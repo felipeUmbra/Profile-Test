@@ -1,0 +1,103 @@
+body {
+    font-family: 'Inter', sans-serif;
+    background: linear-gradient(135deg, #f0f4f8 0%, #d9e3ef 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    margin: 0;
+    padding: 1rem;
+}
+.rating-button {
+    transition: all 0.2s;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
+}
+.rating-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+}
+.rating-button.selected {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
+}
+.progress-bar-inner {
+    transition: width 0.3s ease-in-out;
+}
+/* Custom scrollbar for result interpretation */
+.scroll-container {
+    max-height: 70vh;
+    overflow-y: auto;
+}
+.scroll-container::-webkit-scrollbar {
+    width: 6px;
+}
+.scroll-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+.scroll-container::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+.scroll-container::-webkit-scrollbar-thumb:hover {
+    background: #a1a1a1;
+}
+.lang-button {
+    transition: transform 0.1s;
+}
+.lang-button:hover {
+    transform: scale(1.1);
+}
+.container {
+    background-color: white;
+    padding: 2rem;
+    border-radius: 1rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
+    text-align: center;
+}
+.link-button {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    background-color: #4f46e5;
+    color: white;
+    font-weight: bold;
+    border-radius: 0.5rem;
+    text-decoration: none;
+    transition: background-color 0.2s;
+}
+.link-button:hover {
+    background-color: #4338ca;
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+    .max-w-\[80vw\] {
+        max-width: 95vw !important;
+        padding: 1rem !important;
+    }
+    .text-4xl {
+        font-size: 1.875rem !important;
+    }
+    .text-2xl {
+        font-size: 1.25rem !important;
+    }
+    .p-6 {
+        padding: 1rem !important;
+    }
+    .p-8 {
+        padding: 1.5rem !important;
+    }
+}
+
+/* Print styles */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+    button {
+        display: none !important;
+    }
+    a {
+        display: none !important;
+    }
+}
