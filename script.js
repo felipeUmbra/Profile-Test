@@ -20,24 +20,422 @@ const CONFIG = {
         maxRating: 5,
         factors: ['O', 'C', 'E', 'A', 'N'],
         questionsPerFactor: 8,
-        maxScorePerFactor: 40, // 8 questions × 5 points
+        maxScorePerFactor: 40,
         progressKey: 'personalityTest_big5'
     },
-    localStorageTimeout: 3600000 // 1 hour in milliseconds
+    localStorageTimeout: 3600000,
+    resultKeys: {
+        DISC: 'personalityTest_disc_result',
+        MBTI: 'personalityTest_mbti_result', 
+        BIG5: 'personalityTest_big5_result'
+    }
 };
 
-// --- Test Type Detection ---
+// --- Virtual Scrolling Implementation ---
+class VirtualScroller {
+    constructor(container, items, itemHeight, renderItem) {
+        this.container = container;
+        this.items = items;
+        this.itemHeight = itemHeight;
+        this.renderItem = renderItem;
+        this.visibleItems = [];
+        this.scrollTop = 0;
+        this.visibleCount = 0;
+        
+        this.init();
+    }
+
+    init() {
+        // Set container height for proper scrolling
+        this.container.style.height = `${this.items.length * this.itemHeight}px`;
+        this.container.style.position = 'relative';
+        this.container.style.overflow = 'auto';
+        
+        // Create viewport element
+        this.viewport = document.createElement('div');
+        this.viewport.style.position = 'relative';
+        this.viewport.style.height = '100%';
+        this.container.appendChild(this.viewport);
+        
+        // Calculate visible count
+        this.visibleCount = Math.ceil(this.container.clientHeight / this.itemHeight) + 2;
+        
+        // Add scroll listener with debouncing
+        this.container.addEventListener('scroll', this.debounce(this.handleScroll.bind(this), 10));
+        
+        // Initial render
+        this.render();
+        
+        // Add ARIA attributes
+        this.container.setAttribute('role', 'region');
+        this.container.setAttribute('aria-label', 'Scrollable content');
+        this.container.setAttribute('aria-busy', 'false');
+    }
+
+    debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+
+    handleScroll() {
+        this.scrollTop = this.container.scrollTop;
+        this.render();
+    }
+
+    render() {
+        const startIndex = Math.floor(this.scrollTop / this.itemHeight);
+        const endIndex = Math.min(startIndex + this.visibleCount, this.items.length);
+        
+        // Clear existing items
+        while (this.viewport.firstChild) {
+            this.viewport.removeChild(this.viewport.firstChild);
+        }
+        
+        // Render visible items
+        for (let i = startIndex; i < endIndex; i++) {
+            const item = this.items[i];
+            const element = this.renderItem(item, i);
+            element.style.position = 'absolute';
+            element.style.top = `${i * this.itemHeight}px`;
+            element.style.width = '100%';
+            element.style.height = `${this.itemHeight}px`;
+            element.setAttribute('data-index', i);
+            this.viewport.appendChild(element);
+        }
+        
+        // Update ARIA attributes for accessibility
+        this.container.setAttribute('aria-setsize', this.items.length);
+        this.container.setAttribute('aria-posinset', startIndex + 1);
+    }
+
+    destroy() {
+        this.container.removeEventListener('scroll', this.handleScroll);
+        this.container.innerHTML = '';
+    }
+}
+
+// --- Enhanced Accessibility Manager ---
+class AccessibilityManager {
+    constructor() {
+        this.liveRegions = new Map();
+        this.currentFocus = null;
+        this.init();
+    }
+
+    init() {
+        // Create live regions for different priority levels
+        this.createLiveRegion('assertive', 'assertive');
+        this.createLiveRegion('polite', 'polite');
+        
+        // Add screen reader styles
+        this.addScreenReaderStyles();
+        
+        // Enhance existing elements
+        this.enhanceExistingElements();
+        
+        // Setup focus tracking
+        this.setupFocusManagement();
+    }
+
+    createLiveRegion(id, politeness) {
+        const region = document.createElement('div');
+        region.id = `live-region-${id}`;
+        region.setAttribute('aria-live', politeness);
+        region.setAttribute('aria-atomic', 'true');
+        region.className = 'sr-only';
+        document.body.appendChild(region);
+        this.liveRegions.set(id, region);
+    }
+
+    announce(message, politeness = 'polite') {
+        const region = this.liveRegions.get(politeness);
+        if (region) {
+            // Clear previous message
+            region.textContent = '';
+            // Use setTimeout to ensure the DOM updates
+            setTimeout(() => {
+                region.textContent = message;
+                console.log(`Screen Reader: ${message}`); // For debugging
+            }, 100);
+        }
+    }
+
+    addScreenReaderStyles() {
+        if (!document.getElementById('sr-styles')) {
+            const style = document.createElement('style');
+            style.id = 'sr-styles';
+            style.textContent = `
+                .sr-only {
+                    position: absolute;
+                    width: 1px;
+                    height: 1px;
+                    padding: 0;
+                    margin: -1px;
+                    overflow: hidden;
+                    clip: rect(0, 0, 0, 0);
+                    white-space: nowrap;
+                    border: 0;
+                }
+                
+                .focus-visible {
+                    outline: 3px solid #4f46e5;
+                    outline-offset: 2px;
+                    border-radius: 8px;
+                }
+                
+                .keyboard-navigation *:focus {
+                    outline: 3px solid #4f46e5;
+                    outline-offset: 2px;
+                }
+                
+                @media (prefers-reduced-motion: reduce) {
+                    * {
+                        animation-duration: 0.01ms !important;
+                        animation-iteration-count: 1 !important;
+                        transition-duration: 0.01ms !important;
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+    }
+
+    enhanceExistingElements() {
+        // Enhance progress bars
+        this.enhanceProgressBars();
+        
+        // Enhance rating buttons
+        this.enhanceRatingButtons();
+        
+        // Enhance navigation
+        this.enhanceNavigation();
+    }
+
+    enhanceProgressBars() {
+        const progressBars = document.querySelectorAll('[id*="progress"]');
+        progressBars.forEach(bar => {
+            if (!bar.getAttribute('role')) {
+                bar.setAttribute('role', 'progressbar');
+                bar.setAttribute('aria-valuemin', '0');
+                bar.setAttribute('aria-valuemax', '100');
+                bar.setAttribute('aria-valuenow', '0');
+            }
+        });
+    }
+
+    enhanceRatingButtons() {
+        const ratingButtons = document.querySelectorAll('.rating-button');
+        ratingButtons.forEach((button, index) => {
+            if (!button.getAttribute('aria-label')) {
+                const label = button.textContent.trim();
+                button.setAttribute('aria-label', label);
+            }
+            button.setAttribute('tabindex', '0');
+            button.setAttribute('role', 'button');
+            
+            // Add focus management
+            button.addEventListener('focus', () => {
+                this.currentFocus = button;
+                button.classList.add('focus-visible');
+            });
+            
+            button.addEventListener('blur', () => {
+                button.classList.remove('focus-visible');
+            });
+        });
+    }
+
+    enhanceNavigation() {
+        const backButton = document.querySelector('a[href="index.html"]');
+        if (backButton) {
+            backButton.setAttribute('aria-label', 'Back to home page');
+            backButton.setAttribute('tabindex', '0');
+        }
+
+        const languageButtons = document.querySelectorAll('.lang-button');
+        languageButtons.forEach((button, index) => {
+            button.setAttribute('aria-label', button.querySelector('img').alt);
+            button.setAttribute('tabindex', '0');
+        });
+    }
+
+    setupFocusManagement() {
+        // Track keyboard vs mouse navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Tab') {
+                document.body.classList.add('keyboard-navigation');
+            }
+        });
+
+        document.addEventListener('mousedown', () => {
+            document.body.classList.remove('keyboard-navigation');
+        });
+
+        // Skip to main content functionality
+        this.addSkipToContentLink();
+    }
+
+    addSkipToContentLink() {
+        const skipLink = document.createElement('a');
+        skipLink.href = '#main-content';
+        skipLink.className = 'sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:bg-white focus:p-4 focus:z-50';
+        skipLink.textContent = 'Skip to main content';
+        document.body.insertBefore(skipLink, document.body.firstChild);
+
+        // Add main content ID to the main container
+        const mainContainer = document.querySelector('.max-w-\\[80vw\\]') || document.querySelector('.container');
+        if (mainContainer) {
+            mainContainer.id = 'main-content';
+            mainContainer.setAttribute('role', 'main');
+            mainContainer.setAttribute('tabindex', '-1');
+        }
+    }
+
+    updateProgressBar(percentage) {
+        const progressBar = document.getElementById('progress-bar-inner');
+        if (progressBar) {
+            progressBar.style.width = `${percentage}%`;
+            progressBar.setAttribute('aria-valuenow', percentage);
+            
+            const progressText = document.getElementById('progress-text');
+            if (progressText) {
+                const text = progressText.textContent;
+                this.announce(`Progress: ${percentage}%. ${text}`);
+            }
+        }
+    }
+
+    enhanceDynamicContent(container) {
+        if (!container) return;
+
+        // Enhance result cards
+        const resultCards = container.querySelectorAll('[id*="result"], .score-card, .p-6.rounded-xl');
+        resultCards.forEach((card, index) => {
+            if (!card.getAttribute('role')) {
+                card.setAttribute('role', 'article');
+                card.setAttribute('aria-label', `Result ${index + 1}`);
+                card.setAttribute('tabindex', '0');
+            }
+        });
+
+        // Enhance headings
+        const headings = container.querySelectorAll('h1, h2, h3, h4, h5, h6');
+        headings.forEach((heading, index) => {
+            if (!heading.getAttribute('tabindex')) {
+                heading.setAttribute('tabindex', '-1');
+            }
+        });
+
+        // Enhance buttons in dynamic content
+        const buttons = container.querySelectorAll('button');
+        buttons.forEach(button => {
+            if (!button.getAttribute('aria-label') && button.textContent.trim()) {
+                button.setAttribute('aria-label', button.textContent.trim());
+            }
+            button.setAttribute('tabindex', '0');
+        });
+    }
+
+    moveFocusToElement(element) {
+        if (element) {
+            element.focus();
+            element.classList.add('focus-visible');
+            
+            // Announce focus change for screen readers
+            const label = element.getAttribute('aria-label') || element.textContent || 'Element';
+            this.announce(`Focused on ${label}`, 'polite');
+        }
+    }
+}
+
+// --- Test Runner for Unit Testing ---
+class TestRunner {
+    static runScoringTests() {
+        const tests = {
+            passed: 0,
+            failed: 0,
+            results: []
+        };
+
+        // Test DISC scoring
+        try {
+            const discScores = { D: 28, I: 10, S: 8, C: 12 };
+            const discFactorScores = [
+                { factor: 'D', score: 28 },
+                { factor: 'I', score: 10 },
+                { factor: 'C', score: 12 },
+                { factor: 'S', score: 8 }
+            ].sort((a, b) => b.score - a.score);
+            
+            const discProfile = getProfileKey(discFactorScores);
+            if (discProfile === 'D') {
+                tests.passed++;
+                tests.results.push({ test: 'DISC Pure D Profile', status: 'PASS' });
+            } else {
+                tests.failed++;
+                tests.results.push({ test: 'DISC Pure D Profile', status: 'FAIL', expected: 'D', got: discProfile });
+            }
+        } catch (error) {
+            tests.failed++;
+            tests.results.push({ test: 'DISC Pure D Profile', status: 'ERROR', error: error.message });
+        }
+
+        // Test MBTI scoring
+        try {
+            const mbtiScores = { E: 6, I: 1, S: 2, N: 5, T: 7, F: 0, J: 6, P: 1 };
+            const mbtiType = calculateMBTIType(mbtiScores);
+            if (mbtiType === 'ENTJ') {
+                tests.passed++;
+                tests.results.push({ test: 'MBTI ENTJ Type', status: 'PASS' });
+            } else {
+                tests.failed++;
+                tests.results.push({ test: 'MBTI ENTJ Type', status: 'FAIL', expected: 'ENTJ', got: mbtiType });
+            }
+        } catch (error) {
+            tests.failed++;
+            tests.results.push({ test: 'MBTI ENTJ Type', status: 'ERROR', error: error.message });
+        }
+
+        // Test Big Five reverse scoring
+        try {
+            const question = { factor: 'O', reverse: true };
+            const rating = 5;
+            const finalScore = question.reverse ? (6 - rating) : rating;
+            if (finalScore === 1) {
+                tests.passed++;
+                tests.results.push({ test: 'Big Five Reverse Scoring', status: 'PASS' });
+            } else {
+                tests.failed++;
+                tests.results.push({ test: 'Big Five Reverse Scoring', status: 'FAIL', expected: 1, got: finalScore });
+            }
+        } catch (error) {
+            tests.failed++;
+            tests.results.push({ test: 'Big Five Reverse Scoring', status: 'ERROR', error: error.message });
+        }
+
+        console.log('🧪 Scoring Tests Completed:', tests);
+        return tests;
+    }
+}
+
+// Test Type Detection
 const currentPage = window.location.pathname.split('/').pop();
 const isMBTITest = currentPage === 'mbti.html';
 const isDISCTest = currentPage === 'disc.html' || currentPage === 'DISC.html';
 const isBig5Test = currentPage === 'big5.html';
 
-// --- Language State and Translations ---
-let currentLang = 'en'; // Default language
+// Language State and Translations
+let currentLang = 'en';
 
 const translations = {
     'en': {
-        // DISC Test Translations
         disc_title: "DISC Personality Test",
         disc_subtitle: "Rate how much each statement describes you (1 = Least, 4 = Most)",
         progress_q_of_total: "Question {q} of {total}",
@@ -54,7 +452,6 @@ const translations = {
         export_pdf: "Export to PDF 📄",
         filename: "DISC_Personality_Results_EN",
         
-        // MBTI Test Translations
         mbti_title: "MBTI Personality Test",
         mbti_subtitle: "Choose the option that best describes you for each statement",
         mbti_rating_guide: "Choose the statement that better describes your natural preference",
@@ -62,29 +459,21 @@ const translations = {
         mbti_result_subtitle: "Your MBTI personality type and detailed interpretation",
         mbti_interpretation_title: "Detailed Type Interpretation",
         mbti_filename: "MBTI_Personality_Results_EN",
-        mbti_dimension_e: "Extraversion",
-        mbti_dimension_i: "Introversion", 
-        mbti_dimension_s: "Sensing",
-        mbti_dimension_n: "Intuition",
-        mbti_dimension_t: "Thinking",
-        mbti_dimension_f: "Feeling",
-        mbti_dimension_j: "Judging",
-        mbti_dimension_p: "Perceiving",
         
-        // Big5 Test Translations
         big5_title: "Big Five Personality Test",
         big5_subtitle: "Rate how much each statement describes you (1 = Strongly Disagree, 5 = Strongly Agree)",
         big5_main_result_title: "Your Big Five Personality Traits:",
         big5_result_subtitle: "Below are your scores for the five major personality factors",
         big5_interpretation_title: "Trait Interpretations",
         big5_filename: "Big5_Personality_Results_EN",
+
+        // Big Five factor names
         big5_openness: "Openness",
-        big5_conscientiousness: "Conscientiousness",
+        big5_conscientiousness: "Conscientiousness", 
         big5_extraversion: "Extraversion",
         big5_agreeableness: "Agreeableness",
         big5_neuroticism: "Neuroticism",
 
-        // Common/Error Messages
         error_general: "An error occurred. Please try again.",
         error_pdf: "Failed to generate PDF. Please try again.",
         loading: "Loading...",
@@ -92,7 +481,6 @@ const translations = {
         test_data_invalid: "Test data appears to be invalid. Starting fresh test."
     },
     'pt': {
-        // DISC Test Translations
         disc_title: "Teste de Personalidade DISC",
         disc_subtitle: "Avalie o quanto cada afirmação o descreve (1 = Mínimo, 4 = Máximo)",
         progress_q_of_total: "Pergunta {q} de {total}",
@@ -109,7 +497,6 @@ const translations = {
         export_pdf: "Exportar para PDF 📄",
         filename: "DISC_Personality_Results_PT",
         
-        // MBTI Test Translations
         mbti_title: "Teste de Personalidade MBTI",
         mbti_subtitle: "Escolha a opção que melhor descreve você para cada afirmação",
         mbti_rating_guide: "Escolha a afirmação que melhor descreve sua preferência natural",
@@ -117,29 +504,21 @@ const translations = {
         mbti_result_subtitle: "Seu tipo de personalidade MBTI e interpretação detalhada",
         mbti_interpretation_title: "Interpretação Detalhada do Tipo",
         mbti_filename: "MBTI_Personality_Results_PT",
-        mbti_dimension_e: "Extroversão",
-        mbti_dimension_i: "Introversão",
-        mbti_dimension_s: "Sensação",
-        mbti_dimension_n: "Intuição", 
-        mbti_dimension_t: "Pensamento",
-        mbti_dimension_f: "Sentimento",
-        mbti_dimension_j: "Julgamento",
-        mbti_dimension_p: "Percepção",
         
-        // Big5 Test Translations
         big5_title: "Teste de Personalidade Big Five",
         big5_subtitle: "Avalie o quanto cada afirmação o descreve (1 = Discordo Totalmente, 5 = Concordo Totalmente)",
         big5_main_result_title: "Seus Traços de Personalidade Big Five:",
         big5_result_subtitle: "Abaixo estão suas pontuações para os cinco principais fatores de personalidade",
         big5_interpretation_title: "Interpretações dos Traços",
         big5_filename: "Big5_Personality_Results_PT",
+
+        // Big Five factor names
         big5_openness: "Abertura",
         big5_conscientiousness: "Conscienciosidade",
         big5_extraversion: "Extroversão",
         big5_agreeableness: "Amabilidade",
         big5_neuroticism: "Neuroticismo",
 
-        // Common/Error Messages
         error_general: "Ocorreu um erro. Por favor, tente novamente.",
         error_pdf: "Falha ao gerar PDF. Por favor, tente novamente.",
         loading: "Carregando...",
@@ -162,7 +541,7 @@ function t(key, replacements = {}) {
     }
 }
 
-// --- Performance Optimization: Debounce Function ---
+// Performance Optimization: Debounce Function
 function debounce(func, wait) {
     let timeout;
     return function executedFunction(...args) {
@@ -175,7 +554,7 @@ function debounce(func, wait) {
     };
 }
 
-// --- Local Storage Management ---
+// Local Storage Management
 function getStorageKey() {
     if (isMBTITest) return CONFIG.MBTI.progressKey;
     if (isBig5Test) return CONFIG.BIG5.progressKey;
@@ -205,12 +584,10 @@ function loadProgress() {
         if (saved) {
             const progress = JSON.parse(saved);
             
-            // Check if progress is still valid (within timeout)
             if (Date.now() - progress.timestamp < CONFIG.localStorageTimeout) {
                 console.log(t('resuming_test'));
                 return progress;
             } else {
-                // Clear expired progress
                 localStorage.removeItem(getStorageKey());
             }
         }
@@ -228,7 +605,72 @@ function clearProgress() {
     }
 }
 
-// --- Data Validation ---
+// Test Result Storage Management
+function saveTestResult(resultData) {
+    try {
+        let storageKey;
+        let resultObject = {
+            ...resultData,
+            timestamp: Date.now()
+        };
+
+        if (isMBTITest) {
+            storageKey = CONFIG.resultKeys.MBTI;
+        } else if (isBig5Test) {
+            storageKey = CONFIG.resultKeys.BIG5;
+        } else {
+            storageKey = CONFIG.resultKeys.DISC;
+        }
+
+        localStorage.setItem(storageKey, JSON.stringify(resultObject));
+        console.log(`Test result saved to ${storageKey}`);
+        
+        // Show success message
+        showSuccessMessage(currentLang === 'en' ? 'Result saved successfully!' : 'Resultado salvo com sucesso!');
+    } catch (error) {
+        console.warn('Could not save test result to localStorage:', error);
+        showError(currentLang === 'en' ? 'Failed to save result.' : 'Falha ao salvar resultado.');
+    }
+}
+
+function showSuccessMessage(message, duration = 3000) {
+    let successContainer = document.getElementById('success-container');
+    if (!successContainer) {
+        successContainer = document.createElement('div');
+        successContainer.id = 'success-container';
+        successContainer.className = 'fixed top-4 right-4 z-50 max-w-sm';
+        successContainer.setAttribute('role', 'alert');
+        successContainer.setAttribute('aria-live', 'polite');
+        document.body.appendChild(successContainer);
+    }
+
+    const successElement = document.createElement('div');
+    successElement.className = 'bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg shadow-lg mb-2 success-message';
+    successElement.innerHTML = `
+        <div class="flex items-center">
+            <span class="text-green-500 mr-2" aria-hidden="true">✓</span>
+            <span>${message}</span>
+            <button onclick="this.parentElement.parentElement.remove()" 
+                    class="ml-4 text-green-500 hover:text-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+                    aria-label="Close success message">
+                ×
+            </button>
+        </div>
+    `;
+
+    successContainer.appendChild(successElement);
+    if (accessibilityManager) {
+        accessibilityManager.announce(`Success: ${message}`, 'assertive');
+    }
+
+    setTimeout(() => {
+        if (successElement.parentNode) {
+            successElement.parentNode.removeChild(successElement);
+        }
+    }, duration);
+}
+
+// Data Validation
 function validateTestData() {
     try {
         if (isMBTITest && mbtiQuestions.length !== CONFIG.MBTI.totalQuestions) {
@@ -250,14 +692,15 @@ function validateTestData() {
     }
 }
 
-// --- Error Handling Utilities ---
+// Error Handling Utilities
 function showError(message = t('error_general'), duration = 5000) {
-    // Create or get error container
     let errorContainer = document.getElementById('error-container');
     if (!errorContainer) {
         errorContainer = document.createElement('div');
         errorContainer.id = 'error-container';
         errorContainer.className = 'fixed top-4 right-4 z-50 max-w-sm';
+        errorContainer.setAttribute('role', 'alert');
+        errorContainer.setAttribute('aria-live', 'assertive');
         document.body.appendChild(errorContainer);
     }
 
@@ -265,14 +708,21 @@ function showError(message = t('error_general'), duration = 5000) {
     errorElement.className = 'bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg shadow-lg mb-2';
     errorElement.innerHTML = `
         <div class="flex items-center">
-            <span class="text-red-500 mr-2">⚠</span>
+            <span class="text-red-500 mr-2" aria-hidden="true">⚠</span>
             <span>${message}</span>
+            <button onclick="this.parentElement.parentElement.remove()" 
+                    class="ml-4 text-red-500 hover:text-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+                    aria-label="Close error message">
+                ×
+            </button>
         </div>
     `;
 
     errorContainer.appendChild(errorElement);
+    if (accessibilityManager) {
+        accessibilityManager.announce(`Error: ${message}`, 'assertive');
+    }
 
-    // Auto remove after duration
     setTimeout(() => {
         if (errorElement.parentNode) {
             errorElement.parentNode.removeChild(errorElement);
@@ -285,12 +735,15 @@ function showLoading(message = t('loading')) {
     loadingElement.id = 'loading-overlay';
     loadingElement.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
     loadingElement.innerHTML = `
-        <div class="bg-white p-6 rounded-lg shadow-xl flex items-center">
-            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mr-3"></div>
+        <div class="bg-white p-6 rounded-lg shadow-xl flex items-center" role="alert" aria-live="polite">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mr-3" aria-hidden="true"></div>
             <span>${message}</span>
         </div>
     `;
     document.body.appendChild(loadingElement);
+    if (accessibilityManager) {
+        accessibilityManager.announce(message, 'polite');
+    }
     return loadingElement;
 }
 
@@ -301,90 +754,197 @@ function hideLoading() {
     }
 }
 
-// --- Accessibility Enhancements ---
-function enhanceAccessibility() {
-    try {
-        // Add ARIA labels to rating buttons
-        if (isDISCTest || isBig5Test) {
-            const ratingButtons = document.querySelectorAll('button[data-rating]');
-            ratingButtons.forEach(button => {
-                const rating = button.getAttribute('data-rating');
-                const label = isBig5Test ? 
-                    `${rating} - ${['Strongly Disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly Agree'][rating-1]}` :
-                    `${rating} - ${['Least Like Me', 'Less Like Me', 'More Like Me', 'Most Like Me'][rating-1]}`;
-                button.setAttribute('aria-label', label);
-            });
+// Enhanced Keyboard Navigation
+function setupEnhancedKeyboardNavigation() {
+    document.addEventListener('keydown', handleEnhancedKeyboardNavigation);
+    
+    // Add focus visible class for better keyboard navigation feedback
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Tab') {
+            document.body.classList.add('keyboard-navigation');
         }
+    });
 
-        // Add keyboard navigation
-        document.addEventListener('keydown', handleKeyboardNavigation);
+    document.addEventListener('mousedown', () => {
+        document.body.classList.remove('keyboard-navigation');
+    });
+}
 
-        // Ensure focus management for screen readers
-        const mainContent = document.querySelector('main');
-        if (mainContent) {
-            mainContent.setAttribute('role', 'main');
-            mainContent.setAttribute('aria-live', 'polite');
-        }
+function handleEnhancedKeyboardNavigation(event) {
+    const { key, target, ctrlKey, altKey } = event;
+    
+    // Skip if user is typing in an input field
+    if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
+        return;
+    }
 
-    } catch (error) {
-        console.warn('Accessibility enhancements failed:', error);
+    switch (key) {
+        case 'ArrowLeft':
+        case 'ArrowRight':
+        case 'ArrowUp':
+        case 'ArrowDown':
+            handleArrowNavigation(event, key);
+            break;
+        case ' ':
+        case 'Enter':
+            handleActionKey(event, target);
+            break;
+        case 'Escape':
+            handleEscapeKey(event);
+            break;
+        case 'h':
+        case 'H':
+            if (ctrlKey) showKeyboardShortcuts();
+            break;
+        case '1':
+        case '2':
+        case '3':
+        case '4':
+        case '5':
+            if (isDISCTest || isBig5Test) handleNumberKey(event, key);
+            break;
+        case 'a':
+        case 'A':
+        case 'b':
+        case 'B':
+            if (isMBTITest) handleMBTIKey(event, key);
+            break;
     }
 }
 
-function handleKeyboardNavigation(event) {
-    // Handle number keys for ratings
-    if ((isDISCTest || isBig5Test) && event.key >= '1' && event.key <= (isBig5Test ? '5' : '4')) {
-        const rating = parseInt(event.key);
+function handleArrowNavigation(event, direction) {
+    const focusableElements = getFocusableElements();
+    const currentIndex = focusableElements.indexOf(document.activeElement);
+    
+    if (currentIndex !== -1) {
+        event.preventDefault();
+        let newIndex;
+        
+        if (direction === 'ArrowRight' || direction === 'ArrowDown') {
+            newIndex = (currentIndex + 1) % focusableElements.length;
+        } else {
+            newIndex = (currentIndex - 1 + focusableElements.length) % focusableElements.length;
+        }
+        
+        const newElement = focusableElements[newIndex];
+        newElement.focus();
+        newElement.classList.add('focus-visible');
+        
+        // Announce focus change for screen readers
+        if (accessibilityManager) {
+            const label = newElement.getAttribute('aria-label') || newElement.textContent || 'Element';
+            accessibilityManager.announce(label, 'polite');
+        }
+    }
+}
+
+function handleActionKey(event, target) {
+    if (target.classList.contains('rating-button') || target.hasAttribute('data-rating') || 
+        target.id.startsWith('option-') || target.id === 'restart-btn' || target.id === 'export-btn') {
+        event.preventDefault();
+        target.click();
+        if (accessibilityManager) {
+            accessibilityManager.announce(`Selected: ${target.textContent.trim()}`, 'assertive');
+        }
+    }
+}
+
+function handleEscapeKey(event) {
+    const mainContent = document.querySelector('main') || document.querySelector('#main-content');
+    if (mainContent) {
+        mainContent.focus();
+        if (accessibilityManager) {
+            accessibilityManager.announce('Returned to main content', 'polite');
+        }
+    }
+}
+
+function handleNumberKey(event, key) {
+    const rating = parseInt(key);
+    const maxRating = isBig5Test ? 5 : 4;
+    
+    if (rating >= 1 && rating <= maxRating) {
         const buttons = document.querySelectorAll(`button[data-rating="${rating}"]`);
         if (buttons.length > 0) {
             event.preventDefault();
             buttons[0].click();
         }
     }
+}
 
-    // Handle A/B keys for MBTI
-    if (isMBTITest && (event.key === 'a' || event.key === 'A' || event.key === 'b' || event.key === 'B')) {
-        const option = event.key.toLowerCase();
-        const button = document.getElementById(`option-${option}`);
-        if (button) {
-            event.preventDefault();
-            button.click();
-        }
-    }
-
-    // Handle Enter key for selected buttons
-    if (event.key === 'Enter') {
-        const focused = document.activeElement;
-        if (focused && (focused.hasAttribute('data-rating') || focused.id.startsWith('option-'))) {
-            event.preventDefault();
-            focused.click();
-        }
+function handleMBTIKey(event, key) {
+    const option = key.toLowerCase();
+    const button = document.getElementById(`option-${option}`);
+    if (button) {
+        event.preventDefault();
+        button.click();
     }
 }
 
-// --- Print-Friendly Styles ---
-function addPrintStyles() {
-    if (!document.getElementById('print-styles')) {
-        const style = document.createElement('style');
-        style.id = 'print-styles';
-        style.textContent = `
-            @media print {
-                .no-print { display: none !important; }
-                body { font-size: 12pt; }
-                .bg-gray-100 { background: white !important; }
-                .shadow-lg { box-shadow: none !important; }
-                .border-2 { border: 1px solid #000 !important; }
-                .text-6xl { font-size: 2.5rem !important; }
-                .text-3xl { font-size: 1.5rem !important; }
-                .p-6 { padding: 1rem !important; }
-                .mb-4 { margin-bottom: 0.5rem !important; }
-            }
-        `;
-        document.head.appendChild(style);
-    }
+function getFocusableElements() {
+    return Array.from(document.querySelectorAll(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    )).filter(el => !el.disabled && el.offsetParent !== null);
 }
 
-// --- DISC Test Data (30 Questions) ---
+function showKeyboardShortcuts() {
+    const shortcuts = [
+        'Arrow Keys: Navigate between options',
+        'Enter/Space: Select current option',
+        'Escape: Return to main content',
+        'Number Keys 1-5: Select rating (DISC/Big5)',
+        'A/B Keys: Select MBTI options',
+        'Ctrl+H: Show this help'
+    ].join('. ');
+    
+    if (accessibilityManager) {
+        accessibilityManager.announce(`Keyboard shortcuts: ${shortcuts}`);
+    }
+    showError(`Keyboard Shortcuts: ${shortcuts}`, 8000);
+}
+
+// Virtual Scrolling Setup for Results
+function setupVirtualScrollingForResults() {
+    const interpretationContainers = document.querySelectorAll('.scroll-container');
+    interpretationContainers.forEach(container => {
+        // Only enable virtual scrolling for containers with many items
+        const items = Array.from(container.children);
+        if (items.length > 10) { // Lower threshold for better performance
+            // Backup original content
+            const originalHTML = container.innerHTML;
+            
+            const scroller = new VirtualScroller(
+                container,
+                items,
+                120, // estimated item height
+                (item, index) => {
+                    const div = document.createElement('div');
+                    div.className = item.className + ' virtual-item';
+                    div.innerHTML = item.innerHTML;
+                    div.setAttribute('role', 'article');
+                    div.setAttribute('aria-label', `Result item ${index + 1}`);
+                    return div;
+                }
+            );
+            virtualScrollers.set(container.id, { scroller, originalHTML });
+        }
+    });
+}
+
+function cleanupVirtualScrolling() {
+    virtualScrollers.forEach(({ scroller, originalHTML }, containerId) => {
+        const container = document.getElementById(containerId);
+        if (container) {
+            scroller.destroy();
+            container.innerHTML = originalHTML;
+        }
+    });
+    virtualScrollers.clear();
+}
+
+// --- EMBEDDED TEST DATA (No external loading) ---
+
+// DISC Test Data (30 Questions)
 const discQuestions = [
     // D - Dominance (8 Questions total)
     { text: { en: "I prioritize getting measurable results quickly.", pt: "Eu priorizo a obtenção de resultados mensuráveis rapidamente." }, factor: "D" },
@@ -425,7 +985,7 @@ const discQuestions = [
     { text: { en: "I base my decisions primarily on verifiable facts and data.", pt: "Eu baseio minhas decisões principalmente em fatos e dados verificáveis." }, factor: "C" },
 ];
 
-// --- MBTI Test Data (28 Questions - 7 per dimension) ---
+// MBTI Test Data (28 Questions - 7 per dimension)
 const mbtiQuestions = [
     // E/I Questions (7 total)
     { 
@@ -632,7 +1192,7 @@ const mbtiQuestions = [
     }
 ];
 
-// --- Big Five Test Data (40 Questions) ---
+// Big Five Test Data (40 Questions)
 const big5Questions = [
     // Openness (8 questions)
     { text: { en: "I have a rich vocabulary.", pt: "Eu tenho um vocabulário rico." }, factor: "O", reverse: false },
@@ -930,14 +1490,14 @@ const blendedDescriptions = {
     }
 };
 
-// --- Global State ---
+// Global State
 let currentQuestionIndex = 0;
-let scores = { D: 0, I: 0, S: 0, C: 0 }; // For DISC
-let mbtiScores = { E: 0, I: 0, S: 0, N: 0, T: 0, F: 0, J: 0, P: 0 }; // For MBTI
-let big5Scores = { O: 0, C: 0, E: 0, A: 0, N: 0 }; // For Big Five
+let scores = { D: 0, I: 0, S: 0, C: 0 };
+let mbtiScores = { E: 0, I: 0, S: 0, N: 0, T: 0, F: 0, J: 0, P: 0 };
+let big5Scores = { O: 0, C: 0, E: 0, A: 0, N: 0 };
 let userRatings = [];
 
-// --- DOM Elements ---
+// DOM Elements
 let testContainer;
 let resultsContainer;
 let questionTextElement;
@@ -945,29 +1505,34 @@ let progressTextElement;
 let ratingButtonsContainer;
 let progressBarElement;
 
-// --- Debounced Handlers ---
+// Global Accessibility Manager
+let accessibilityManager;
+
+// Virtual Scrollers Map
+let virtualScrollers = new Map();
+
+// Debounced Handlers
 const debouncedHandleRating = debounce(handleRating, 300);
 const debouncedHandleMBTIRating = debounce(handleMBTIRating, 300);
 const debouncedHandleBig5Rating = debounce(handleBig5Rating, 300);
 
-/**
- * Sets the application language and updates the UI text.
- * @param {string} lang 'en' or 'pt'
- */
+// Enhanced Language Function
 function setLanguage(lang) {
     try {
         if (lang === currentLang) return;
         currentLang = lang;
         updateStaticText();
         
-        // Save language preference
         try {
             localStorage.setItem('personalityTest_language', lang);
         } catch (e) {
             console.warn('Could not save language preference');
         }
         
-        // Re-render the current view
+        if (accessibilityManager) {
+            accessibilityManager.announce(`Language changed to ${lang === 'en' ? 'English' : 'Portuguese'}`);
+        }
+        
         if (resultsContainer && resultsContainer.classList.contains('hidden')) {
             if (isMBTITest) {
                 renderMBTIQuestion();
@@ -977,7 +1542,7 @@ function setLanguage(lang) {
                 renderQuestion();
             }
         } else if (resultsContainer) {
-            showResults(true); // Re-render results immediately
+            showResults(true);
         }
     } catch (error) {
         console.error('Error setting language:', error);
@@ -985,9 +1550,6 @@ function setLanguage(lang) {
     }
 }
 
-/**
- * Updates all non-dynamic text in the UI based on currentLang.
- */
 function updateStaticText() {
     try {
         if (isMBTITest) {
@@ -998,7 +1560,6 @@ function updateStaticText() {
             document.getElementById('header-title').textContent = t('big5_title');
             document.getElementById('header-subtitle').textContent = t('big5_subtitle');
             
-            // Update rating button labels for Big Five
             const ratingLabels = currentLang === 'en' 
                 ? ["Strongly Disagree", "Disagree", "Neutral", "Agree", "Strongly Agree"]
                 : ["Discordo Totalmente", "Discordo", "Neutro", "Concordo", "Concordo Totalmente"];
@@ -1033,11 +1594,40 @@ function updateStaticText() {
     }
 }
 
-// --- MBTI Specific Functions ---
+// Enhanced Question Rendering with Accessibility
+function renderQuestion() {
+    try {
+        if (currentQuestionIndex >= discQuestions.length) {
+            showResults();
+            return;
+        }
 
-/**
- * Renders the current MBTI question
- */
+        const currentQ = discQuestions[currentQuestionIndex];
+        const totalQuestions = discQuestions.length;
+
+        questionTextElement.textContent = currentQ.text[currentLang];
+        questionTextElement.setAttribute('aria-live', 'polite');
+        
+        const progress = (currentQuestionIndex / totalQuestions) * 100;
+        progressTextElement.textContent = t('progress_q_of_total', { q: currentQuestionIndex + 1, total: totalQuestions });
+        if (accessibilityManager) {
+            accessibilityManager.updateProgressBar(progress);
+        }
+
+        Array.from(ratingButtonsContainer.children).forEach(btn => btn.classList.remove('selected'));
+
+        // Announce new question for screen readers
+        if (accessibilityManager) {
+            accessibilityManager.announce(`Question ${currentQuestionIndex + 1} of ${totalQuestions}: ${currentQ.text[currentLang]}`, 'polite');
+        }
+
+        saveProgress();
+    } catch (error) {
+        console.error('Error rendering question:', error);
+        showError(t('error_general'));
+    }
+}
+
 function renderMBTIQuestion() {
     try {
         if (currentQuestionIndex >= mbtiQuestions.length) {
@@ -1048,23 +1638,30 @@ function renderMBTIQuestion() {
         const currentQ = mbtiQuestions[currentQuestionIndex];
         const totalQuestions = mbtiQuestions.length;
 
-        // Update question options
         document.getElementById('option-a-text').textContent = currentQ.optionA[currentLang];
         document.getElementById('option-b-text').textContent = currentQ.optionB[currentLang];
         
-        // Update progress
+        // Update ARIA labels
+        document.getElementById('option-a').setAttribute('aria-label', `Option A: ${currentQ.optionA[currentLang]}`);
+        document.getElementById('option-b').setAttribute('aria-label', `Option B: ${currentQ.optionB[currentLang]}`);
+        
         const progress = (currentQuestionIndex / totalQuestions) * 100;
         progressTextElement.textContent = t('progress_q_of_total', { q: currentQuestionIndex + 1, total: totalQuestions });
-        progressBarElement.style.width = `${progress}%`;
+        if (accessibilityManager) {
+            accessibilityManager.updateProgressBar(progress);
+        }
 
-        // Reset button styles
         document.getElementById('option-a').classList.remove('selected', 'bg-blue-200', 'border-blue-500');
         document.getElementById('option-b').classList.remove('selected', 'bg-purple-200', 'border-purple-500');
         
         document.getElementById('option-a').classList.add('bg-gray-100', 'border-gray-300');
         document.getElementById('option-b').classList.add('bg-gray-100', 'border-gray-300');
 
-        // Save progress after rendering question
+        // Announce new question for screen readers
+        if (accessibilityManager) {
+            accessibilityManager.announce(`Question ${currentQuestionIndex + 1} of ${totalQuestions}. Option A: ${currentQ.optionA[currentLang]}. Option B: ${currentQ.optionB[currentLang]}`, 'polite');
+        }
+
         saveProgress();
     } catch (error) {
         console.error('Error rendering MBTI question:', error);
@@ -1072,9 +1669,69 @@ function renderMBTIQuestion() {
     }
 }
 
-/**
- * Handles MBTI rating selection
- */
+function renderBig5Question() {
+    try {
+        if (currentQuestionIndex >= big5Questions.length) {
+            showResults();
+            return;
+        }
+
+        const currentQ = big5Questions[currentQuestionIndex];
+        const totalQuestions = big5Questions.length;
+
+        questionTextElement.textContent = currentQ.text[currentLang];
+        questionTextElement.setAttribute('aria-live', 'polite');
+        
+        const progress = (currentQuestionIndex / totalQuestions) * 100;
+        progressTextElement.textContent = t('progress_q_of_total', { q: currentQuestionIndex + 1, total: totalQuestions });
+        if (accessibilityManager) {
+            accessibilityManager.updateProgressBar(progress);
+        }
+
+        Array.from(ratingButtonsContainer.children).forEach(btn => btn.classList.remove('selected'));
+
+        // Announce new question for screen readers
+        if (accessibilityManager) {
+            accessibilityManager.announce(`Question ${currentQuestionIndex + 1} of ${totalQuestions}: ${currentQ.text[currentLang]}`, 'polite');
+        }
+
+        saveProgress();
+    } catch (error) {
+        console.error('Error rendering Big5 question:', error);
+        showError(t('error_general'));
+    }
+}
+
+// Enhanced Rating Handlers with Accessibility
+function handleRating(rating, buttonElement) {
+    try {
+        if (currentQuestionIndex >= discQuestions.length) return;
+
+        const currentQ = discQuestions[currentQuestionIndex];
+
+        Array.from(ratingButtonsContainer.children).forEach(btn => btn.classList.remove('selected'));
+        buttonElement.classList.add('selected');
+
+        scores[currentQ.factor] += rating;
+        userRatings.push({ factor: currentQ.factor, rating: rating });
+        
+        // Announce selection for screen readers
+        if (accessibilityManager) {
+            accessibilityManager.announce(`Selected rating ${rating} for question`, 'assertive');
+        }
+
+        saveProgress();
+
+        setTimeout(() => {
+            currentQuestionIndex++;
+            renderQuestion();
+        }, 300);
+    } catch (error) {
+        console.error('Error handling rating:', error);
+        showError(t('error_general'));
+    }
+}
+
 function handleMBTIRating(option, buttonElement) {
     try {
         if (currentQuestionIndex >= mbtiQuestions.length) return;
@@ -1082,7 +1739,6 @@ function handleMBTIRating(option, buttonElement) {
         const currentQ = mbtiQuestions[currentQuestionIndex];
         const selectedValue = option === 'A' ? currentQ.aValue : currentQ.bValue;
 
-        // Visual feedback
         document.getElementById('option-a').classList.remove('selected', 'bg-blue-200', 'border-blue-500', 'bg-gray-100');
         document.getElementById('option-b').classList.remove('selected', 'bg-purple-200', 'border-purple-500', 'bg-gray-100');
         
@@ -1092,14 +1748,17 @@ function handleMBTIRating(option, buttonElement) {
             buttonElement.classList.add('selected', 'bg-purple-200', 'border-purple-500');
         }
 
-        // Update score
         mbtiScores[selectedValue] += 1;
         userRatings.push({ dimension: currentQ.dimension, choice: option, value: selectedValue });
 
-        // Save progress
+        // Announce selection for screen readers
+        const selectedText = option === 'A' ? currentQ.optionA[currentLang] : currentQ.optionB[currentLang];
+        if (accessibilityManager) {
+            accessibilityManager.announce(`Selected: ${selectedText}`, 'assertive');
+        }
+
         saveProgress();
 
-        // Advance to next question
         setTimeout(() => {
             currentQuestionIndex++;
             renderMBTIQuestion();
@@ -1110,9 +1769,55 @@ function handleMBTIRating(option, buttonElement) {
     }
 }
 
-/**
- * Calculates final MBTI type
- */
+function handleBig5Rating(rating, buttonElement) {
+    try {
+        if (currentQuestionIndex >= big5Questions.length) return;
+
+        const currentQ = big5Questions[currentQuestionIndex];
+
+        Array.from(ratingButtonsContainer.children).forEach(btn => btn.classList.remove('selected'));
+        buttonElement.classList.add('selected');
+
+        const finalScore = currentQ.reverse ? (6 - rating) : rating;
+        
+        big5Scores[currentQ.factor] += finalScore;
+        userRatings.push({ factor: currentQ.factor, rating: rating, finalScore: finalScore });
+
+        // Announce selection for screen readers
+        if (accessibilityManager) {
+            accessibilityManager.announce(`Selected rating ${rating} for question`, 'assertive');
+        }
+
+        saveProgress();
+
+        setTimeout(() => {
+            currentQuestionIndex++;
+            renderBig5Question();
+        }, 300);
+    } catch (error) {
+        console.error('Error handling Big5 rating:', error);
+        showError(t('error_general'));
+    }
+}
+
+// Scoring Algorithms
+function getProfileKey(factorScores) {
+    try {
+        const primary = factorScores[0];
+        const secondary = factorScores[1];
+        const PURE_THRESHOLD = CONFIG.DISC.pureThreshold;
+
+        if (primary.score - secondary.score > PURE_THRESHOLD) {
+            return primary.factor;
+        } else {
+            return primary.factor + secondary.factor;
+        }
+    } catch (error) {
+        console.error('Error getting profile key:', error);
+        return 'UNKN';
+    }
+}
+
 function calculateMBTIType() {
     try {
         const eiType = mbtiScores.E >= mbtiScores.I ? 'E' : 'I';
@@ -1127,12 +1832,56 @@ function calculateMBTIType() {
     }
 }
 
-/**
- * Shows MBTI specific results with percentage display
- */
+// Enhanced Results Display with Virtual Scrolling
+function showResults(forceRerender = false) {
+    try {
+        if (!forceRerender) {
+            testContainer.classList.add('hidden');
+            resultsContainer.classList.remove('hidden');
+            
+            // Move focus to results for screen readers
+            resultsContainer.setAttribute('tabindex', '-1');
+            resultsContainer.focus();
+        }
+
+        const resultScores = document.getElementById('result-scores');
+        const resultInterpretation = document.getElementById('result-interpretation');
+
+        // Clear progress when test is completed
+        clearProgress();
+
+        // Announce completion
+        if (accessibilityManager) {
+            accessibilityManager.announce('Test completed. Displaying results.', 'assertive');
+        }
+
+        if (isMBTITest) {
+            showMBTIResults(resultScores, resultInterpretation);
+        } else if (isBig5Test) {
+            showBig5Results(resultScores, resultInterpretation);
+        } else {
+            showDISCResults(resultScores, resultInterpretation);
+        }
+
+        // Enhance dynamic content for accessibility
+        if (accessibilityManager) {
+            accessibilityManager.enhanceDynamicContent(resultsContainer);
+        }
+        
+        // Setup virtual scrolling for long interpretations
+        setTimeout(() => {
+            setupVirtualScrollingForResults();
+        }, 100);
+
+    } catch (error) {
+        console.error('Error showing results:', error);
+        showError(t('error_general'));
+    }
+}
+
+// Enhanced MBTI Results with Accessibility
 function showMBTIResults(resultScores, resultInterpretation) {
     try {
-        // Calculate MBTI type
         const mbtiType = calculateMBTIType();
         const typeData = mbtiTypeDescriptions[mbtiType];
 
@@ -1141,20 +1890,34 @@ function showMBTIResults(resultScores, resultInterpretation) {
             return;
         }
 
-        // Set the main result header
         const mainResultTitle = document.getElementById('main-result-title');
         mainResultTitle.innerHTML = `${t('mbti_main_result_title')} <span class="text-purple-600 font-extrabold">${mbtiType}</span>`;
         document.getElementById('result-subtitle').textContent = t('mbti_result_subtitle');
         document.getElementById('interpretation-title').textContent = t('mbti_interpretation_title');
 
-        // Create MBTI type display
         const mbtiTypeDisplay = document.getElementById('mbti-type-display');
         mbtiTypeDisplay.innerHTML = `
-            <div class="text-6xl font-bold mb-4">${mbtiType}</div>
+            <div class="text-6xl font-bold mb-4" aria-label="Your MBTI type: ${mbtiType}">${mbtiType}</div>
             <div class="text-2xl font-semibold">${typeData.name[currentLang]}</div>
         `;
+        mbtiTypeDisplay.setAttribute('role', 'status');
+        mbtiTypeDisplay.setAttribute('aria-live', 'polite');
 
-        // Create dimension score cards with percentages
+        // Save the result
+        saveTestResult({
+            testType: 'MBTI',
+            type: mbtiType,
+            typeName: typeData.name[currentLang],
+            description: typeData.description[currentLang],
+            scores: { ...mbtiScores },
+            dimensions: ['EI', 'SN', 'TF', 'JP']
+        });
+
+        // Announce result
+        if (accessibilityManager) {
+            accessibilityManager.announce(`Your MBTI personality type is ${mbtiType}: ${typeData.name[currentLang]}`, 'assertive');
+        }
+
         let scoreCardsHTML = '';
         const dimensions = [
             { dim: 'E', opposite: 'I' },
@@ -1174,12 +1937,14 @@ function showMBTIResults(resultScores, resultInterpretation) {
             const isPreferred = dimScore >= oppScore;
 
             scoreCardsHTML += `
-                <div class="p-6 rounded-xl border-2 ${dimData.style} shadow-lg transition duration-300 ${isPreferred ? 'scale-[1.02] ring-4 ring-offset-2 ring-purple-500' : ''}">
+                <div class="p-6 rounded-xl border-2 ${dimData.style} shadow-lg transition duration-300 ${isPreferred ? 'scale-[1.02] ring-4 ring-offset-2 ring-purple-500' : ''}"
+                     role="article" aria-label="${dimData.title[currentLang]} vs ${oppData.title[currentLang]} score">
                     <div class="flex items-center mb-4">
-                        <span class="text-3xl mr-3">${dimData.icon}</span>
+                        <span class="text-3xl mr-3" aria-hidden="true">${dimData.icon}</span>
                         <h3 class="text-xl font-bold">${dimData.title[currentLang]} vs ${oppData.title[currentLang]}</h3>
                     </div>
-                    <div class="w-full bg-gray-200 rounded-full h-2.5 mb-2">
+                    <div class="w-full bg-gray-200 rounded-full h-2.5 mb-2" role="progressbar" 
+                         aria-valuenow="${dimPercentage}" aria-valuemin="0" aria-valuemax="100">
                         <div class="h-2.5 rounded-full ${isPreferred ? 'bg-purple-600' : 'bg-gray-500'}" style="width: ${dimPercentage}%"></div>
                     </div>
                     <div class="flex justify-between text-sm font-semibold">
@@ -1193,11 +1958,10 @@ function showMBTIResults(resultScores, resultInterpretation) {
 
         resultScores.innerHTML = scoreCardsHTML;
 
-        // Create detailed interpretation
         const mainInterpretationHTML = `
-            <div class="mb-6 p-6 rounded-xl border-l-4 border-purple-500 shadow-md bg-white">
+            <div class="mb-6 p-6 rounded-xl border-l-4 border-purple-500 shadow-md bg-white" role="article" aria-label="Detailed interpretation">
                 <h4 class="text-2xl font-bold text-gray-800 mb-2 flex items-center">
-                    <span class="text-3xl mr-3">${mbtiDimensions[mbtiType[0]].icon}</span>
+                    <span class="text-3xl mr-3" aria-hidden="true">${mbtiDimensions[mbtiType[0]].icon}</span>
                     ${mbtiType} - ${typeData.name[currentLang]}
                 </h4>
                 <p class="text-gray-600">${typeData.description[currentLang]}</p>
@@ -1211,86 +1975,28 @@ function showMBTIResults(resultScores, resultInterpretation) {
     }
 }
 
-// --- Big Five Specific Functions ---
-
-/**
- * Renders the current Big Five question
- */
-function renderBig5Question() {
-    try {
-        if (currentQuestionIndex >= big5Questions.length) {
-            showResults();
-            return;
-        }
-
-        const currentQ = big5Questions[currentQuestionIndex];
-        const totalQuestions = big5Questions.length;
-
-        // Update question text
-        questionTextElement.textContent = currentQ.text[currentLang];
-        
-        // Update progress
-        const progress = (currentQuestionIndex / totalQuestions) * 100;
-        progressTextElement.textContent = t('progress_q_of_total', { q: currentQuestionIndex + 1, total: totalQuestions });
-        progressBarElement.style.width = `${progress}%`;
-
-        // Reset button styles
-        Array.from(ratingButtonsContainer.children).forEach(btn => btn.classList.remove('selected'));
-
-        // Save progress after rendering question
-        saveProgress();
-    } catch (error) {
-        console.error('Error rendering Big5 question:', error);
-        showError(t('error_general'));
-    }
-}
-
-/**
- * Handles Big Five rating selection
- */
-function handleBig5Rating(rating, buttonElement) {
-    try {
-        if (currentQuestionIndex >= big5Questions.length) return;
-
-        const currentQ = big5Questions[currentQuestionIndex];
-
-        // Visually select the button
-        Array.from(ratingButtonsContainer.children).forEach(btn => btn.classList.remove('selected'));
-        buttonElement.classList.add('selected');
-
-        // Calculate score (reverse if needed)
-        const finalScore = currentQ.reverse ? (6 - rating) : rating;
-        
-        // Update score
-        big5Scores[currentQ.factor] += finalScore;
-        userRatings.push({ factor: currentQ.factor, rating: rating, finalScore: finalScore });
-
-        // Save progress
-        saveProgress();
-
-        // Advance to next question
-        setTimeout(() => {
-            currentQuestionIndex++;
-            renderBig5Question();
-        }, 300);
-    } catch (error) {
-        console.error('Error handling Big5 rating:', error);
-        showError(t('error_general'));
-    }
-}
-
-/**
- * Shows Big Five specific results
- */
+// Enhanced Big Five Results with Accessibility
 function showBig5Results(resultScores, resultInterpretation) {
     try {
-        // Set the main result header
         const mainResultTitle = document.getElementById('main-result-title');
         mainResultTitle.innerHTML = `${t('big5_main_result_title')}`;
         document.getElementById('result-subtitle').textContent = t('big5_result_subtitle');
         document.getElementById('interpretation-title').textContent = t('big5_interpretation_title');
 
-        // Create Big Five score cards
+        // Save the result
+        saveTestResult({
+            testType: 'BIG5',
+            scores: { ...big5Scores },
+            factors: ['O', 'C', 'E', 'A', 'N'],
+            maxScores: {
+                O: CONFIG.BIG5.maxScorePerFactor,
+                C: CONFIG.BIG5.maxScorePerFactor,
+                E: CONFIG.BIG5.maxScorePerFactor,
+                A: CONFIG.BIG5.maxScorePerFactor,
+                N: CONFIG.BIG5.maxScorePerFactor
+            }
+        });
+
         let scoreCardsHTML = '';
         const dimensions = ['O', 'C', 'E', 'A', 'N'];
 
@@ -1300,7 +2006,6 @@ function showBig5Results(resultScores, resultInterpretation) {
             const maxScore = CONFIG.BIG5.maxScorePerFactor;
             const percentage = Math.round((score / maxScore) * 100);
 
-            // Determine interpretation based on score
             let interpretation = "";
             if (percentage >= 70) {
                 interpretation = factor === 'N' ? 
@@ -1315,12 +2020,14 @@ function showBig5Results(resultScores, resultInterpretation) {
             }
 
             scoreCardsHTML += `
-                <div class="p-6 rounded-xl border-2 ${desc.style} shadow-lg transition duration-300">
+                <div class="p-6 rounded-xl border-2 ${desc.style} shadow-lg transition duration-300"
+                     role="article" aria-label="${desc.title[currentLang]} score">
                     <div class="flex items-center mb-4">
-                        <span class="text-3xl mr-3">${desc.icon}</span>
+                        <span class="text-3xl mr-3" aria-hidden="true">${desc.icon}</span>
                         <h3 class="text-xl font-bold">${desc.title[currentLang]}</h3>
                     </div>
-                    <div class="w-full bg-gray-200 rounded-full h-2.5 mb-2">
+                    <div class="w-full bg-gray-200 rounded-full h-2.5 mb-2" role="progressbar" 
+                         aria-valuenow="${percentage}" aria-valuemin="0" aria-valuemax="100">
                         <div class="h-2.5 rounded-full bg-indigo-600" style="width: ${percentage}%"></div>
                     </div>
                     <p class="text-sm font-semibold mt-2">${score}/${maxScore} ${t('points')} (${percentage}%)</p>
@@ -1334,16 +2041,15 @@ function showBig5Results(resultScores, resultInterpretation) {
 
         resultScores.innerHTML = scoreCardsHTML;
 
-        // Create detailed interpretation
         const mainInterpretationHTML = `
-            <div class="mb-6 p-6 rounded-xl border-l-4 border-indigo-500 shadow-md bg-white">
+            <div class="mb-6 p-6 rounded-xl border-l-4 border-indigo-500 shadow-md bg-white" role="article" aria-label="Trait interpretations">
                 <h4 class="text-2xl font-bold text-gray-800 mb-2">${currentLang === 'en' ? 'Understanding Your Big Five Results' : 'Entendendo Seus Resultados Big Five'}</h4>
                 <p class="text-gray-600 mb-4">
                     ${currentLang === 'en' ? 
                     "The Big Five personality traits represent five broad domains of human personality. Your scores indicate your relative standing on each dimension compared to the general population. Remember that all traits have both strengths and challenges, and no single score is 'better' than another." :
                     "Os cinco grandes traços de personalidade representam cinco domínios amplos da personalidade humana. Suas pontuações indicam sua posição relativa em cada dimensão em comparação com a população em geral. Lembre-se de que todos os traços têm pontos fortes e desafios, e nenhuma pontuação única é 'melhor' que outra."}
                 </p>
-                <ul class="list-disc list-inside text-gray-600 space-y-2">
+                <ul class="list-disc list-inside text-gray-600 space-y-2" role="list">
                     <li><strong>${t('big5_openness')}:</strong> ${currentLang === 'en' ? "Imagination, creativity, curiosity, and appreciation for new experiences" : "Imaginação, criatividade, curiosidade e apreço por novas experiências"}</li>
                     <li><strong>${t('big5_conscientiousness')}:</strong> ${currentLang === 'en' ? "Organization, diligence, reliability, and goal-directed behavior" : "Organização, diligência, confiabilidade e comportamento orientado a objetivos"}</li>
                     <li><strong>${t('big5_extraversion')}:</strong> ${currentLang === 'en' ? "Sociability, assertiveness, energy, and positive emotions" : "Sociabilidade, assertividade, energia e emoções positivas"}</li>
@@ -1354,214 +2060,20 @@ function showBig5Results(resultScores, resultInterpretation) {
         `;
         
         resultInterpretation.innerHTML = mainInterpretationHTML;
+        
+        // Announce completion
+        if (accessibilityManager) {
+            accessibilityManager.announce('Big Five results displayed. Review your scores for each personality trait.', 'polite');
+        }
     } catch (error) {
         console.error('Error showing Big5 results:', error);
         showError(t('error_general'));
     }
 }
 
-// --- Common Logic Functions ---
-
-/**
- * Initializes the application and renders the first question.
- */
-function init() {
-    try {
-        testContainer = document.getElementById('test-container');
-        resultsContainer = document.getElementById('results-container');
-        questionTextElement = document.getElementById('question-text');
-        progressTextElement = document.getElementById('progress-text');
-        progressBarElement = document.getElementById('progress-bar-inner');
-        ratingButtonsContainer = document.getElementById('rating-buttons');
-
-        // Validate test data
-        if (!validateTestData()) {
-            console.warn(t('test_data_invalid'));
-        }
-
-        // Load language preference
-        try {
-            const savedLang = localStorage.getItem('personalityTest_language');
-            if (savedLang && (savedLang === 'en' || savedLang === 'pt')) {
-                currentLang = savedLang;
-            }
-        } catch (e) {
-            console.warn('Could not load language preference');
-        }
-
-        // Load progress if available
-        const progress = loadProgress();
-        if (progress) {
-            currentQuestionIndex = progress.currentQuestionIndex;
-            scores = progress.scores || scores;
-            mbtiScores = progress.mbtiScores || mbtiScores;
-            big5Scores = progress.big5Scores || big5Scores;
-            userRatings = progress.userRatings || userRatings;
-            currentLang = progress.currentLang || currentLang;
-        }
-
-        // Initialize static text
-        updateStaticText(); 
-        
-        // Add print styles
-        addPrintStyles();
-        
-        // Enhance accessibility
-        enhanceAccessibility();
-        
-        // Render initial question based on test type
-        if (isMBTITest) {
-            if (currentQuestionIndex < mbtiQuestions.length) {
-                renderMBTIQuestion();
-            } else {
-                showResults();
-            }
-        } else if (isBig5Test) {
-            if (currentQuestionIndex < big5Questions.length) {
-                renderBig5Question();
-            } else {
-                showResults();
-            }
-        } else {
-            if (currentQuestionIndex < discQuestions.length) {
-                renderQuestion();
-            } else {
-                showResults();
-            }
-        }
-    } catch (error) {
-        console.error('Error initializing application:', error);
-        showError(t('error_general'));
-    }
-}
-
-/**
- * Renders the current DISC question text and updates the progress bar.
- */
-function renderQuestion() {
-    try {
-        if (currentQuestionIndex >= discQuestions.length) {
-            showResults();
-            return;
-        }
-
-        const currentQ = discQuestions[currentQuestionIndex];
-        const totalQuestions = discQuestions.length;
-
-        // Update question text using the selected language
-        questionTextElement.textContent = currentQ.text[currentLang];
-        
-        // Update progress
-        const progress = (currentQuestionIndex / totalQuestions) * 100;
-        progressTextElement.textContent = t('progress_q_of_total', { q: currentQuestionIndex + 1, total: totalQuestions });
-        progressBarElement.style.width = `${progress}%`;
-
-        // Reset button styles
-        Array.from(ratingButtonsContainer.children).forEach(btn => btn.classList.remove('selected'));
-
-        // Save progress after rendering question
-        saveProgress();
-    } catch (error) {
-        console.error('Error rendering question:', error);
-        showError(t('error_general'));
-    }
-}
-
-/**
- * Handles the user rating for DISC, updates scores, and advances to the next question.
- * @param {number} rating The score (1-4) selected by the user.
- * @param {HTMLElement} buttonElement The button element that was clicked.
- */
-function handleRating(rating, buttonElement) {
-    try {
-        // Check if the test is already finished (shouldn't happen, but safe check)
-        if (currentQuestionIndex >= discQuestions.length) return; 
-
-        const currentQ = discQuestions[currentQuestionIndex];
-
-        // 1. Visually select the button
-        Array.from(ratingButtonsContainer.children).forEach(btn => btn.classList.remove('selected'));
-        buttonElement.classList.add('selected');
-
-        // 2. Update the score and history (rating = score)
-        scores[currentQ.factor] += rating;
-        userRatings.push({ factor: currentQ.factor, rating: rating });
-        
-        // 3. Save progress
-        saveProgress();
-
-        // 4. Delay slightly before advancing for visual feedback
-        setTimeout(() => {
-            currentQuestionIndex++;
-            renderQuestion();
-        }, 300);
-    } catch (error) {
-        console.error('Error handling rating:', error);
-        showError(t('error_general'));
-    }
-}
-
-/**
- * Determines the final DISC profile key (D, I, S, C, DI, ID, SC, etc.)
- * based on the two highest scores.
- * @param {Array<Object>} factorScores Sorted array of scores [{factor: 'D', score: 25}, ...]
- * @returns {string} The profile key (e.g., 'DI', 'C')
- */
-function getProfileKey(factorScores) {
-    try {
-        const primary = factorScores[0];
-        const secondary = factorScores[1];
-        
-        // Threshold for considering a score 'Pure' vs 'Blended'
-        const PURE_THRESHOLD = CONFIG.DISC.pureThreshold;
-
-        if (primary.score - secondary.score > PURE_THRESHOLD) {
-            return primary.factor; // Pure Style (e.g., 'D', 'I', 'S', 'C')
-        } else {
-            return primary.factor + secondary.factor; // Blended Style (e.g., 'DI', 'IS', 'SC')
-        }
-    } catch (error) {
-        console.error('Error getting profile key:', error);
-        return 'UNKN';
-    }
-}
-
-/**
- * Calculates final results, determines the primary style, and renders the results UI.
- * @param {boolean} forceRerender If true, just re-render results without hiding/showing containers.
- */
-function showResults(forceRerender = false) {
-    try {
-        if (!forceRerender) {
-            testContainer.classList.add('hidden');
-            resultsContainer.classList.remove('hidden');
-        }
-
-        const resultScores = document.getElementById('result-scores');
-        const resultInterpretation = document.getElementById('result-interpretation');
-
-        // Clear progress when test is completed
-        clearProgress();
-
-        if (isMBTITest) {
-            showMBTIResults(resultScores, resultInterpretation);
-        } else if (isBig5Test) {
-            showBig5Results(resultScores, resultInterpretation);
-        } else {
-            showDISCResults(resultScores, resultInterpretation);
-        }
-    } catch (error) {
-        console.error('Error showing results:', error);
-        showError(t('error_general'));
-    }
-}
-
-/**
- * Shows DISC specific results
- */
+// Enhanced DISC Results with Accessibility
 function showDISCResults(resultScores, resultInterpretation) {
     try {
-        // --- Dynamic Scoring Setup ---
         const factorCounts = discQuestions.reduce((acc, q) => {
             acc[q.factor] = (acc[q.factor] || 0) + 1;
             return acc;
@@ -1574,10 +2086,8 @@ function showDISCResults(resultScores, resultInterpretation) {
             { factor: 'C', score: scores.C },
         ];
         
-        // 1. Sort scores to find Primary and Secondary
         factorScores.sort((a, b) => b.score - a.score);
         
-        // 2. Determine the Profile Key (e.g., 'DI', 'C')
         const profileKey = getProfileKey(factorScores);
         const profileData = blendedDescriptions[profileKey];
         
@@ -1586,46 +2096,49 @@ function showDISCResults(resultScores, resultInterpretation) {
             return;
         }
 
-        // Set the main result header using the blended profile name
         const mainResultTitle = document.getElementById('main-result-title');
         mainResultTitle.innerHTML = `${t('main_result_title')} <span class="text-indigo-600 font-extrabold">${profileData.name[currentLang]}</span>`;
-
         document.getElementById('result-subtitle').textContent = t('result_subtitle');
         document.getElementById('interpretation-title').textContent = t('interpretation_title');
 
-        // --- Render Score Cards (Always show all 4 base factors) ---
-        let scoreCardsHTML = '';
-        
-        // Find the two highest score factors for visual emphasis (regardless of the pure/blended split)
-        const primaryStyles = [factorScores[0].factor, factorScores[1].factor]; 
+        // Save the result
+        saveTestResult({
+            testType: 'DISC',
+            profileKey: profileKey,
+            profileName: profileData.name[currentLang],
+            description: profileData.description[currentLang],
+            scores: { ...scores },
+            factors: factorScores
+        });
 
-        // Sort by factor letter (D, I, S, C) for consistent display in the score cards
+        // Announce result
+        if (accessibilityManager) {
+            accessibilityManager.announce(`Your DISC personality profile is ${profileData.name[currentLang]}`, 'assertive');
+        }
+
+        let scoreCardsHTML = '';
+        const primaryStyles = [factorScores[0].factor, factorScores[1].factor];
         const factorOrder = ['D', 'I', 'S', 'C'];
         const sortedForDisplay = factorOrder.map(f => factorScores.find(s => s.factor === f));
         
         sortedForDisplay.forEach(item => {
             const desc = discDescriptions[item.factor];
-            
-            const factorCount = factorCounts[item.factor]; 
-            const maxScore = factorCount * 4;             
-            const minScore = factorCount * 1;             
-            const range = maxScore - minScore;            
-
-            const percentage = range > 0 
-                ? Math.round(((item.score - minScore) / range) * 100)
-                : 0;
-
-            // Highlight the top two factors
+            const factorCount = factorCounts[item.factor];
+            const maxScore = factorCount * 4;
+            const minScore = factorCount * 1;
+            const range = maxScore - minScore;
+            const percentage = range > 0 ? Math.round(((item.score - minScore) / range) * 100) : 0;
             const isPrimary = primaryStyles.includes(item.factor);
 
-            // Score Card HTML
             scoreCardsHTML += `
-                <div class="p-6 rounded-xl border-2 ${desc.style} shadow-lg transition duration-300 ${isPrimary ? 'scale-[1.02] ring-4 ring-offset-2 ring-indigo-500' : ''}">
+                <div class="p-6 rounded-xl border-2 ${desc.style} shadow-lg transition duration-300 ${isPrimary ? 'scale-[1.02] ring-4 ring-offset-2 ring-indigo-500' : ''}"
+                     role="article" aria-label="${desc.title[currentLang]} score">
                     <div class="flex items-center mb-4">
-                        <span class="text-3xl mr-3">${desc.icon}</span>
+                        <span class="text-3xl mr-3" aria-hidden="true">${desc.icon}</span>
                         <h3 class="text-xl font-bold">${desc.title[currentLang]}</h3>
                     </div>
-                    <div class="w-full bg-gray-200 rounded-full h-2.5 mb-2">
+                    <div class="w-full bg-gray-200 rounded-full h-2.5 mb-2" role="progressbar" 
+                         aria-valuenow="${percentage}" aria-valuemin="0" aria-valuemax="100">
                         <div class="h-2.5 rounded-full ${isPrimary ? 'bg-indigo-600' : 'bg-gray-500'}" style="width: ${percentage}%"></div>
                     </div>
                     <p class="text-sm font-semibold mt-2">${item.score} / ${maxScore} ${t('points')} (${percentage}%)</p>
@@ -1635,11 +2148,10 @@ function showDISCResults(resultScores, resultInterpretation) {
 
         resultScores.innerHTML = scoreCardsHTML;
 
-        // --- Render Detailed Blended Interpretation ---
         const mainInterpretationHTML = `
-            <div class="mb-6 p-6 rounded-xl border-l-4 ${profileData.style} shadow-md bg-white">
+            <div class="mb-6 p-6 rounded-xl border-l-4 ${profileData.style} shadow-md bg-white" role="article" aria-label="Detailed profile interpretation">
                 <h4 class="text-2xl font-bold text-gray-800 mb-2 flex items-center">
-                    <span class="text-3xl mr-3">${discDescriptions[profileKey.charAt(0)].icon}</span>
+                    <span class="text-3xl mr-3" aria-hidden="true">${discDescriptions[profileKey.charAt(0)].icon}</span>
                     ${profileData.name[currentLang]}
                 </h4>
                 <p class="text-gray-600">${profileData.description[currentLang]}</p>
@@ -1653,9 +2165,7 @@ function showDISCResults(resultScores, resultInterpretation) {
     }
 }
 
-/**
- * Exports the results container content as a PDF file.
- */
+// Enhanced PDF Export with Accessibility
 function exportToPDF() {
     const loading = showLoading(currentLang === 'en' ? 'Generating PDF...' : 'Gerando PDF...');
     
@@ -1687,6 +2197,9 @@ function exportToPDF() {
 
         html2pdf().set(options).from(element).save().then(() => {
             hideLoading();
+            if (accessibilityManager) {
+                accessibilityManager.announce('PDF exported successfully', 'assertive');
+            }
         }).catch(error => {
             console.error('PDF generation failed:', error);
             hideLoading();
@@ -1700,12 +2213,12 @@ function exportToPDF() {
     }
 }
 
-/**
- * Resets the test state and restarts the quiz.
- */
+// Enhanced Restart Function with Accessibility
 function restartTest() {
     try {
-        // Reset state variables to zero
+        // Cleanup virtual scrolling
+        cleanupVirtualScrolling();
+        
         currentQuestionIndex = 0;
         
         if (isMBTITest) {
@@ -1718,14 +2231,11 @@ function restartTest() {
         
         userRatings = [];
         
-        // Clear progress
         clearProgress();
         
-        // Hide results and show the test container
         resultsContainer.classList.add('hidden');
         testContainer.classList.remove('hidden');
         
-        // Clear the dynamically generated HTML results
         document.getElementById('result-scores').innerHTML = '';
         document.getElementById('result-interpretation').innerHTML = '';
         
@@ -1734,7 +2244,15 @@ function restartTest() {
             if (mbtiTypeDisplay) mbtiTypeDisplay.innerHTML = '';
         }
 
-        // Render the first question and update the progress bar to 0%
+        // Move focus back to test container
+        testContainer.setAttribute('tabindex', '-1');
+        testContainer.focus();
+        
+        // Announce restart
+        if (accessibilityManager) {
+            accessibilityManager.announce('Test restarted. Beginning from question one.', 'assertive');
+        }
+
         if (isMBTITest) {
             renderMBTIQuestion();
         } else if (isBig5Test) {
@@ -1748,5 +2266,99 @@ function restartTest() {
     }
 }
 
-// Initialize the app when the window loads
+// Enhanced Initialization
+function init() {
+    try {
+        testContainer = document.getElementById('test-container');
+        resultsContainer = document.getElementById('results-container');
+        questionTextElement = document.getElementById('question-text');
+        progressTextElement = document.getElementById('progress-text');
+        progressBarElement = document.getElementById('progress-bar-inner');
+        ratingButtonsContainer = document.getElementById('rating-buttons');
+
+        // Initialize accessibility manager
+        accessibilityManager = new AccessibilityManager();
+
+        // Validate test data
+        if (!validateTestData()) {
+            console.warn(t('test_data_invalid'));
+        }
+
+        // Load language preference
+        try {
+            const savedLang = localStorage.getItem('personalityTest_language');
+            if (savedLang && (savedLang === 'en' || savedLang === 'pt')) {
+                currentLang = savedLang;
+            }
+        } catch (e) {
+            console.warn('Could not load language preference');
+        }
+
+        // Load progress if available
+        const progress = loadProgress();
+        if (progress) {
+            currentQuestionIndex = progress.currentQuestionIndex;
+            scores = progress.scores || scores;
+            mbtiScores = progress.mbtiScores || mbtiScores;
+            big5Scores = progress.big5Scores || big5Scores;
+            userRatings = progress.userRatings || userRatings;
+            currentLang = progress.currentLang || currentLang;
+        }
+
+        // Initialize static text
+        updateStaticText();
+        
+        // Setup enhanced keyboard navigation
+        setupEnhancedKeyboardNavigation();
+        
+        // Run unit tests in development
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            TestRunner.runScoringTests();
+        }
+        
+        // Render initial question based on test type
+        if (isMBTITest) {
+            if (currentQuestionIndex < mbtiQuestions.length) {
+                renderMBTIQuestion();
+            } else {
+                showResults();
+            }
+        } else if (isBig5Test) {
+            if (currentQuestionIndex < big5Questions.length) {
+                renderBig5Question();
+            } else {
+                showResults();
+            }
+        } else {
+            if (currentQuestionIndex < discQuestions.length) {
+                renderQuestion();
+            } else {
+                showResults();
+            }
+        }
+        
+        // Announce application ready
+        setTimeout(() => {
+            if (accessibilityManager) {
+                accessibilityManager.announce('Personality test application loaded and ready. Use Tab key to navigate and arrow keys for selection.', 'polite');
+            }
+        }, 1000);
+        
+    } catch (error) {
+        console.error('Error initializing application:', error);
+        showError(t('error_general'));
+    }
+}
+
+// Initialize the application when the window loads
 window.onload = init;
+
+// Export for testing
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = {
+        getProfileKey,
+        calculateMBTIType,
+        TestRunner,
+        saveTestResult
+    };
+}

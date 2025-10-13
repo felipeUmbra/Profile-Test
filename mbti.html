@@ -23,7 +23,7 @@
             </a>
             <div class="flex space-x-2">
                 <button onclick="setLanguage('en')" class="lang-button p-1 rounded hover:bg-gray-100">
-                    <img src="https://placehold.co/24x16/000000/FFFFFF?text=US" alt="English" title="English" class="rounded shadow">
+                    <img src="https://placehold.co/24x16/000000/FFFFFF?text=EN" alt="English" title="English" class="rounded shadow">
                 </button>
                 <button onclick="setLanguage('pt')" class="lang-button p-1 rounded hover:bg-gray-100">
                     <img src="https://placehold.co/24x16/000000/FFFFFF?text=BR" alt="Português" title="Português (Brasil)" class="rounded shadow">
@@ -49,7 +49,9 @@
 
             <!-- Question Card -->
             <div class="bg-indigo-50 p-6 md:p-10 rounded-xl border-4 border-indigo-200 shadow-xl">
-                <p id="question-text" class="text-2xl font-semibold text-gray-700 min-h-[4rem] flex items-center">Loading Question...</p>
+                <p id="question-text" class="text-2xl font-semibold text-gray-700 min-h-[4rem] flex items-center">
+                    <span id="loading-text">Loading test data...</span>
+                </p>
             </div>
 
             <!-- Rating Buttons -->
