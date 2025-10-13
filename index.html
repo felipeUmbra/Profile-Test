@@ -7,31 +7,44 @@
     <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="style.css">
+    <script src="script.js"></script>
 </head>
 <body class="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-blue-50 to-indigo-100">
     <div class="container max-w-4xl">
-        <h1 class="text-4xl font-extrabold text-gray-800 mb-6 text-center">Personality Test Hub</h1>
-        <p class="text-gray-500 mb-8 text-center text-lg">Choose a personality test to discover more about yourself:</p>
+        <!-- Language Selector -->
+        <div class="flex justify-end mb-6">
+            <div class="flex space-x-2">
+                <button onclick="setLanguage('en')" class="lang-button p-1 rounded hover:bg-gray-100 transition duration-200">
+                    <img src="https://placehold.co/24x16/000000/FFFFFF?text=EN" alt="English" title="English" class="rounded shadow">
+                </button>
+                <button onclick="setLanguage('pt')" class="lang-button p-1 rounded hover:bg-gray-100 transition duration-200">
+                    <img src="https://placehold.co/24x16/000000/FFFFFF?text=BR" alt="Português" title="Português (Brasil)" class="rounded shadow">
+                </button>
+            </div>
+        </div>
+
+        <h1 id="main-title" class="text-4xl font-extrabold text-gray-800 mb-6 text-center">Personality Test Hub</h1>
+        <p id="subtitle" class="text-gray-500 mb-8 text-center text-lg">Choose a personality test to discover more about yourself:</p>
         
         <div class="space-y-4 mb-12">
             <a href="DISC.html" class="block text-center py-4 text-xl bg-indigo-500 hover:bg-indigo-600 text-white font-bold rounded-xl transition duration-300 shadow-lg">
-                DISC Personality Test
-                <span class="block text-sm text-indigo-100 mt-1">Understand your communication and work style</span>
+                <span id="disc-test">DISC Personality Test</span>
+                <span id="disc-subtitle" class="block text-sm text-indigo-100 mt-1">Understand your communication and work style</span>
             </a>
             <a href="mbti.html" class="block text-center py-4 text-xl bg-purple-500 hover:bg-purple-600 text-white font-bold rounded-xl transition duration-300 shadow-lg">
-                MBTI Personality Test  
-                <span class="block text-sm text-purple-100 mt-1">Discover your psychological type</span>
+                <span id="mbti-test">MBTI Personality Test</span>
+                <span id="mbti-subtitle" class="block text-sm text-purple-100 mt-1">Discover your psychological type</span>
             </a>
             <a href="big5.html" class="block text-center py-4 text-xl bg-green-500 hover:bg-green-600 text-white font-bold rounded-xl transition duration-300 shadow-lg">
-                Big Five Personality Test
-                <span class="block text-sm text-green-100 mt-1">Explore the five major personality dimensions</span>
+                <span id="big5-test">Big Five Personality Test</span>
+                <span id="big5-subtitle" class="block text-sm text-green-100 mt-1">Explore the five major personality dimensions</span>
             </a>
         </div>
 
         <!-- Saved Results Section -->
         <div id="saved-results-section" class="bg-white rounded-2xl shadow-xl p-6 mb-8 hidden">
             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-bold text-gray-800">Your Test Results</h2>
+                <h2 id="results-title" class="text-2xl font-bold text-gray-800">Your Test Results</h2>
                 <button id="clear-results-btn" class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg transition duration-300">
                     Clear All Results
                 </button>
@@ -42,349 +55,9 @@
         </div>
 
         <div class="mt-8 text-center text-gray-400 text-sm">
-            <p>All tests available in English and Portuguese</p>
-            <p class="mt-2">Your results are saved automatically and can be viewed here anytime</p>
+            <p id="footer-text-1">All tests available in English and Portuguese</p>
+            <p id="footer-text-2" class="mt-2">Your results are saved automatically and can be viewed here anytime</p>
         </div>
     </div>
-
-    <script>
-        // Results storage and display functionality
-        const STORAGE_KEYS = {
-            DISC: 'personalityTest_disc_result',
-            MBTI: 'personalityTest_mbti_result',
-            BIG5: 'personalityTest_big5_result'
-        };
-
-        // Big Five trait descriptions
-        const big5TraitDescriptions = {
-            'O': {
-                name: { en: 'Openness', pt: 'Abertura' },
-                high: { 
-                    en: 'Imaginative, creative, curious, open to new experiences', 
-                    pt: 'Imaginativo, criativo, curioso, aberto a novas experiências' 
-                },
-                moderate: { 
-                    en: 'Balanced between practicality and creativity', 
-                    pt: 'Equilibrado entre praticidade e criatividade' 
-                },
-                low: { 
-                    en: 'Practical, conventional, prefers routine', 
-                    pt: 'Prático, convencional, prefere rotina' 
-                }
-            },
-            'C': {
-                name: { en: 'Conscientiousness', pt: 'Conscienciosidade' },
-                high: { 
-                    en: 'Organized, disciplined, reliable, goal-oriented', 
-                    pt: 'Organizado, disciplinado, confiável, orientado a objetivos' 
-                },
-                moderate: { 
-                    en: 'Balanced between spontaneity and planning', 
-                    pt: 'Equilibrado entre espontaneidade e planejamento' 
-                },
-                low: { 
-                    en: 'Flexible, spontaneous, adaptable to change', 
-                    pt: 'Flexível, espontâneo, adaptável a mudanças' 
-                }
-            },
-            'E': {
-                name: { en: 'Extraversion', pt: 'Extroversão' },
-                high: { 
-                    en: 'Sociable, energetic, enthusiastic, talkative', 
-                    pt: 'Sociável, energético, entusiástico, comunicativo' 
-                },
-                moderate: { 
-                    en: 'Balanced between social and solitary activities', 
-                    pt: 'Equilibrado entre atividades sociais e solitárias' 
-                },
-                low: { 
-                    en: 'Reserved, reflective, enjoys solitude', 
-                    pt: 'Reservado, reflexivo, aprecia solidão' 
-                }
-            },
-            'A': {
-                name: { en: 'Agreeableness', pt: 'Amabilidade' },
-                high: { 
-                    en: 'Compassionate, cooperative, trusting, empathetic', 
-                    pt: 'Compassivo, cooperativo, confiante, empático' 
-                },
-                moderate: { 
-                    en: 'Balanced between cooperation and assertiveness', 
-                    pt: 'Equilibrado entre cooperação e assertividade' 
-                },
-                low: { 
-                    en: 'Analytical, straightforward, values independence', 
-                    pt: 'Analítico, direto, valoriza independência' 
-                }
-            },
-            'N': {
-                name: { en: 'Neuroticism', pt: 'Neuroticismo' },
-                high: { 
-                    en: 'Sensitive to stress, experiences strong emotions', 
-                    pt: 'Sensível ao estresse, experimenta emoções fortes' 
-                },
-                moderate: { 
-                    en: 'Generally emotionally stable with occasional sensitivity', 
-                    pt: 'Geralmente estável emocionalmente com sensibilidade ocasional' 
-                },
-                low: { 
-                    en: 'Emotionally stable, resilient, calm under pressure', 
-                    pt: 'Estável emocionalmente, resiliente, calmo sob pressão' 
-                }
-            }
-        };
-
-        function loadSavedResults() {
-            const resultsContainer = document.getElementById('saved-results');
-            const section = document.getElementById('saved-results-section');
-            
-            if (!resultsContainer || !section) return;
-
-            let hasResults = false;
-            let resultsHTML = '';
-
-            // Check for DISC results
-            const discResult = localStorage.getItem(STORAGE_KEYS.DISC);
-            if (discResult) {
-                try {
-                    const result = JSON.parse(discResult);
-                    resultsHTML += createResultCard('DISC', result);
-                    hasResults = true;
-                } catch (e) {
-                    console.error('Error parsing DISC result:', e);
-                }
-            }
-
-            // Check for MBTI results
-            const mbtiResult = localStorage.getItem(STORAGE_KEYS.MBTI);
-            if (mbtiResult) {
-                try {
-                    const result = JSON.parse(mbtiResult);
-                    resultsHTML += createResultCard('MBTI', result);
-                    hasResults = true;
-                } catch (e) {
-                    console.error('Error parsing MBTI result:', e);
-                }
-            }
-
-            // Check for Big5 results
-            const big5Result = localStorage.getItem(STORAGE_KEYS.BIG5);
-            if (big5Result) {
-                try {
-                    const result = JSON.parse(big5Result);
-                    resultsHTML += createResultCard('BIG5', result);
-                    hasResults = true;
-                } catch (e) {
-                    console.error('Error parsing Big5 result:', e);
-                }
-            }
-
-            if (hasResults) {
-                resultsContainer.innerHTML = resultsHTML;
-                section.classList.remove('hidden');
-            } else {
-                section.classList.add('hidden');
-            }
-        }
-
-        function createResultCard(testType, result) {
-            const testNames = {
-                DISC: 'DISC Personality',
-                MBTI: 'MBTI Personality', 
-                BIG5: 'Big Five Personality'
-            };
-
-            const testColors = {
-                DISC: 'indigo',
-                MBTI: 'purple',
-                BIG5: 'green'
-            };
-
-            const color = testColors[testType];
-            const date = new Date(result.timestamp).toLocaleDateString();
-            
-            let content = '';
-            
-            if (testType === 'DISC') {
-                content = `
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <h3 class="font-bold text-lg text-${color}-700">${result.profileName}</h3>
-                            <p class="text-gray-600 text-sm">${result.description}</p>
-                        </div>
-                        <div class="text-right">
-                            <div class="text-2xl font-bold text-${color}-600">${result.profileKey}</div>
-                            <div class="text-xs text-gray-500">${date}</div>
-                        </div>
-                    </div>
-                `;
-            } else if (testType === 'MBTI') {
-                content = `
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <h3 class="font-bold text-lg text-${color}-700">${result.typeName}</h3>
-                            <p class="text-gray-600 text-sm">${result.description}</p>
-                        </div>
-                        <div class="text-right">
-                            <div class="text-2xl font-bold text-${color}-600">${result.type}</div>
-                            <div class="text-xs text-gray-500">${date}</div>
-                        </div>
-                    </div>
-                `;
-            } else if (testType === 'BIG5') {
-                // Calculate trait levels and create friendly description
-                const traitAnalysis = analyzeBig5Traits(result.scores, result.maxScores);
-                content = createBig5FriendlyDescription(traitAnalysis, date);
-            }
-
-            return `
-                <div class="p-4 rounded-xl border-2 border-${color}-200 bg-${color}-50 hover:bg-${color}-100 transition duration-300 cursor-pointer" 
-                     onclick="retakeTest('${testType}')">
-                    <div class="flex justify-between items-center mb-2">
-                        <span class="text-sm font-semibold text-${color}-600">${testNames[testType]}</span>
-                        <span class="text-xs text-gray-500 hover:text-${color}-700" onclick="event.stopPropagation(); deleteResult('${testType}')">🗑️</span>
-                    </div>
-                    ${content}
-                </div>
-            `;
-        }
-
-        function analyzeBig5Traits(scores, maxScores) {
-            const analysis = {};
-            const factors = ['O', 'C', 'E', 'A', 'N'];
-            
-            factors.forEach(factor => {
-                const score = scores[factor];
-                const maxScore = maxScores[factor];
-                const percentage = (score / maxScore) * 100;
-                
-                let level, description;
-                
-                if (percentage >= 70) {
-                    level = 'high';
-                    description = big5TraitDescriptions[factor].high;
-                } else if (percentage >= 40) {
-                    level = 'moderate';
-                    description = big5TraitDescriptions[factor].moderate;
-                } else {
-                    level = 'low';
-                    description = big5TraitDescriptions[factor].low;
-                }
-                
-                analysis[factor] = {
-                    name: big5TraitDescriptions[factor].name,
-                    score: score,
-                    maxScore: maxScore,
-                    percentage: Math.round(percentage),
-                    level: level,
-                    description: description
-                };
-            });
-            
-            return analysis;
-        }
-
-        function createBig5FriendlyDescription(traitAnalysis, date) {
-            const currentLang = document.documentElement.lang === 'pt' ? 'pt' : 'en';
-            
-            // Group traits by level
-            const highTraits = Object.values(traitAnalysis).filter(trait => trait.level === 'high');
-            const moderateTraits = Object.values(traitAnalysis).filter(trait => trait.level === 'moderate');
-            const lowTraits = Object.values(traitAnalysis).filter(trait => trait.level === 'low');
-            
-            let descriptionHTML = `
-                <div class="mb-3">
-                    <h3 class="font-bold text-lg text-green-700 mb-2">${currentLang === 'en' ? 'Your Personality Profile' : 'Seu Perfil de Personalidade'}</h3>
-            `;
-            
-            // High traits section
-            if (highTraits.length > 0) {
-                descriptionHTML += `
-                    <div class="mb-3">
-                        <h4 class="font-semibold text-green-600 text-sm mb-1">${currentLang === 'en' ? '🌟 Strong Characteristics:' : '🌟 Características Fortes:'}</h4>
-                        <ul class="text-xs text-gray-600 space-y-1">
-                `;
-                highTraits.forEach(trait => {
-                    descriptionHTML += `<li>• <strong>${trait.name[currentLang]}:</strong> ${trait.description[currentLang]}</li>`;
-                });
-                descriptionHTML += `</ul></div>`;
-            }
-            
-            // Moderate traits section
-            if (moderateTraits.length > 0) {
-                descriptionHTML += `
-                    <div class="mb-3">
-                        <h4 class="font-semibold text-yellow-600 text-sm mb-1">${currentLang === 'en' ? '⚖️ Balanced Characteristics:' : '⚖️ Características Equilibradas:'}</h4>
-                        <ul class="text-xs text-gray-600 space-y-1">
-                `;
-                moderateTraits.forEach(trait => {
-                    descriptionHTML += `<li>• <strong>${trait.name[currentLang]}:</strong> ${trait.description[currentLang]}</li>`;
-                });
-                descriptionHTML += `</ul></div>`;
-            }
-            
-            // Low traits section
-            if (lowTraits.length > 0) {
-                descriptionHTML += `
-                    <div class="mb-3">
-                        <h4 class="font-semibold text-blue-600 text-sm mb-1">${currentLang === 'en' ? '🌱 Developing Characteristics:' : '🌱 Características em Desenvolvimento:'}</h4>
-                        <ul class="text-xs text-gray-600 space-y-1">
-                `;
-                lowTraits.forEach(trait => {
-                    descriptionHTML += `<li>• <strong>${trait.name[currentLang]}:</strong> ${trait.description[currentLang]}</li>`;
-                });
-                descriptionHTML += `</ul></div>`;
-            }
-            
-            // Summary
-            descriptionHTML += `
-                <div class="text-xs text-gray-500 mt-2">
-                    <div class="flex justify-between items-center">
-                        <span>${currentLang === 'en' ? 'Based on your Big Five assessment' : 'Baseado na sua avaliação Big Five'}</span>
-                        <span>${date}</span>
-                    </div>
-                </div>
-            </div>
-            `;
-            
-            return descriptionHTML;
-        }
-
-        function retakeTest(testType) {
-            const testPages = {
-                DISC: 'DISC.html',
-                MBTI: 'mbti.html',
-                BIG5: 'big5.html'
-            };
-            window.location.href = testPages[testType];
-        }
-
-        function deleteResult(testType) {
-            if (confirm('Are you sure you want to delete this result?')) {
-                localStorage.removeItem(STORAGE_KEYS[testType]);
-                loadSavedResults();
-            }
-        }
-
-        function clearAllResults() {
-            if (confirm('Are you sure you want to clear all your test results?')) {
-                Object.values(STORAGE_KEYS).forEach(key => {
-                    localStorage.removeItem(key);
-                });
-                loadSavedResults();
-            }
-        }
-
-        // Initialize when page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            loadSavedResults();
-            
-            // Add event listener to clear button
-            const clearBtn = document.getElementById('clear-results-btn');
-            if (clearBtn) {
-                clearBtn.addEventListener('click', clearAllResults);
-            }
-        });
-    </script>
 </body>
 </html>

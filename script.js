@@ -430,6 +430,7 @@ const currentPage = window.location.pathname.split('/').pop();
 const isMBTITest = currentPage === 'mbti.html';
 const isDISCTest = currentPage === 'disc.html' || currentPage === 'DISC.html';
 const isBig5Test = currentPage === 'big5.html';
+const isIndexPage = currentPage === 'index.html' || currentPage === '';
 
 // Language State and Translations
 let currentLang = 'en';
@@ -527,6 +528,133 @@ const translations = {
     }
 };
 
+// Index Page Translations
+const indexTranslations = {
+    'en': {
+        mainTitle: "Personality Test Hub",
+        subtitle: "Choose a personality test to discover more about yourself:",
+        discTest: "DISC Personality Test",
+        discSubtitle: "Understand your communication and work style",
+        mbtiTest: "MBTI Personality Test",
+        mbtiSubtitle: "Discover your psychological type",
+        big5Test: "Big Five Personality Test", 
+        big5Subtitle: "Explore the five major personality dimensions",
+        resultsTitle: "Your Test Results",
+        clearResults: "Clear All Results",
+        footerText1: "All tests available in English and Portuguese",
+        footerText2: "Your results are saved automatically and can be viewed here anytime",
+        confirmDelete: "Are you sure you want to delete this result?",
+        confirmClearAll: "Are you sure you want to clear all your test results?",
+        // Big Five trait descriptions
+        strongCharacteristics: "🌟 Strong Characteristics:",
+        balancedCharacteristics: "⚖️ Balanced Characteristics:",
+        developingCharacteristics: "🌱 Developing Characteristics:",
+        personalityProfile: "Your Personality Profile",
+        basedOnAssessment: "Based on your Big Five assessment"
+    },
+    'pt': {
+        mainTitle: "Central de Testes de Personalidade",
+        subtitle: "Escolha um teste de personalidade para descobrir mais sobre você:",
+        discTest: "Teste de Personalidade DISC",
+        discSubtitle: "Compreenda seu estilo de comunicação e trabalho",
+        mbtiTest: "Teste de Personalidade MBTI",
+        mbtiSubtitle: "Descubra seu tipo psicológico",
+        big5Test: "Teste de Personalidade Big Five",
+        big5Subtitle: "Explore as cinco principais dimensões da personalidade",
+        resultsTitle: "Seus Resultados de Teste",
+        clearResults: "Limpar Todos os Resultados",
+        footerText1: "Todos os testes disponíveis em Inglês e Português",
+        footerText2: "Seus resultados são salvos automaticamente e podem ser vistos aqui a qualquer momento",
+        confirmDelete: "Tem certeza que deseja excluir este resultado?",
+        confirmClearAll: "Tem certeza que deseja limpar todos os seus resultados de teste?",
+        // Big Five trait descriptions
+        strongCharacteristics: "🌟 Características Fortes:",
+        balancedCharacteristics: "⚖️ Características Equilibradas:",
+        developingCharacteristics: "🌱 Características em Desenvolvimento:",
+        personalityProfile: "Seu Perfil de Personalidade",
+        basedOnAssessment: "Baseado na sua avaliação Big Five"
+    }
+};
+
+// Big Five trait descriptions for index page
+const big5TraitDescriptions = {
+    'O': {
+        name: { en: 'Openness', pt: 'Abertura' },
+        high: { 
+            en: 'Imaginative, creative, curious, open to new experiences', 
+            pt: 'Imaginativo, criativo, curioso, aberto a novas experiências' 
+        },
+        moderate: { 
+            en: 'Balanced between practicality and creativity', 
+            pt: 'Equilibrado entre praticidade e criatividade' 
+        },
+        low: { 
+            en: 'Practical, conventional, prefers routine', 
+            pt: 'Prático, convencional, prefere rotina' 
+        }
+    },
+    'C': {
+        name: { en: 'Conscientiousness', pt: 'Conscienciosidade' },
+        high: { 
+            en: 'Organized, disciplined, reliable, goal-oriented', 
+            pt: 'Organizado, disciplinado, confiável, orientado a objetivos' 
+        },
+        moderate: { 
+            en: 'Balanced between spontaneity and planning', 
+            pt: 'Equilibrado entre espontaneidade e planejamento' 
+        },
+        low: { 
+            en: 'Flexible, spontaneous, adaptable to change', 
+            pt: 'Flexível, espontâneo, adaptável a mudanças' 
+        }
+    },
+    'E': {
+        name: { en: 'Extraversion', pt: 'Extroversão' },
+        high: { 
+            en: 'Sociable, energetic, enthusiastic, talkative', 
+            pt: 'Sociável, energético, entusiástico, comunicativo' 
+        },
+        moderate: { 
+            en: 'Balanced between social and solitary activities', 
+            pt: 'Equilibrado entre atividades sociais e solitárias' 
+        },
+        low: { 
+            en: 'Reserved, reflective, enjoys solitude', 
+            pt: 'Reservado, reflexivo, aprecia solidão' 
+        }
+    },
+    'A': {
+        name: { en: 'Agreeableness', pt: 'Amabilidade' },
+        high: { 
+            en: 'Compassionate, cooperative, trusting, empathetic', 
+            pt: 'Compassivo, cooperativo, confiante, empático' 
+        },
+        moderate: { 
+            en: 'Balanced between cooperation and assertiveness', 
+            pt: 'Equilibrado entre cooperação e assertividade' 
+        },
+        low: { 
+            en: 'Analytical, straightforward, values independence', 
+            pt: 'Analítico, direto, valoriza independência' 
+        }
+    },
+    'N': {
+        name: { en: 'Neuroticism', pt: 'Neuroticismo' },
+        high: { 
+            en: 'Sensitive to stress, experiences strong emotions', 
+            pt: 'Sensível ao estresse, experimenta emoções fortes' 
+        },
+        moderate: { 
+            en: 'Generally emotionally stable with occasional sensitivity', 
+            pt: 'Geralmente estável emocionalmente com sensibilidade ocasional' 
+        },
+        low: { 
+            en: 'Emotionally stable, resilient, calm under pressure', 
+            pt: 'Estável emocionalmente, resiliente, calmo sob pressão' 
+        }
+    }
+};
+
 // Utility function for translation
 function t(key, replacements = {}) {
     try {
@@ -537,6 +665,20 @@ function t(key, replacements = {}) {
         return text;
     } catch (error) {
         console.error('Translation error:', error);
+        return key;
+    }
+}
+
+// Index page translation function
+function tIndex(key, replacements = {}) {
+    try {
+        let text = indexTranslations[currentLang][key] || indexTranslations['en'][key] || key;
+        for (const [k, v] of Object.entries(replacements)) {
+            text = text.replace(`{${k}}`, v);
+        }
+        return text;
+    } catch (error) {
+        console.error('Index translation error:', error);
         return key;
     }
 }
@@ -1521,7 +1663,25 @@ function setLanguage(lang) {
     try {
         if (lang === currentLang) return;
         currentLang = lang;
-        updateStaticText();
+        
+        if (isIndexPage) {
+            updateIndexStaticText();
+            loadSavedResults();
+        } else {
+            updateStaticText();
+            
+            if (resultsContainer && resultsContainer.classList.contains('hidden')) {
+                if (isMBTITest) {
+                    renderMBTIQuestion();
+                } else if (isBig5Test) {
+                    renderBig5Question();
+                } else {
+                    renderQuestion();
+                }
+            } else if (resultsContainer) {
+                showResults(true);
+            }
+        }
         
         try {
             localStorage.setItem('personalityTest_language', lang);
@@ -1531,18 +1691,6 @@ function setLanguage(lang) {
         
         if (accessibilityManager) {
             accessibilityManager.announce(`Language changed to ${lang === 'en' ? 'English' : 'Portuguese'}`);
-        }
-        
-        if (resultsContainer && resultsContainer.classList.contains('hidden')) {
-            if (isMBTITest) {
-                renderMBTIQuestion();
-            } else if (isBig5Test) {
-                renderBig5Question();
-            } else {
-                renderQuestion();
-            }
-        } else if (resultsContainer) {
-            showResults(true);
         }
     } catch (error) {
         console.error('Error setting language:', error);
@@ -1591,6 +1739,32 @@ function updateStaticText() {
         if (exportBtn) exportBtn.textContent = t('export_pdf');
     } catch (error) {
         console.error('Error updating static text:', error);
+    }
+}
+
+function updateIndexStaticText() {
+    try {
+        // Update main content
+        document.getElementById('main-title').textContent = tIndex('mainTitle');
+        document.getElementById('subtitle').textContent = tIndex('subtitle');
+        
+        // Update test links
+        document.getElementById('disc-test').textContent = tIndex('discTest');
+        document.getElementById('disc-subtitle').textContent = tIndex('discSubtitle');
+        document.getElementById('mbti-test').textContent = tIndex('mbtiTest');
+        document.getElementById('mbti-subtitle').textContent = tIndex('mbtiSubtitle');
+        document.getElementById('big5-test').textContent = tIndex('big5Test');
+        document.getElementById('big5-subtitle').textContent = tIndex('big5Subtitle');
+        
+        // Update results section
+        document.getElementById('results-title').textContent = tIndex('resultsTitle');
+        document.getElementById('clear-results-btn').textContent = tIndex('clearResults');
+        
+        // Update footer
+        document.getElementById('footer-text-1').textContent = tIndex('footerText1');
+        document.getElementById('footer-text-2').textContent = tIndex('footerText2');
+    } catch (error) {
+        console.error('Error updating index static text:', error);
     }
 }
 
@@ -2266,8 +2440,279 @@ function restartTest() {
     }
 }
 
+// Index Page Functions
+function loadSavedResults() {
+    const resultsContainer = document.getElementById('saved-results');
+    const section = document.getElementById('saved-results-section');
+    
+    if (!resultsContainer || !section) return;
+
+    let hasResults = false;
+    let resultsHTML = '';
+
+    // Check for DISC results
+    const discResult = localStorage.getItem(CONFIG.resultKeys.DISC);
+    if (discResult) {
+        try {
+            const result = JSON.parse(discResult);
+            resultsHTML += createResultCard('DISC', result);
+            hasResults = true;
+        } catch (e) {
+            console.error('Error parsing DISC result:', e);
+        }
+    }
+
+    // Check for MBTI results
+    const mbtiResult = localStorage.getItem(CONFIG.resultKeys.MBTI);
+    if (mbtiResult) {
+        try {
+            const result = JSON.parse(mbtiResult);
+            resultsHTML += createResultCard('MBTI', result);
+            hasResults = true;
+        } catch (e) {
+            console.error('Error parsing MBTI result:', e);
+        }
+    }
+
+    // Check for Big5 results
+    const big5Result = localStorage.getItem(CONFIG.resultKeys.BIG5);
+    if (big5Result) {
+        try {
+            const result = JSON.parse(big5Result);
+            resultsHTML += createResultCard('BIG5', result);
+            hasResults = true;
+        } catch (e) {
+            console.error('Error parsing Big5 result:', e);
+        }
+    }
+
+    if (hasResults) {
+        resultsContainer.innerHTML = resultsHTML;
+        section.classList.remove('hidden');
+    } else {
+        section.classList.add('hidden');
+    }
+}
+
+function createResultCard(testType, result) {
+    const testNames = {
+        DISC: { en: 'DISC Personality', pt: 'Personalidade DISC' },
+        MBTI: { en: 'MBTI Personality', pt: 'Personalidade MBTI' }, 
+        BIG5: { en: 'Big Five Personality', pt: 'Personalidade Big Five' }
+    };
+
+    const testColors = {
+        DISC: 'indigo',
+        MBTI: 'purple',
+        BIG5: 'green'
+    };
+
+    const color = testColors[testType];
+    const date = new Date(result.timestamp).toLocaleDateString();
+    
+    let content = '';
+    
+    if (testType === 'DISC') {
+        content = `
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="font-bold text-lg text-${color}-700">${result.profileName}</h3>
+                    <p class="text-gray-600 text-sm">${result.description}</p>
+                </div>
+                <div class="text-right">
+                    <div class="text-2xl font-bold text-${color}-600">${result.profileKey}</div>
+                    <div class="text-xs text-gray-500">${date}</div>
+                </div>
+            </div>
+        `;
+    } else if (testType === 'MBTI') {
+        content = `
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="font-bold text-lg text-${color}-700">${result.typeName}</h3>
+                    <p class="text-gray-600 text-sm">${result.description}</p>
+                </div>
+                <div class="text-right">
+                    <div class="text-2xl font-bold text-${color}-600">${result.type}</div>
+                    <div class="text-xs text-gray-500">${date}</div>
+                </div>
+            </div>
+        `;
+    } else if (testType === 'BIG5') {
+        // Calculate trait levels and create friendly description
+        const traitAnalysis = analyzeBig5Traits(result.scores, result.maxScores);
+        content = createBig5FriendlyDescription(traitAnalysis, date);
+    }
+
+    return `
+        <div class="p-4 rounded-xl border-2 border-${color}-200 bg-${color}-50 hover:bg-${color}-100 transition duration-300 cursor-pointer" 
+             onclick="retakeTest('${testType}')">
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-sm font-semibold text-${color}-600">${testNames[testType][currentLang]}</span>
+                <span class="text-xs text-gray-500 hover:text-${color}-700" onclick="event.stopPropagation(); deleteResult('${testType}')">🗑️</span>
+            </div>
+            ${content}
+        </div>
+    `;
+}
+
+function analyzeBig5Traits(scores, maxScores) {
+    const analysis = {};
+    const factors = ['O', 'C', 'E', 'A', 'N'];
+    
+    factors.forEach(factor => {
+        const score = scores[factor];
+        const maxScore = maxScores[factor];
+        const percentage = (score / maxScore) * 100;
+        
+        let level, description;
+        
+        if (percentage >= 70) {
+            level = 'high';
+            description = big5TraitDescriptions[factor].high;
+        } else if (percentage >= 40) {
+            level = 'moderate';
+            description = big5TraitDescriptions[factor].moderate;
+        } else {
+            level = 'low';
+            description = big5TraitDescriptions[factor].low;
+        }
+        
+        analysis[factor] = {
+            name: big5TraitDescriptions[factor].name,
+            score: score,
+            maxScore: maxScore,
+            percentage: Math.round(percentage),
+            level: level,
+            description: description
+        };
+    });
+    
+    return analysis;
+}
+
+function createBig5FriendlyDescription(traitAnalysis, date) {
+    const t = indexTranslations[currentLang];
+    
+    // Group traits by level
+    const highTraits = Object.values(traitAnalysis).filter(trait => trait.level === 'high');
+    const moderateTraits = Object.values(traitAnalysis).filter(trait => trait.level === 'moderate');
+    const lowTraits = Object.values(traitAnalysis).filter(trait => trait.level === 'low');
+    
+    let descriptionHTML = `
+        <div class="mb-3">
+            <h3 class="font-bold text-lg text-green-700 mb-2">${t.personalityProfile}</h3>
+    `;
+    
+    // High traits section
+    if (highTraits.length > 0) {
+        descriptionHTML += `
+            <div class="mb-3">
+                <h4 class="font-semibold text-green-600 text-sm mb-1">${t.strongCharacteristics}</h4>
+                <ul class="text-xs text-gray-600 space-y-1">
+        `;
+        highTraits.forEach(trait => {
+            descriptionHTML += `<li>• <strong>${trait.name[currentLang]}:</strong> ${trait.description[currentLang]}</li>`;
+        });
+        descriptionHTML += `</ul></div>`;
+    }
+    
+    // Moderate traits section
+    if (moderateTraits.length > 0) {
+        descriptionHTML += `
+            <div class="mb-3">
+                <h4 class="font-semibold text-yellow-600 text-sm mb-1">${t.balancedCharacteristics}</h4>
+                <ul class="text-xs text-gray-600 space-y-1">
+        `;
+        moderateTraits.forEach(trait => {
+            descriptionHTML += `<li>• <strong>${trait.name[currentLang]}:</strong> ${trait.description[currentLang]}</li>`;
+        });
+        descriptionHTML += `</ul></div>`;
+    }
+    
+    // Low traits section
+    if (lowTraits.length > 0) {
+        descriptionHTML += `
+            <div class="mb-3">
+                <h4 class="font-semibold text-blue-600 text-sm mb-1">${t.developingCharacteristics}</h4>
+                <ul class="text-xs text-gray-600 space-y-1">
+        `;
+        lowTraits.forEach(trait => {
+            descriptionHTML += `<li>• <strong>${trait.name[currentLang]}:</strong> ${trait.description[currentLang]}</li>`;
+        });
+        descriptionHTML += `</ul></div>`;
+    }
+    
+    // Summary
+    descriptionHTML += `
+        <div class="text-xs text-gray-500 mt-2">
+            <div class="flex justify-between items-center">
+                <span>${t.basedOnAssessment}</span>
+                <span>${date}</span>
+            </div>
+        </div>
+    </div>
+    `;
+    
+    return descriptionHTML;
+}
+
+function retakeTest(testType) {
+    const testPages = {
+        DISC: 'DISC.html',
+        MBTI: 'mbti.html',
+        BIG5: 'big5.html'
+    };
+    window.location.href = testPages[testType];
+}
+
+function deleteResult(testType) {
+    const t = indexTranslations[currentLang];
+    if (confirm(t.confirmDelete)) {
+        localStorage.removeItem(CONFIG.resultKeys[testType]);
+        loadSavedResults();
+    }
+}
+
+function clearAllResults() {
+    const t = indexTranslations[currentLang];
+    if (confirm(t.confirmClearAll)) {
+        Object.values(CONFIG.resultKeys).forEach(key => {
+            localStorage.removeItem(key);
+        });
+        loadSavedResults();
+    }
+}
+
 // Enhanced Initialization
 function init() {
+    try {
+        // Load language preference
+        try {
+            const savedLang = localStorage.getItem('personalityTest_language');
+            if (savedLang && (savedLang === 'en' || savedLang === 'pt')) {
+                currentLang = savedLang;
+            }
+        } catch (e) {
+            console.warn('Could not load language preference');
+        }
+
+        // Set initial language
+        document.documentElement.lang = currentLang;
+
+        if (isIndexPage) {
+            initIndexPage();
+        } else {
+            initTestPage();
+        }
+        
+    } catch (error) {
+        console.error('Error initializing application:', error);
+        showError(t('error_general'));
+    }
+}
+
+function initTestPage() {
     try {
         testContainer = document.getElementById('test-container');
         resultsContainer = document.getElementById('results-container');
@@ -2282,16 +2727,6 @@ function init() {
         // Validate test data
         if (!validateTestData()) {
             console.warn(t('test_data_invalid'));
-        }
-
-        // Load language preference
-        try {
-            const savedLang = localStorage.getItem('personalityTest_language');
-            if (savedLang && (savedLang === 'en' || savedLang === 'pt')) {
-                currentLang = savedLang;
-            }
-        } catch (e) {
-            console.warn('Could not load language preference');
         }
 
         // Load progress if available
@@ -2345,7 +2780,38 @@ function init() {
         }, 1000);
         
     } catch (error) {
-        console.error('Error initializing application:', error);
+        console.error('Error initializing test page:', error);
+        showError(t('error_general'));
+    }
+}
+
+function initIndexPage() {
+    try {
+        // Initialize accessibility manager
+        accessibilityManager = new AccessibilityManager();
+
+        // Initialize static text
+        updateIndexStaticText();
+        loadSavedResults();
+        
+        // Add event listener to clear button
+        const clearBtn = document.getElementById('clear-results-btn');
+        if (clearBtn) {
+            clearBtn.addEventListener('click', clearAllResults);
+        }
+
+        // Setup enhanced keyboard navigation
+        setupEnhancedKeyboardNavigation();
+        
+        // Announce application ready
+        setTimeout(() => {
+            if (accessibilityManager) {
+                accessibilityManager.announce('Personality test hub loaded and ready. Choose a test to begin.', 'polite');
+            }
+        }, 1000);
+        
+    } catch (error) {
+        console.error('Error initializing index page:', error);
         showError(t('error_general'));
     }
 }
