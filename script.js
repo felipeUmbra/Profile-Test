@@ -6,13 +6,15 @@ const CONFIG = {
         maxRating: 4,
         factors: ['D', 'I', 'S', 'C'],
         pureThreshold: 4,
-        progressKey: 'personalityTest_disc'
+        progressKey: 'personalityTest_disc',
+        testId: 1
     },
     MBTI: {
         totalQuestions: 28,
         dimensions: ['EI', 'SN', 'TF', 'JP'],
         questionsPerDimension: 7,
-        progressKey: 'personalityTest_mbti'
+        progressKey: 'personalityTest_mbti',
+        testId: 2
     },
     BIG5: {
         totalQuestions: 40,
@@ -21,14 +23,16 @@ const CONFIG = {
         factors: ['O', 'C', 'E', 'A', 'N'],
         questionsPerFactor: 8,
         maxScorePerFactor: 40,
-        progressKey: 'personalityTest_big5'
+        progressKey: 'personalityTest_big5',
+        testId: 3
     },
     localStorageTimeout: 3600000,
     resultKeys: {
         DISC: 'personalityTest_disc_result',
         MBTI: 'personalityTest_mbti_result', 
         BIG5: 'personalityTest_big5_result'
-    }
+    },
+    apiBaseUrl: 'http://localhost:1433/api' // Update this to your backend URL
 };
 
 // --- Virtual Scrolling Implementation ---
@@ -428,7 +432,7 @@ class TestRunner {
 // Test Type Detection
 const currentPage = window.location.pathname.split('/').pop();
 const isMBTITest = currentPage === 'mbti.html';
-const isDISCTest = currentPage === 'disc.html' || currentPage === 'DISC.html';
+const isDISCTest = currentPage === 'disc.html';
 const isBig5Test = currentPage === 'big5.html';
 const isIndexPage = currentPage === 'index.html' || currentPage === '';
 
@@ -479,7 +483,8 @@ const translations = {
         error_pdf: "Failed to generate PDF. Please try again.",
         loading: "Loading...",
         resuming_test: "Resuming previous test...",
-        test_data_invalid: "Test data appears to be invalid. Starting fresh test."
+        test_data_invalid: "Test data appears to be invalid. Starting fresh test.",
+        error_fetch_questions: "Failed to load questions from server. Please check your connection."
     },
     'pt': {
         disc_title: "Teste de Personalidade DISC",
@@ -524,7 +529,8 @@ const translations = {
         error_pdf: "Falha ao gerar PDF. Por favor, tente novamente.",
         loading: "Carregando...",
         resuming_test: "Continuando teste anterior...",
-        test_data_invalid: "Os dados do teste parecem inválidos. Iniciando novo teste."
+        test_data_invalid: "Os dados do teste parecem inválidos. Iniciando novo teste.",
+        error_fetch_questions: "Falha ao carregar perguntas do servidor. Por favor, verifique sua conexão."
     }
 };
 
@@ -683,6 +689,224 @@ function tIndex(key, replacements = {}) {
     }
 }
 
+function getFallbackQuestions(testType, lang) {
+    console.log(`Using fallback questions for ${testType} in ${lang}`);
+    
+    if (testType === 'disc') {
+        return [
+            { id: 1, text: { en: "I prioritize getting measurable results quickly.", pt: "Eu priorizo a obtenção de resultados mensuráveis rapidamente." }, factor: "D" },
+            { id: 2, text: { en: "I am direct and assertive in my communication style.", pt: "Eu sou direto e assertivo no meu estilo de comunicação." }, factor: "D" },
+            { id: 3, text: { en: "I enjoy taking charge and leading group activities.", pt: "Eu gosto de assumir o comando e liderar atividades em grupo." }, factor: "D" },
+            { id: 4, text: { en: "I thrive on challenge and competitive environments.", pt: "Eu prospero em ambientes desafiadores e competitivos." }, factor: "D" },
+            { id: 5, text: { en: "I feel comfortable making decisions without extensive consultation.", pt: "Sinto-me à vontade para tomar decisões sem consulta extensa." }, factor: "D" },
+            { id: 6, text: { en: "I am focused on overcoming obstacles and achieving immediate goals.", pt: "Estou focado em superar obstáculos e alcançar objetivos imediatos." }, factor: "D" },
+            { id: 7, text: { en: "I appreciate an environment where speed is valued over thoroughness.", pt: "Eu aprecio um ambiente onde a velocidade é mais valorizada do que a exaustividade." }, factor: "D" },
+            { id: 8, text: { en: "I confront issues and people directly when conflict arises.", pt: "Eu confronto problemas e pessoas diretamente quando surge um conflito." }, factor: "D" },
+            { id: 9, text: { en: "I am outgoing and enjoy meeting new people frequently.", pt: "Eu sou extrovertido e gosto de conhecer novas pessoas frequentemente." }, factor: "I" },
+            { id: 10, text: { en: "I use enthusiasm and positive language to motivate others.", pt: "Eu uso entusiasmo e linguagem positiva para motivar os outros." }, factor: "I" },
+            { id: 11, text: { en: "I am naturally optimistic and look for the best in situations.", pt: "Eu sou naturalmente otimista e procuro o melhor nas situações." }, factor: "I" },
+            { id: 12, text: { en: "I like to talk and express my ideas freely and openly.", pt: "Eu gosto de conversar e expressar minhas ideias livre e abertamente." }, factor: "I" },
+            { id: 13, text: { en: "I enjoy being the center of attention in a social setting.", pt: "Eu gosto de ser o centro das atenções em um ambiente social." }, factor: "I" },
+            { id: 14, text: { en: "I am skilled at persuading others to adopt my ideas.", pt: "Sou hábil em persuadir os outros a adotarem minhas ideias." }, factor: "I" },
+            { id: 15, text: { en: "I often rely on intuition and feelings rather than facts.", pt: "Muitas vezes, confio na intuição e nos sentimentos em vez de em fatos." }, factor: "I" },
+            { id: 16, text: { en: "I am patient and prefer a predictable, stable work environment.", pt: "Eu sou paciente e prefiro um ambiente de trabalho previsível e estável." }, factor: "S" },
+            { id: 17, text: { en: "I am supportive and value harmony in my team and relationships.", pt: "Eu sou prestativo e valorizo a harmonia na minha equipe e relacionamentos." }, factor: "S" },
+            { id: 18, text: { en: "I am a reliable team player who follows through on commitments.", pt: "Eu sou um membro de equipe confiável que cumpre os compromissos." }, factor: "S" },
+            { id: 19, text: { en: "I prefer to work at a steady, deliberate, and consistent pace.", pt: "Eu prefiro trabalhar em um ritmo constante, deliberado e consistente." }, factor: "S" },
+            { id: 20, text: { en: "I value maintaining a secure and familiar routine.", pt: "Eu valorizo a manutenção de uma rotina segura e familiar." }, factor: "S" },
+            { id: 21, text: { en: "I am empathetic and a good listener for others' concerns.", pt: "Eu sou empático e um bom ouvinte para as preocupações dos outros." }, factor: "S" },
+            { id: 22, text: { en: "I dislike sudden, unexpected changes to plans or schedules.", pt: "Eu não gosto de mudanças repentinas e inesperadas nos planos ou horários." }, factor: "S" },
+            { id: 23, text: { en: "I tend to be quite cautious when approaching new tasks or risks.", pt: "Eu tento a ser bastante cauteloso ao abordar novas tarefas ou riscos." }, factor: "S" },
+            { id: 24, text: { en: "I am highly analytical and focused on details and accuracy.", pt: "Eu sou altamente analítico e focado em detalhes e precisão." }, factor: "C" },
+            { id: 25, text: { en: "I enjoy following established rules, procedures, and high standards.", pt: "Eu gosto de seguir regras estabelecidas, procedimentos e altos padrões." }, factor: "C" },
+            { id: 26, text: { en: "I approach problems logically, systematically, and critically.", pt: "Eu abordo problemas de forma lógica, sistemática e crítica." }, factor: "C" },
+            { id: 27, text: { en: "I take time to carefully review and critique all my work.", pt: "Eu dedico tempo para revisar e criticar cuidadosamente todo o meu trabalho." }, factor: "C" },
+            { id: 28, text: { en: "I am highly organized and meticulous about my workspace.", pt: "Eu sou altamente organizado e meticuloso com meu espaço de trabalho." }, factor: "C" },
+            { id: 29, text: { en: "I strive for perfection in everything I do, even minor tasks.", pt: "Eu me esforço para a perfeição em tudo o que faço, mesmo em tarefas menores." }, factor: "C" },
+            { id: 30, text: { en: "I base my decisions primarily on verifiable facts and data.", pt: "Eu baseio minhas decisões principalmente em fatos e dados verificáveis." }, factor: "C" }
+        ];
+    }
+    
+    if (testType === 'mbti') {
+    return [
+        { id: 1, optionA: { en: "You enjoy being the center of attention at social gatherings", pt: "Você gosta de ser o centro das atenções em encontros sociais" }, optionB: { en: "You prefer observing from the sidelines in social situations", pt: "Você prefere observar de fora em situações sociais" }, dimension: "EI", aValue: "E", bValue: "I" },
+        { id: 2, optionA: { en: "You feel energized after spending time with large groups", pt: "Você se sente energizado depois de passar tempo com grandes grupos" }, optionB: { en: "You need alone time to recharge after social interactions", pt: "Você precisa de tempo sozinho para recarregar após interações sociais" }, dimension: "EI", aValue: "E", bValue: "I" },
+        { id: 3, optionA: { en: "You think out loud and process ideas through conversation", pt: "Você pensa em voz alta e processa ideias através da conversa" }, optionB: { en: "You prefer to think things through quietly before speaking", pt: "Você prefere pensar nas coisas quieto antes de falar" }, dimension: "EI", aValue: "E", bValue: "I" },
+        { id: 4, optionA: { en: "You enjoy meeting new people and making new friends", pt: "Você gosta de conhecer novas pessoas e fazer novos amigos" }, optionB: { en: "You prefer spending time with a few close friends", pt: "Você prefere passar o tempo com alguns amigos próximos" }, dimension: "EI", aValue: "E", bValue: "I" },
+        { id: 5, optionA: { en: "You are often described as outgoing and sociable", pt: "Você é frequentemente descrito como extrovertido e sociável" }, optionB: { en: "You are often described as reserved and private", pt: "Você é frequentemente descrito como reservado e discreto" }, dimension: "EI", aValue: "E", bValue: "I" },
+        { id: 6, optionA: { en: "You enjoy group activities and collaborative projects", pt: "Você gosta de atividades em grupo e projetos colaborativos" }, optionB: { en: "You prefer working alone or in very small groups", pt: "Você prefere trabalhar sozinho ou em grupos muito pequenos" }, dimension: "EI", aValue: "E", bValue: "I" },
+        { id: 7, optionA: { en: "You frequently initiate social plans and gatherings", pt: "Você frequentemente inicia planos sociais e encontros" }, optionB: { en: "You usually wait for others to invite you to social events", pt: "Você geralmente espera que outros o convidem para eventos sociais" }, dimension: "EI", aValue: "E", bValue: "I" },
+        
+        { id: 8, optionA: { en: "You focus on concrete facts and practical realities", pt: "Você se concentra em fatos concretos e realidades práticas" }, optionB: { en: "You enjoy thinking about abstract concepts and future possibilities", pt: "Você gosta de pensar em conceitos abstratos e possibilidades futuras" }, dimension: "SN", aValue: "S", bValue: "N" },
+        { id: 9, optionA: { en: "You prefer clear, step-by-step instructions", pt: "Você prefere instruções claras, passo a passo" }, optionB: { en: "You like to improvise and figure things out as you go", pt: "Você gosta de improvisar e descobrir as coisas no caminho" }, dimension: "SN", aValue: "S", bValue: "N" },
+        { id: 10, optionA: { en: "You trust past experiences and proven methods", pt: "Você confia em experiências passadas e métodos comprovados" }, optionB: { en: "You get excited about new ideas and innovative approaches", pt: "Você fica animado com novas ideias e abordagens inovadoras" }, dimension: "SN", aValue: "S", bValue: "N" },
+        { id: 11, optionA: { en: "You notice specific details in your environment", pt: "Você percebe detalhes específicos no seu ambiente" }, optionB: { en: "You tend to see the big picture and overall patterns", pt: "Você tende a ver o panorama geral e os padrões totais" }, dimension: "SN", aValue: "S", bValue: "N" },
+        { id: 12, optionA: { en: "You prefer dealing with actual experiences", pt: "Você prefere lidar com experiências reais" }, optionB: { en: "You enjoy imagining what could be in the future", pt: "Você gosta de imaginar o que poderia ser no futuro" }, dimension: "SN", aValue: "S", bValue: "N" },
+        { id: 13, optionA: { en: "You are very present-oriented and practical", pt: "Você é muito orientado para o presente e prático" }, optionB: { en: "You are often thinking about future possibilities", pt: "Você frequentemente pensa sobre possibilidades futuras" }, dimension: "SN", aValue: "S", bValue: "N" },
+        { id: 14, optionA: { en: "You prefer literal and straightforward communication", pt: "Você prefere comunicação literal e direta" }, optionB: { en: "You enjoy metaphorical and symbolic meanings", pt: "Você gosta de significados metafóricos e simbólicos" }, dimension: "SN", aValue: "S", bValue: "N" },
+        
+        { id: 15, optionA: { en: "You make decisions based on logic and objective analysis", pt: "Você toma decisões baseadas em lógica e análise objetiva" }, optionB: { en: "You consider people's feelings and values when deciding", pt: "Você considera os sentimentos e valores das pessoas ao decidir" }, dimension: "TF", aValue: "T", bValue: "F" },
+        { id: 16, optionA: { en: "You value truth and fairness above harmony", pt: "Você valoriza a verdade e justiça acima da harmonia" }, optionB: { en: "You prioritize maintaining harmony in relationships", pt: "Você prioriza manter a harmonia nos relacionamentos" }, dimension: "TF", aValue: "T", bValue: "F" },
+        { id: 17, optionA: { en: "You prefer direct, straightforward communication", pt: "Você prefere comunicação direta e objetiva" }, optionB: { en: "You consider how your words might affect others emotionally", pt: "Você considera como suas palavras podem afetar outros emocionalmente" }, dimension: "TF", aValue: "T", bValue: "F" },
+        { id: 18, optionA: { en: "You tend to be more critical than compassionate", pt: "Você tende a ser mais crítico do que compassivo" }, optionB: { en: "You tend to be more compassionate than critical", pt: "Você tende a ser mais compassivo do que crítico" }, dimension: "TF", aValue: "T", bValue: "F" },
+        { id: 19, optionA: { en: "You believe consistency and fairness are most important", pt: "Você acredita que consistência e justiça são mais importantes" }, optionB: { en: "You believe empathy and circumstances should be considered", pt: "Você acredita que empatia e circunstâncias devem ser consideradas" }, dimension: "TF", aValue: "T", bValue: "F" },
+        { id: 20, optionA: { en: "You focus on objective criteria when evaluating situations", pt: "Você se concentra em critérios objetivos ao avaliar situações" }, optionB: { en: "You focus on human values and needs when evaluating situations", pt: "Você se concentra em valores humanos e necessidades ao avaliar situações" }, dimension: "TF", aValue: "T", bValue: "F" },
+        { id: 21, optionA: { en: "You prefer constructive criticism to help others improve", pt: "Você prefere críticas construtivas para ajudar outros a melhorar" }, optionB: { en: "You prefer gentle encouragement to support others", pt: "Você prefere incentivo gentil para apoiar os outros" }, dimension: "TF", aValue: "T", bValue: "F" },
+        
+        { id: 22, optionA: { en: "You like to have decisions made and plans settled", pt: "Você gosta de ter decisões tomadas e planos estabelecidos" }, optionB: { en: "You prefer to keep your options open as long as possible", pt: "Você prefere manter suas opções abertas o máximo possível" }, dimension: "JP", aValue: "J", bValue: "P" },
+        { id: 23, optionA: { en: "You work best with deadlines and clear schedules", pt: "Você trabalha melhor com prazos e cronogramas claros" }, optionB: { en: "You feel constrained by too much structure and planning", pt: "Você se sente limitado por muita estrutura e planejamento" }, dimension: "JP", aValue: "J", bValue: "P" },
+        { id: 24, optionA: { en: "You enjoy completing tasks and checking them off your list", pt: "Você gosta de completar tarefas e marcá-las na sua lista" }, optionB: { en: "You enjoy starting new projects more than finishing them", pt: "Você gosta mais de começar novos projetos do que terminá-los" }, dimension: "JP", aValue: "J", bValue: "P" },
+        { id: 25, optionA: { en: "You prefer to make decisions quickly and move forward", pt: "Você prefere tomar decisões rapidamente e seguir em frente" }, optionB: { en: "You prefer to gather more information before deciding", pt: "Você prefere coletar mais informações antes de decidir" }, dimension: "JP", aValue: "J", bValue: "P" },
+        { id: 26, optionA: { en: "You like to have a clear plan before starting projects", pt: "Você gosta de ter um plano claro antes de começar projetos" }, optionB: { en: "You prefer to be spontaneous and adapt as you go", pt: "Você prefere ser espontâneo e se adaptar no caminho" }, dimension: "JP", aValue: "J", bValue: "P" },
+        { id: 27, optionA: { en: "You feel more comfortable when things are decided", pt: "Você se sente mais confortável quando as coisas estão decididas" }, optionB: { en: "You feel more comfortable leaving things flexible", pt: "Você se sente mais confortável deixando as coisas flexíveis" }, dimension: "JP", aValue: "J", bValue: "P" },
+        { id: 28, optionA: { en: "You prefer to finish projects well before deadlines", pt: "Você prefere terminar projetos bem antes dos prazos" }, optionB: { en: "You often work best under pressure near deadlines", pt: "Você frequentemente trabalha melhor sob pressão perto dos prazos" }, dimension: "JP", aValue: "J", bValue: "P" }
+        ];
+    }
+    
+    if (testType === 'big5') {
+    return [
+        // Openness (8 questions)
+        { id: 1, text: { en: "I have a rich vocabulary.", pt: "Eu tenho um vocabulário rico." }, factor: "O", reverse: false },
+        { id: 2, text: { en: "I have a vivid imagination.", pt: "Eu tenho uma imaginação vívida." }, factor: "O", reverse: false },
+        { id: 3, text: { en: "I have difficulty understanding abstract ideas.", pt: "Eu tenho dificuldade em entender ideias abstratas." }, factor: "O", reverse: true },
+        { id: 4, text: { en: "I am not interested in abstract ideas.", pt: "Eu não me interesso por ideias abstratas." }, factor: "O", reverse: true },
+        { id: 5, text: { en: "I have excellent ideas.", pt: "Eu tenho excelentes ideias." }, factor: "O", reverse: false },
+        { id: 6, text: { en: "I do not have a good imagination.", pt: "Eu não tenho uma boa imaginação." }, factor: "O", reverse: true },
+        { id: 7, text: { en: "I am quick to understand things.", pt: "Eu entendo as coisas rapidamente." }, factor: "O", reverse: false },
+        { id: 8, text: { en: "I use difficult words.", pt: "Eu uso palavras difíceis." }, factor: "O", reverse: false },
+        
+        // Conscientiousness (8 questions)
+        { id: 9, text: { en: "I am always prepared.", pt: "Eu estão sempre preparado." }, factor: "C", reverse: false },
+        { id: 10, text: { en: "I pay attention to details.", pt: "Eu presto atenção aos detalhes." }, factor: "C", reverse: false },
+        { id: 11, text: { en: "I get chores done right away.", pt: "Eu faço as tarefas imediatamente." }, factor: "C", reverse: false },
+        { id: 12, text: { en: "I like order.", pt: "Eu gosto de ordem." }, factor: "C", reverse: false },
+        { id: 13, text: { en: "I often forget to put things back in their proper place.", pt: "Eu frequentemente esqueço de colocar as coisas no lugar certo." }, factor: "C", reverse: true },
+        { id: 14, text: { en: "I make a mess of things.", pt: "Eu bagunço as coisas." }, factor: "C", reverse: true },
+        { id: 15, text: { en: "I often forget my obligations.", pt: "Eu frequentemente esqueço minhas obrigações." }, factor: "C", reverse: true },
+        { id: 16, text: { en: "I shirk my duties.", pt: "Eu evito meus deveres." }, factor: "C", reverse: true },
+        
+        // Extraversion (8 questions)
+        { id: 17, text: { en: "I am the life of the party.", pt: "Eu sou a alma da festa." }, factor: "E", reverse: false },
+        { id: 18, text: { en: "I feel comfortable around people.", pt: "Eu me sinto confortável perto de pessoas." }, factor: "E", reverse: false },
+        { id: 19, text: { en: "I start conversations.", pt: "Eu inicio conversas." }, factor: "E", reverse: false },
+        { id: 20, text: { en: "I talk to a lot of different people at parties.", pt: "Eu converso com muitas pessoas diferentes em festas." }, factor: "E", reverse: false },
+        { id: 21, text: { en: "I don't talk a lot.", pt: "Eu não falo muito." }, factor: "E", reverse: true },
+        { id: 22, text: { en: "I keep in the background.", pt: "Eu fico no fundo." }, factor: "E", reverse: true },
+        { id: 23, text: { en: "I have little to say.", pt: "Eu tenho pouco a dizer." }, factor: "E", reverse: true },
+        { id: 24, text: { en: "I don't like to draw attention to myself.", pt: "Eu não gosto de chamar atenção para mim mesmo." }, factor: "E", reverse: true },
+        
+        // Agreeableness (8 questions)
+        { id: 25, text: { en: "I am interested in people.", pt: "Eu me interesso por pessoas." }, factor: "A", reverse: false },
+        { id: 26, text: { en: "I sympathize with others' feelings.", pt: "Eu simpatizo com os sentimentos dos outros." }, factor: "A", reverse: false },
+        { id: 27, text: { en: "I have a soft heart.", pt: "Eu tenho um coração mole." }, factor: "A", reverse: false },
+        { id: 28, text: { en: "I take time out for others.", pt: "Eu reservo tempo para os outros." }, factor: "A", reverse: false },
+        { id: 29, text: { en: "I feel others' emotions.", pt: "Eu sinto as emoções dos outros." }, factor: "A", reverse: false },
+        { id: 30, text: { en: "I make people feel at ease.", pt: "Eu faço as pessoas se sentirem à vontade." }, factor: "A", reverse: false },
+        { id: 31, text: { en: "I am not really interested in others.", pt: "Eu não estou realmente interessado nos outros." }, factor: "A", reverse: true },
+        { id: 32, text: { en: "I insult people.", pt: "Eu insulte pessoas." }, factor: "A", reverse: true },
+        
+        // Neuroticism (8 questions)
+        { id: 33, text: { en: "I get stressed out easily.", pt: "Eu fico estressado facilmente." }, factor: "N", reverse: false },
+        { id: 34, text: { en: "I worry about things.", pt: "Eu me preocupo com as coisas." }, factor: "N", reverse: false },
+        { id: 35, text: { en: "I am easily disturbed.", pt: "Eu me perturbo facilmente." }, factor: "N", reverse: false },
+        { id: 36, text: { en: "I get upset easily.", pt: "Eu fico chateado facilmente." }, factor: "N", reverse: false },
+        { id: 37, text: { en: "I change my mood a lot.", pt: "Eu mudo meu humor frequentemente." }, factor: "N", reverse: false },
+        { id: 38, text: { en: "I have frequent mood swings.", pt: "Eu tenho mudanças de humor frequentes." }, factor: "N", reverse: false },
+        { id: 39, text: { en: "I get irritated easily.", pt: "Eu fico irritado facilmente." }, factor: "N", reverse: false },
+        { id: 40, text: { en: "I often feel blue.", pt: "Eu frequentemente me sinto triste." }, factor: "N", reverse: false }
+        ];
+    }
+    
+    return [];
+}
+// --- Database Integration Functions ---
+
+// Fetch questions from the database
+async function fetchQuestions(testType, lang = 'en') {
+    console.log(`Using fallback questions for ${testType} in ${lang}`);
+    
+    // Always use fallback questions for now
+    return getFallbackQuestions(testType, lang);
+}
+
+// Save progress to database
+async function saveProgressToDatabase() {
+    try {
+        const sessionId = getOrCreateSessionId();
+        const testId = getCurrentTestId();
+        
+        const answers = userRatings.map((rating, index) => ({
+            questionId: currentTestQuestions[index]?.id || index + 1,
+            rating: rating.rating || rating.finalScore || 1,
+            factor: rating.factor || rating.dimension
+        }));
+
+        const response = await fetch(`${CONFIG.apiBaseUrl}/save-progress`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                sessionId: sessionId,
+                testId: testId,
+                currentQuestion: currentQuestionIndex,
+                answers: answers
+            })
+        });
+        
+        if (!response.ok) throw new Error('Failed to save progress to database');
+        
+        console.log('Progress saved to database');
+    } catch (error) {
+        console.warn('Could not save progress to database:', error);
+        // Continue with local storage as fallback
+        saveProgressToLocalStorage();
+    }
+}
+
+// Save result to database
+async function saveResultToDatabase(resultData) {
+    try {
+        const sessionId = getOrCreateSessionId();
+        const testId = getCurrentTestId();
+        
+        const response = await fetch(`${CONFIG.apiBaseUrl}/save-result`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                sessionId: sessionId,
+                testId: testId,
+                scores: resultData.scores,
+                profileKey: resultData.profileKey || resultData.type
+            })
+        });
+        
+        if (!response.ok) throw new Error('Failed to save result to database');
+        
+        console.log('Result saved to database');
+        return true;
+    } catch (error) {
+        console.warn('Could not save result to database:', error);
+        return false;
+    }
+}
+
+// Get or create session ID
+function getOrCreateSessionId() {
+    let sessionId = localStorage.getItem('personalityTest_sessionId');
+    if (!sessionId) {
+        sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        localStorage.setItem('personalityTest_sessionId', sessionId);
+    }
+    return sessionId;
+}
+
+// Get current test ID
+function getCurrentTestId() {
+    if (isDISCTest) return CONFIG.DISC.testId;
+    if (isMBTITest) return CONFIG.MBTI.testId;
+    if (isBig5Test) return CONFIG.BIG5.testId;
+    return 0;
+}
+
 // Performance Optimization: Debounce Function
 function debounce(func, wait) {
     let timeout;
@@ -696,14 +920,14 @@ function debounce(func, wait) {
     };
 }
 
-// Local Storage Management
+// Local Storage Management (Fallback)
 function getStorageKey() {
     if (isMBTITest) return CONFIG.MBTI.progressKey;
     if (isBig5Test) return CONFIG.BIG5.progressKey;
     return CONFIG.DISC.progressKey;
 }
 
-function saveProgress() {
+function saveProgressToLocalStorage() {
     try {
         const progress = {
             currentQuestionIndex,
@@ -720,7 +944,7 @@ function saveProgress() {
     }
 }
 
-function loadProgress() {
+function loadProgressFromLocalStorage() {
     try {
         const saved = localStorage.getItem(getStorageKey());
         if (saved) {
@@ -739,7 +963,7 @@ function loadProgress() {
     return null;
 }
 
-function clearProgress() {
+function clearProgressFromLocalStorage() {
     try {
         localStorage.removeItem(getStorageKey());
     } catch (error) {
@@ -747,8 +971,43 @@ function clearProgress() {
     }
 }
 
+// Combined progress management
+function saveProgress() {
+    // Try database first, then localStorage as fallback
+    saveProgressToDatabase().catch(() => {
+        saveProgressToLocalStorage();
+    });
+}
+
+function loadProgress() {
+    // For now, we'll use localStorage for progress resumption
+    // In a future version, we could try to load from database first
+    return loadProgressFromLocalStorage();
+}
+
+function clearProgress() {
+    clearProgressFromLocalStorage();
+    // Note: We don't clear database progress as it's meant for analytics
+}
+
 // Test Result Storage Management
 function saveTestResult(resultData) {
+    // Save to database
+    saveResultToDatabase(resultData).then(success => {
+        if (success) {
+            // Also save to localStorage for display on index page
+            saveTestResultToLocalStorage(resultData);
+        } else {
+            // Fallback to localStorage only
+            saveTestResultToLocalStorage(resultData);
+        }
+    }).catch(() => {
+        // Fallback to localStorage only
+        saveTestResultToLocalStorage(resultData);
+    });
+}
+
+function saveTestResultToLocalStorage(resultData) {
     try {
         let storageKey;
         let resultObject = {
@@ -815,18 +1074,20 @@ function showSuccessMessage(message, duration = 3000) {
 // Data Validation
 function validateTestData() {
     try {
-        if (isMBTITest && mbtiQuestions.length !== CONFIG.MBTI.totalQuestions) {
-            console.warn(`MBTI questions count mismatch: expected ${CONFIG.MBTI.totalQuestions}, got ${mbtiQuestions.length}`);
+        if (!currentTestQuestions || currentTestQuestions.length === 0) {
+            console.warn('No questions loaded from database');
             return false;
         }
-        if (isDISCTest && discQuestions.length !== CONFIG.DISC.totalQuestions) {
-            console.warn(`DISC questions count mismatch: expected ${CONFIG.DISC.totalQuestions}, got ${discQuestions.length}`);
+        
+        const expectedCount = isMBTITest ? CONFIG.MBTI.totalQuestions : 
+                            isBig5Test ? CONFIG.BIG5.totalQuestions : 
+                            CONFIG.DISC.totalQuestions;
+        
+        if (currentTestQuestions.length !== expectedCount) {
+            console.warn(`Questions count mismatch: expected ${expectedCount}, got ${currentTestQuestions.length}`);
             return false;
         }
-        if (isBig5Test && big5Questions.length !== CONFIG.BIG5.totalQuestions) {
-            console.warn(`Big5 questions count mismatch: expected ${CONFIG.BIG5.totalQuestions}, got ${big5Questions.length}`);
-            return false;
-        }
+        
         return true;
     } catch (error) {
         console.error('Error validating test data:', error);
@@ -1084,308 +1345,8 @@ function cleanupVirtualScrolling() {
     virtualScrollers.clear();
 }
 
-// --- EMBEDDED TEST DATA (No external loading) ---
-
-// DISC Test Data (30 Questions)
-const discQuestions = [
-    // D - Dominance (8 Questions total)
-    { text: { en: "I prioritize getting measurable results quickly.", pt: "Eu priorizo a obtenção de resultados mensuráveis rapidamente." }, factor: "D" },
-    { text: { en: "I am direct and assertive in my communication style.", pt: "Eu sou direto e assertivo no meu estilo de comunicação." }, factor: "D" },
-    { text: { en: "I enjoy taking charge and leading group activities.", pt: "Eu gosto de assumir o comando e liderar atividades em grupo." }, factor: "D" },
-    { text: { en: "I thrive on challenge and competitive environments.", pt: "Eu prospero em ambientes desafiadores e competitivos." }, factor: "D" },
-    { text: { en: "I feel comfortable making decisions without extensive consultation.", pt: "Sinto-me à vontade para tomar decisões sem consulta extensa." }, factor: "D" },
-    { text: { en: "I am focused on overcoming obstacles and achieving immediate goals.", pt: "Estou focado em superar obstáculos e alcançar objetivos imediatos." }, factor: "D" },
-    { text: { en: "I appreciate an environment where speed is valued over thoroughness.", pt: "Eu aprecio um ambiente onde a velocidade é mais valorizada do que a exaustividade." }, factor: "D" },
-    { text: { en: "I confront issues and people directly when conflict arises.", pt: "Eu confronto problemas e pessoas diretamente quando surge um conflito." }, factor: "D" },
-
-    // I - Influence (7 Questions total)
-    { text: { en: "I am outgoing and enjoy meeting new people frequently.", pt: "Eu sou extrovertido e gosto de conhecer novas pessoas frequentemente." }, factor: "I" },
-    { text: { en: "I use enthusiasm and positive language to motivate others.", pt: "Eu uso entusiasmo e linguagem positiva para motivar os outros." }, factor: "I" },
-    { text: { en: "I am naturally optimistic and look for the best in situations.", pt: "Eu sou naturalmente otimista e procuro o melhor nas situações." }, factor: "I" },
-    { text: { en: "I like to talk and express my ideas freely and openly.", pt: "Eu gosto de conversar e expressar minhas ideias livre e abertamente." }, factor: "I" },
-    { text: { en: "I enjoy being the center of attention in a social setting.", pt: "Eu gosto de ser o centro das atenções em um ambiente social." }, factor: "I" },
-    { text: { en: "I am skilled at persuading others to adopt my ideas.", pt: "Sou hábil em persuadir os outros a adotarem minhas ideias." }, factor: "I" },
-    { text: { en: "I often rely on intuition and feelings rather than facts.", pt: "Muitas vezes, confio na intuição e nos sentimentos em vez de em fatos." }, factor: "I" },
-
-    // S - Steadiness (8 Questions total)
-    { text: { en: "I am patient and prefer a predictable, stable work environment.", pt: "Eu sou paciente e prefiro um ambiente de trabalho previsível e estável." }, factor: "S" },
-    { text: { en: "I am supportive and value harmony in my team and relationships.", pt: "Eu sou prestativo e valorizo a harmonia na minha equipe e relacionamentos." }, factor: "S" },
-    { text: { en: "I am a reliable team player who follows through on commitments.", pt: "Eu sou um membro de equipe confiável que cumpre os compromissos." }, factor: "S" },
-    { text: { en: "I prefer to work at a steady, deliberate, and consistent pace.", pt: "Eu prefiro trabalhar em um ritmo constante, deliberado e consistente." }, factor: "S" },
-    { text: { en: "I value maintaining a secure and familiar routine.", pt: "Eu valorizo a manutenção de uma rotina segura e familiar." }, factor: "S" },
-    { text: { en: "I am empathetic and a good listener for others' concerns.", pt: "Eu sou empático e um bom ouvinte para as preocupações dos outros." }, factor: "S" },
-    { text: { en: "I dislike sudden, unexpected changes to plans or schedules.", pt: "Eu não gosto de mudanças repentinas e inesperadas nos planos ou horários." }, factor: "S" },
-    { text: { en: "I tend to be quite cautious when approaching new tasks or risks.", pt: "Eu tento a ser bastante cauteloso ao abordar novas tarefas ou riscos." }, factor: "S" },
-
-    // C - Conscientiousness (7 Questions total)
-    { text: { en: "I am highly analytical and focused on details and accuracy.", pt: "Eu sou altamente analítico e focado em detalhes e precisão." }, factor: "C" },
-    { text: { en: "I enjoy following established rules, procedures, and high standards.", pt: "Eu gosto de seguir regras estabelecidas, procedimentos e altos padrões." }, factor: "C" },
-    { text: { en: "I approach problems logically, systematically, and critically.", pt: "Eu abordo problemas de forma lógica, sistemática e crítica." }, factor: "C" },
-    { text: { en: "I take time to carefully review and critique all my work.", pt: "Eu dedico tempo para revisar e criticar cuidadosamente todo o meu trabalho." }, factor: "C" },
-    { text: { en: "I am highly organized and meticulous about my workspace.", pt: "Eu sou altamente organizado e meticuloso com meu espaço de trabalho." }, factor: "C" },
-    { text: { en: "I strive for perfection in everything I do, even minor tasks.", pt: "Eu me esforço para a perfeição em tudo o que faço, mesmo em tarefas menores." }, factor: "C" },
-    { text: { en: "I base my decisions primarily on verifiable facts and data.", pt: "Eu baseio minhas decisões principalmente em fatos e dados verificáveis." }, factor: "C" },
-];
-
-// MBTI Test Data (28 Questions - 7 per dimension)
-const mbtiQuestions = [
-    // E/I Questions (7 total)
-    { 
-        optionA: { en: "You enjoy being the center of attention at social gatherings", pt: "Você gosta de ser o centro das atenções em encontros sociais" }, 
-        optionB: { en: "You prefer observing from the sidelines in social situations", pt: "Você prefere observar de fora em situações sociais" },
-        dimension: "EI",
-        aValue: "E",
-        bValue: "I"
-    },
-    { 
-        optionA: { en: "You feel energized after spending time with large groups", pt: "Você se sente energizado depois de passar tempo com grandes grupos" }, 
-        optionB: { en: "You need alone time to recharge after social interactions", pt: "Você precisa de tempo sozinho para recarregar após interações sociais" },
-        dimension: "EI",
-        aValue: "E", 
-        bValue: "I"
-    },
-    { 
-        optionA: { en: "You think out loud and process ideas through conversation", pt: "Você pensa em voz alta e processa ideias através da conversa" }, 
-        optionB: { en: "You prefer to think things through quietly before speaking", pt: "Você prefere pensar nas coisas quieto antes de falar" },
-        dimension: "EI",
-        aValue: "E",
-        bValue: "I"
-    },
-    { 
-        optionA: { en: "You enjoy meeting new people and making new friends", pt: "Você gosta de conhecer novas pessoas e fazer novos amigos" }, 
-        optionB: { en: "You prefer spending time with a few close friends", pt: "Você prefere passar o tempo com alguns amigos próximos" },
-        dimension: "EI",
-        aValue: "E",
-        bValue: "I"
-    },
-    { 
-        optionA: { en: "You are often described as outgoing and sociable", pt: "Você é frequentemente descrito como extrovertido e sociável" }, 
-        optionB: { en: "You are often described as reserved and private", pt: "Você é frequentemente descrito como reservado e discreto" },
-        dimension: "EI",
-        aValue: "E",
-        bValue: "I"
-    },
-    { 
-        optionA: { en: "You enjoy group activities and collaborative projects", pt: "Você gosta de atividades em grupo e projetos colaborativos" }, 
-        optionB: { en: "You prefer working alone or in very small groups", pt: "Você prefere trabalhar sozinho ou em grupos muito pequenos" },
-        dimension: "EI",
-        aValue: "E",
-        bValue: "I"
-    },
-    { 
-        optionA: { en: "You frequently initiate social plans and gatherings", pt: "Você frequentemente inicia planos sociais e encontros" }, 
-        optionB: { en: "You usually wait for others to invite you to social events", pt: "Você geralmente espera que outros o convidem para eventos sociais" },
-        dimension: "EI",
-        aValue: "E",
-        bValue: "I"
-    },
-    
-    // S/N Questions (7 total)
-    { 
-        optionA: { en: "You focus on concrete facts and practical realities", pt: "Você se concentra em fatos concretos e realidades práticas" }, 
-        optionB: { en: "You enjoy thinking about abstract concepts and future possibilities", pt: "Você gosta de pensar em conceitos abstratos e possibilidades futuras" },
-        dimension: "SN",
-        aValue: "S",
-        bValue: "N"
-    },
-    { 
-        optionA: { en: "You prefer clear, step-by-step instructions", pt: "Você prefere instruções claras, passo a passo" }, 
-        optionB: { en: "You like to improvise and figure things out as you go", pt: "Você gosta de improvisar e descobrir as coisas no caminho" },
-        dimension: "SN",
-        aValue: "S",
-        bValue: "N"
-    },
-    { 
-        optionA: { en: "You trust past experiences and proven methods", pt: "Você confia em experiências passadas e métodos comprovados" }, 
-        optionB: { en: "You get excited about new ideas and innovative approaches", pt: "Você fica animado com novas ideias e abordagens inovadoras" },
-        dimension: "SN",
-        aValue: "S",
-        bValue: "N"
-    },
-    { 
-        optionA: { en: "You notice specific details in your environment", pt: "Você percebe detalhes específicos no seu ambiente" }, 
-        optionB: { en: "You tend to see the big picture and overall patterns", pt: "Você tende a ver o panorama geral e os padrões totais" },
-        dimension: "SN",
-        aValue: "S",
-        bValue: "N"
-    },
-    { 
-        optionA: { en: "You prefer dealing with actual experiences", pt: "Você prefere lidar com experiências reais" }, 
-        optionB: { en: "You enjoy imagining what could be in the future", pt: "Você gosta de imaginar o que poderia ser no futuro" },
-        dimension: "SN",
-        aValue: "S",
-        bValue: "N"
-    },
-    { 
-        optionA: { en: "You are very present-oriented and practical", pt: "Você é muito orientado para o presente e prático" }, 
-        optionB: { en: "You are often thinking about future possibilities", pt: "Você frequentemente pensa sobre possibilidades futuras" },
-        dimension: "SN",
-        aValue: "S",
-        bValue: "N"
-    },
-    { 
-        optionA: { en: "You prefer literal and straightforward communication", pt: "Você prefere comunicação literal e direta" }, 
-        optionB: { en: "You enjoy metaphorical and symbolic meanings", pt: "Você gosta de significados metafóricos e simbólicos" },
-        dimension: "SN",
-        aValue: "S",
-        bValue: "N"
-    },
-    
-    // T/F Questions (7 total)
-    { 
-        optionA: { en: "You make decisions based on logic and objective analysis", pt: "Você toma decisões baseadas em lógica e análise objetiva" }, 
-        optionB: { en: "You consider people's feelings and values when deciding", pt: "Você considera os sentimentos e valores das pessoas ao decidir" },
-        dimension: "TF",
-        aValue: "T",
-        bValue: "F"
-    },
-    { 
-        optionA: { en: "You value truth and fairness above harmony", pt: "Você valoriza a verdade e justiça acima da harmonia" }, 
-        optionB: { en: "You prioritize maintaining harmony in relationships", pt: "Você prioriza manter a harmonia nos relacionamentos" },
-        dimension: "TF",
-        aValue: "T",
-        bValue: "F"
-    },
-    { 
-        optionA: { en: "You prefer direct, straightforward communication", pt: "Você prefere comunicação direta e objetiva" }, 
-        optionB: { en: "You consider how your words might affect others emotionally", pt: "Você considera como suas palavras podem afetar outros emocionalmente" },
-        dimension: "TF",
-        aValue: "T",
-        bValue: "F"
-    },
-    { 
-        optionA: { en: "You tend to be more critical than compassionate", pt: "Você tende a ser mais crítico do que compassivo" }, 
-        optionB: { en: "You tend to be more compassionate than critical", pt: "Você tende a ser mais compassivo do que crítico" },
-        dimension: "TF",
-        aValue: "T",
-        bValue: "F"
-    },
-    { 
-        optionA: { en: "You believe consistency and fairness are most important", pt: "Você acredita que consistência e justiça são mais importantes" }, 
-        optionB: { en: "You believe empathy and circumstances should be considered", pt: "Você acredita que empatia e circunstâncias devem ser consideradas" },
-        dimension: "TF",
-        aValue: "T",
-        bValue: "F"
-    },
-    { 
-        optionA: { en: "You focus on objective criteria when evaluating situations", pt: "Você se concentra em critérios objetivos ao avaliar situações" }, 
-        optionB: { en: "You focus on human values and needs when evaluating situations", pt: "Você se concentra em valores humanos e necessidades ao avaliar situações" },
-        dimension: "TF",
-        aValue: "T",
-        bValue: "F"
-    },
-    { 
-        optionA: { en: "You prefer constructive criticism to help others improve", pt: "Você prefere críticas construtivas para ajudar outros a melhorar" }, 
-        optionB: { en: "You prefer gentle encouragement to support others", pt: "Você prefere incentivo gentil para apoiar os outros" },
-        dimension: "TF",
-        aValue: "T",
-        bValue: "F"
-    },
-    
-    // J/P Questions (7 total)
-    { 
-        optionA: { en: "You like to have decisions made and plans settled", pt: "Você gosta de ter decisões tomadas e planos estabelecidos" }, 
-        optionB: { en: "You prefer to keep your options open as long as possible", pt: "Você prefere manter suas opções abertas o máximo possível" },
-        dimension: "JP",
-        aValue: "J",
-        bValue: "P"
-    },
-    { 
-        optionA: { en: "You work best with deadlines and clear schedules", pt: "Você trabalha melhor com prazos e cronogramas claros" }, 
-        optionB: { en: "You feel constrained by too much structure and planning", pt: "Você se sente limitado por muita estrutura e planejamento" },
-        dimension: "JP",
-        aValue: "J",
-        bValue: "P"
-    },
-    { 
-        optionA: { en: "You enjoy completing tasks and checking them off your list", pt: "Você gosta de completar tarefas e marcá-las na sua lista" }, 
-        optionB: { en: "You enjoy starting new projects more than finishing them", pt: "Você gosta mais de começar novos projetos do que terminá-los" },
-        dimension: "JP",
-        aValue: "J",
-        bValue: "P"
-    },
-    { 
-        optionA: { en: "You prefer to make decisions quickly and move forward", pt: "Você prefere tomar decisões rapidamente e seguir em frente" }, 
-        optionB: { en: "You prefer to gather more information before deciding", pt: "Você prefere coletar mais informações antes de decidir" },
-        dimension: "JP",
-        aValue: "J",
-        bValue: "P"
-    },
-    { 
-        optionA: { en: "You like to have a clear plan before starting projects", pt: "Você gosta de ter um plano claro antes de começar projetos" }, 
-        optionB: { en: "You prefer to be spontaneous and adapt as you go", pt: "Você prefere ser espontâneo e se adaptar no caminho" },
-        dimension: "JP",
-        aValue: "J",
-        bValue: "P"
-    },
-    { 
-        optionA: { en: "You feel more comfortable when things are decided", pt: "Você se sente mais confortável quando as coisas estão decididas" }, 
-        optionB: { en: "You feel more comfortable leaving things flexible", pt: "Você se sente mais confortável deixando as coisas flexíveis" },
-        dimension: "JP",
-        aValue: "J",
-        bValue: "P"
-    },
-    { 
-        optionA: { en: "You prefer to finish projects well before deadlines", pt: "Você prefere terminar projetos bem antes dos prazos" }, 
-        optionB: { en: "You often work best under pressure near deadlines", pt: "Você frequentemente trabalha melhor sob pressão perto dos prazos" },
-        dimension: "JP",
-        aValue: "J",
-        bValue: "P"
-    }
-];
-
-// Big Five Test Data (40 Questions)
-const big5Questions = [
-    // Openness (8 questions)
-    { text: { en: "I have a rich vocabulary.", pt: "Eu tenho um vocabulário rico." }, factor: "O", reverse: false },
-    { text: { en: "I have a vivid imagination.", pt: "Eu tenho uma imaginação vívida." }, factor: "O", reverse: false },
-    { text: { en: "I have difficulty understanding abstract ideas.", pt: "Eu tenho dificuldade em entender ideias abstratas." }, factor: "O", reverse: true },
-    { text: { en: "I am not interested in abstract ideas.", pt: "Eu não me interesso por ideias abstratas." }, factor: "O", reverse: true },
-    { text: { en: "I have excellent ideas.", pt: "Eu tenho excelentes ideias." }, factor: "O", reverse: false },
-    { text: { en: "I do not have a good imagination.", pt: "Eu não tenho uma boa imaginação." }, factor: "O", reverse: true },
-    { text: { en: "I am quick to understand things.", pt: "Eu entendo as coisas rapidamente." }, factor: "O", reverse: false },
-    { text: { en: "I use difficult words.", pt: "Eu uso palavras difíceis." }, factor: "O", reverse: false },
-    
-    // Conscientiousness (8 questions)
-    { text: { en: "I am always prepared.", pt: "Eu estou sempre preparado." }, factor: "C", reverse: false },
-    { text: { en: "I pay attention to details.", pt: "Eu presto atenção aos detalhes." }, factor: "C", reverse: false },
-    { text: { en: "I get chores done right away.", pt: "Eu faço as tarefas imediatamente." }, factor: "C", reverse: false },
-    { text: { en: "I like order.", pt: "Eu gosto de ordem." }, factor: "C", reverse: false },
-    { text: { en: "I often forget to put things back in their proper place.", pt: "Eu frequentemente esqueço de colocar as coisas no lugar certo." }, factor: "C", reverse: true },
-    { text: { en: "I make a mess of things.", pt: "Eu bagunço as coisas." }, factor: "C", reverse: true },
-    { text: { en: "I often forget my obligations.", pt: "Eu frequentemente esqueço minhas obrigações." }, factor: "C", reverse: true },
-    { text: { en: "I shirk my duties.", pt: "Eu evito meus deveres." }, factor: "C", reverse: true },
-    
-    // Extraversion (8 questions)
-    { text: { en: "I am the life of the party.", pt: "Eu sou a alma da festa." }, factor: "E", reverse: false },
-    { text: { en: "I feel comfortable around people.", pt: "Eu me sinto confortável perto de pessoas." }, factor: "E", reverse: false },
-    { text: { en: "I start conversations.", pt: "Eu inicio conversas." }, factor: "E", reverse: false },
-    { text: { en: "I talk to a lot of different people at parties.", pt: "Eu converso com muitas pessoas diferentes em festas." }, factor: "E", reverse: false },
-    { text: { en: "I don't talk a lot.", pt: "Eu não falo muito." }, factor: "E", reverse: true },
-    { text: { en: "I keep in the background.", pt: "Eu fico no fundo." }, factor: "E", reverse: true },
-    { text: { en: "I have little to say.", pt: "Eu tenho pouco a dizer." }, factor: "E", reverse: true },
-    { text: { en: "I don't like to draw attention to myself.", pt: "Eu não gosto de chamar atenção para mim mesmo." }, factor: "E", reverse: true },
-    
-    // Agreeableness (8 questions)
-    { text: { en: "I am interested in people.", pt: "Eu me interesso por pessoas." }, factor: "A", reverse: false },
-    { text: { en: "I sympathize with others' feelings.", pt: "Eu simpatizo com os sentimentos dos outros." }, factor: "A", reverse: false },
-    { text: { en: "I have a soft heart.", pt: "Eu tenho um coração mole." }, factor: "A", reverse: false },
-    { text: { en: "I take time out for others.", pt: "Eu reservo tempo para os outros." }, factor: "A", reverse: false },
-    { text: { en: "I feel others' emotions.", pt: "Eu sinto as emoções dos outros." }, factor: "A", reverse: false },
-    { text: { en: "I make people feel at ease.", pt: "Eu faço as pessoas se sentirem à vontade." }, factor: "A", reverse: false },
-    { text: { en: "I am not really interested in others.", pt: "Eu não estou realmente interessado nos outros." }, factor: "A", reverse: true },
-    { text: { en: "I insult people.", pt: "Eu insulte pessoas." }, factor: "A", reverse: true },
-    
-    // Neuroticism (8 questions)
-    { text: { en: "I get stressed out easily.", pt: "Eu fico estressado facilmente." }, factor: "N", reverse: false },
-    { text: { en: "I worry about things.", pt: "Eu me preocupo com as coisas." }, factor: "N", reverse: false },
-    { text: { en: "I am easily disturbed.", pt: "Eu me perturbo facilmente." }, factor: "N", reverse: false },
-    { text: { en: "I get upset easily.", pt: "Eu fico chateado facilmente." }, factor: "N", reverse: false },
-    { text: { en: "I change my mood a lot.", pt: "Eu mudo meu humor frequentemente." }, factor: "N", reverse: false },
-    { text: { en: "I have frequent mood swings.", pt: "Eu tenho mudanças de humor frequentes." }, factor: "N", reverse: false },
-    { text: { en: "I get irritated easily.", pt: "Eu fico irritado facilmente." }, factor: "N", reverse: false },
-    { text: { en: "I often feel blue.", pt: "Eu frequentemente me sinto triste." }, factor: "N", reverse: false }
-];
+// --- QUESTION DATA (Now loaded from database) ---
+let currentTestQuestions = [];
 
 // Base descriptions for DISC factors
 const discDescriptions = {
@@ -1666,17 +1627,20 @@ function setLanguage(lang) {
         
         if (isIndexPage) {
             updateIndexStaticText();
-            loadSavedResults();
+            loadSavedResults();  // Reload results to apply new language
         } else {
             updateStaticText();
             
             if (resultsContainer && resultsContainer.classList.contains('hidden')) {
-                if (isMBTITest) {
-                    renderMBTIQuestion();
-                } else if (isBig5Test) {
-                    renderBig5Question();
-                } else {
-                    renderQuestion();
+                // Re-render current question with new language
+                if (currentTestQuestions.length > 0) {
+                    if (isMBTITest) {
+                        renderMBTIQuestion();
+                    } else if (isBig5Test) {
+                        renderBig5Question();
+                    } else {
+                        renderQuestion();
+                    }
                 }
             } else if (resultsContainer) {
                 showResults(true);
@@ -1771,13 +1735,13 @@ function updateIndexStaticText() {
 // Enhanced Question Rendering with Accessibility
 function renderQuestion() {
     try {
-        if (currentQuestionIndex >= discQuestions.length) {
+        if (currentQuestionIndex >= currentTestQuestions.length) {
             showResults();
             return;
         }
 
-        const currentQ = discQuestions[currentQuestionIndex];
-        const totalQuestions = discQuestions.length;
+        const currentQ = currentTestQuestions[currentQuestionIndex];
+        const totalQuestions = currentTestQuestions.length;
 
         questionTextElement.textContent = currentQ.text[currentLang];
         questionTextElement.setAttribute('aria-live', 'polite');
@@ -1804,13 +1768,13 @@ function renderQuestion() {
 
 function renderMBTIQuestion() {
     try {
-        if (currentQuestionIndex >= mbtiQuestions.length) {
+        if (currentQuestionIndex >= currentTestQuestions.length) {
             showResults();
             return;
         }
 
-        const currentQ = mbtiQuestions[currentQuestionIndex];
-        const totalQuestions = mbtiQuestions.length;
+        const currentQ = currentTestQuestions[currentQuestionIndex];
+        const totalQuestions = currentTestQuestions.length;
 
         document.getElementById('option-a-text').textContent = currentQ.optionA[currentLang];
         document.getElementById('option-b-text').textContent = currentQ.optionB[currentLang];
@@ -1845,13 +1809,13 @@ function renderMBTIQuestion() {
 
 function renderBig5Question() {
     try {
-        if (currentQuestionIndex >= big5Questions.length) {
+        if (currentQuestionIndex >= currentTestQuestions.length) {
             showResults();
             return;
         }
 
-        const currentQ = big5Questions[currentQuestionIndex];
-        const totalQuestions = big5Questions.length;
+        const currentQ = currentTestQuestions[currentQuestionIndex];
+        const totalQuestions = currentTestQuestions.length;
 
         questionTextElement.textContent = currentQ.text[currentLang];
         questionTextElement.setAttribute('aria-live', 'polite');
@@ -1879,15 +1843,19 @@ function renderBig5Question() {
 // Enhanced Rating Handlers with Accessibility
 function handleRating(rating, buttonElement) {
     try {
-        if (currentQuestionIndex >= discQuestions.length) return;
+        if (currentQuestionIndex >= currentTestQuestions.length) return;
 
-        const currentQ = discQuestions[currentQuestionIndex];
+        const currentQ = currentTestQuestions[currentQuestionIndex];
 
         Array.from(ratingButtonsContainer.children).forEach(btn => btn.classList.remove('selected'));
         buttonElement.classList.add('selected');
 
         scores[currentQ.factor] += rating;
-        userRatings.push({ factor: currentQ.factor, rating: rating });
+        userRatings.push({ 
+            questionId: currentQ.id,
+            factor: currentQ.factor, 
+            rating: rating 
+        });
         
         // Announce selection for screen readers
         if (accessibilityManager) {
@@ -1908,9 +1876,9 @@ function handleRating(rating, buttonElement) {
 
 function handleMBTIRating(option, buttonElement) {
     try {
-        if (currentQuestionIndex >= mbtiQuestions.length) return;
+        if (currentQuestionIndex >= currentTestQuestions.length) return;
 
-        const currentQ = mbtiQuestions[currentQuestionIndex];
+        const currentQ = currentTestQuestions[currentQuestionIndex];
         const selectedValue = option === 'A' ? currentQ.aValue : currentQ.bValue;
 
         document.getElementById('option-a').classList.remove('selected', 'bg-blue-200', 'border-blue-500', 'bg-gray-100');
@@ -1923,7 +1891,12 @@ function handleMBTIRating(option, buttonElement) {
         }
 
         mbtiScores[selectedValue] += 1;
-        userRatings.push({ dimension: currentQ.dimension, choice: option, value: selectedValue });
+        userRatings.push({ 
+            questionId: currentQ.id,
+            dimension: currentQ.dimension, 
+            choice: option, 
+            value: selectedValue 
+        });
 
         // Announce selection for screen readers
         const selectedText = option === 'A' ? currentQ.optionA[currentLang] : currentQ.optionB[currentLang];
@@ -1945,9 +1918,9 @@ function handleMBTIRating(option, buttonElement) {
 
 function handleBig5Rating(rating, buttonElement) {
     try {
-        if (currentQuestionIndex >= big5Questions.length) return;
+        if (currentQuestionIndex >= currentTestQuestions.length) return;
 
-        const currentQ = big5Questions[currentQuestionIndex];
+        const currentQ = currentTestQuestions[currentQuestionIndex];
 
         Array.from(ratingButtonsContainer.children).forEach(btn => btn.classList.remove('selected'));
         buttonElement.classList.add('selected');
@@ -1955,7 +1928,12 @@ function handleBig5Rating(rating, buttonElement) {
         const finalScore = currentQ.reverse ? (6 - rating) : rating;
         
         big5Scores[currentQ.factor] += finalScore;
-        userRatings.push({ factor: currentQ.factor, rating: rating, finalScore: finalScore });
+        userRatings.push({ 
+            questionId: currentQ.id,
+            factor: currentQ.factor, 
+            rating: rating, 
+            finalScore: finalScore 
+        });
 
         // Announce selection for screen readers
         if (accessibilityManager) {
@@ -2081,8 +2059,6 @@ function showMBTIResults(resultScores, resultInterpretation) {
         saveTestResult({
             testType: 'MBTI',
             type: mbtiType,
-            typeName: typeData.name[currentLang],
-            description: typeData.description[currentLang],
             scores: { ...mbtiScores },
             dimensions: ['EI', 'SN', 'TF', 'JP']
         });
@@ -2248,7 +2224,7 @@ function showBig5Results(resultScores, resultInterpretation) {
 // Enhanced DISC Results with Accessibility
 function showDISCResults(resultScores, resultInterpretation) {
     try {
-        const factorCounts = discQuestions.reduce((acc, q) => {
+        const factorCounts = currentTestQuestions.reduce((acc, q) => {
             acc[q.factor] = (acc[q.factor] || 0) + 1;
             return acc;
         }, {});
@@ -2279,8 +2255,6 @@ function showDISCResults(resultScores, resultInterpretation) {
         saveTestResult({
             testType: 'DISC',
             profileKey: profileKey,
-            profileName: profileData.name[currentLang],
-            description: profileData.description[currentLang],
             scores: { ...scores },
             factors: factorScores
         });
@@ -2513,33 +2487,42 @@ function createResultCard(testType, result) {
     let content = '';
     
     if (testType === 'DISC') {
+        const profileKey = result.profileKey;
+        const profileData = blendedDescriptions[profileKey];
+        const profileName = profileData ? profileData.name[currentLang] : (result.profileName || 'Unknown Profile');
+        const description = profileData ? profileData.description[currentLang] : (result.description || '');
+        
         content = `
             <div class="flex items-center justify-between">
                 <div>
-                    <h3 class="font-bold text-lg text-${color}-700">${result.profileName}</h3>
-                    <p class="text-gray-600 text-sm">${result.description}</p>
+                    <h3 class="font-bold text-lg text-${color}-700">${profileName}</h3>
+                    <p class="text-gray-600 text-sm">${description}</p>
                 </div>
                 <div class="text-right">
-                    <div class="text-2xl font-bold text-${color}-600">${result.profileKey}</div>
+                    <div class="text-2xl font-bold text-${color}-600">${profileKey}</div>
                     <div class="text-xs text-gray-500">${date}</div>
                 </div>
             </div>
         `;
     } else if (testType === 'MBTI') {
+        const mbtiType = result.type;
+        const typeData = mbtiTypeDescriptions[mbtiType];
+        const typeName = typeData ? typeData.name[currentLang] : (result.typeName || 'Unknown Type');
+        const description = typeData ? typeData.description[currentLang] : (result.description || '');
+        
         content = `
             <div class="flex items-center justify-between">
                 <div>
-                    <h3 class="font-bold text-lg text-${color}-700">${result.typeName}</h3>
-                    <p class="text-gray-600 text-sm">${result.description}</p>
+                    <h3 class="font-bold text-lg text-${color}-700">${typeName}</h3>
+                    <p class="text-gray-600 text-sm">${description}</p>
                 </div>
                 <div class="text-right">
-                    <div class="text-2xl font-bold text-${color}-600">${result.type}</div>
+                    <div class="text-2xl font-bold text-${color}-600">${mbtiType}</div>
                     <div class="text-xs text-gray-500">${date}</div>
                 </div>
             </div>
         `;
     } else if (testType === 'BIG5') {
-        // Calculate trait levels and create friendly description
         const traitAnalysis = analyzeBig5Traits(result.scores, result.maxScores);
         content = createBig5FriendlyDescription(traitAnalysis, date);
     }
@@ -2659,7 +2642,7 @@ function createBig5FriendlyDescription(traitAnalysis, date) {
 
 function retakeTest(testType) {
     const testPages = {
-        DISC: 'DISC.html',
+        DISC: 'disc.html',
         MBTI: 'mbti.html',
         BIG5: 'big5.html'
     };
@@ -2685,7 +2668,7 @@ function clearAllResults() {
 }
 
 // Enhanced Initialization
-function init() {
+async function init() {
     try {
         // Load language preference
         try {
@@ -2703,7 +2686,7 @@ function init() {
         if (isIndexPage) {
             initIndexPage();
         } else {
-            initTestPage();
+            await initTestPage();
         }
         
     } catch (error) {
@@ -2712,7 +2695,7 @@ function init() {
     }
 }
 
-function initTestPage() {
+async function initTestPage() {
     try {
         testContainer = document.getElementById('test-container');
         resultsContainer = document.getElementById('results-container');
@@ -2724,9 +2707,24 @@ function initTestPage() {
         // Initialize accessibility manager
         accessibilityManager = new AccessibilityManager();
 
+        // Show loading while fetching questions
+        const loading = showLoading(t('loading'));
+
+        // Fetch questions from database
+        let testType = '';
+        if (isDISCTest) testType = 'disc';
+        else if (isMBTITest) testType = 'mbti';
+        else if (isBig5Test) testType = 'big5';
+
+        currentTestQuestions = await fetchQuestions(testType, currentLang);
+        
+        hideLoading();
+
         // Validate test data
         if (!validateTestData()) {
             console.warn(t('test_data_invalid'));
+            showError(t('test_data_invalid'));
+            return;
         }
 
         // Load progress if available
@@ -2753,19 +2751,19 @@ function initTestPage() {
         
         // Render initial question based on test type
         if (isMBTITest) {
-            if (currentQuestionIndex < mbtiQuestions.length) {
+            if (currentQuestionIndex < currentTestQuestions.length) {
                 renderMBTIQuestion();
             } else {
                 showResults();
             }
         } else if (isBig5Test) {
-            if (currentQuestionIndex < big5Questions.length) {
+            if (currentQuestionIndex < currentTestQuestions.length) {
                 renderBig5Question();
             } else {
                 showResults();
             }
         } else {
-            if (currentQuestionIndex < discQuestions.length) {
+            if (currentQuestionIndex < currentTestQuestions.length) {
                 renderQuestion();
             } else {
                 showResults();
@@ -2825,6 +2823,7 @@ if (typeof module !== 'undefined' && module.exports) {
         getProfileKey,
         calculateMBTIType,
         TestRunner,
-        saveTestResult
+        saveTestResult,
+        fetchQuestions
     };
 }
