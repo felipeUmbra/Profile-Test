@@ -1,7 +1,5 @@
 # Personality Test Hub
 
-![Project Screenshot](https://placehold.co/800x400/D9E3EF/4338CA?text=Your+App+Screenshot+Here)
-
 A comprehensive web application that allows users to take three major personality tests: DISC, MBTI, and the Big Five. The app provides detailed interpretations, saves results to the browser, and allows users to export their reports to PDF.
 
 This application is bilingual (English and Portuguese) and features a resilient front-end that can function with or without the backend API.
