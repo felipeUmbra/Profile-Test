@@ -3,11 +3,17 @@ const sql = require('mssql');
 const dbConfig = {
     server: 'localhost',
     database: 'personality_tests',
-    user: 'SA',
+    user: 'SA', 
     password: 'Shopee123',
     options: {
         encrypt: false,
-        trustServerCertificate: true
+        trustServerCertificate: true,
+        enableArithAbort: true
+    },
+    pool: {
+        max: 10,
+        min: 0,
+        idleTimeoutMillis: 30000
     }
 };
 

@@ -689,144 +689,138 @@ function tIndex(key, replacements = {}) {
     }
 }
 
-function getFallbackQuestions(testType, lang) {
-    console.log(`Using fallback questions for ${testType} in ${lang}`);
-    
-    if (testType === 'disc') {
-        return [
-            { id: 1, text: { en: "I prioritize getting measurable results quickly.", pt: "Eu priorizo a obtenção de resultados mensuráveis rapidamente." }, factor: "D" },
-            { id: 2, text: { en: "I am direct and assertive in my communication style.", pt: "Eu sou direto e assertivo no meu estilo de comunicação." }, factor: "D" },
-            { id: 3, text: { en: "I enjoy taking charge and leading group activities.", pt: "Eu gosto de assumir o comando e liderar atividades em grupo." }, factor: "D" },
-            { id: 4, text: { en: "I thrive on challenge and competitive environments.", pt: "Eu prospero em ambientes desafiadores e competitivos." }, factor: "D" },
-            { id: 5, text: { en: "I feel comfortable making decisions without extensive consultation.", pt: "Sinto-me à vontade para tomar decisões sem consulta extensa." }, factor: "D" },
-            { id: 6, text: { en: "I am focused on overcoming obstacles and achieving immediate goals.", pt: "Estou focado em superar obstáculos e alcançar objetivos imediatos." }, factor: "D" },
-            { id: 7, text: { en: "I appreciate an environment where speed is valued over thoroughness.", pt: "Eu aprecio um ambiente onde a velocidade é mais valorizada do que a exaustividade." }, factor: "D" },
-            { id: 8, text: { en: "I confront issues and people directly when conflict arises.", pt: "Eu confronto problemas e pessoas diretamente quando surge um conflito." }, factor: "D" },
-            { id: 9, text: { en: "I am outgoing and enjoy meeting new people frequently.", pt: "Eu sou extrovertido e gosto de conhecer novas pessoas frequentemente." }, factor: "I" },
-            { id: 10, text: { en: "I use enthusiasm and positive language to motivate others.", pt: "Eu uso entusiasmo e linguagem positiva para motivar os outros." }, factor: "I" },
-            { id: 11, text: { en: "I am naturally optimistic and look for the best in situations.", pt: "Eu sou naturalmente otimista e procuro o melhor nas situações." }, factor: "I" },
-            { id: 12, text: { en: "I like to talk and express my ideas freely and openly.", pt: "Eu gosto de conversar e expressar minhas ideias livre e abertamente." }, factor: "I" },
-            { id: 13, text: { en: "I enjoy being the center of attention in a social setting.", pt: "Eu gosto de ser o centro das atenções em um ambiente social." }, factor: "I" },
-            { id: 14, text: { en: "I am skilled at persuading others to adopt my ideas.", pt: "Sou hábil em persuadir os outros a adotarem minhas ideias." }, factor: "I" },
-            { id: 15, text: { en: "I often rely on intuition and feelings rather than facts.", pt: "Muitas vezes, confio na intuição e nos sentimentos em vez de em fatos." }, factor: "I" },
-            { id: 16, text: { en: "I am patient and prefer a predictable, stable work environment.", pt: "Eu sou paciente e prefiro um ambiente de trabalho previsível e estável." }, factor: "S" },
-            { id: 17, text: { en: "I am supportive and value harmony in my team and relationships.", pt: "Eu sou prestativo e valorizo a harmonia na minha equipe e relacionamentos." }, factor: "S" },
-            { id: 18, text: { en: "I am a reliable team player who follows through on commitments.", pt: "Eu sou um membro de equipe confiável que cumpre os compromissos." }, factor: "S" },
-            { id: 19, text: { en: "I prefer to work at a steady, deliberate, and consistent pace.", pt: "Eu prefiro trabalhar em um ritmo constante, deliberado e consistente." }, factor: "S" },
-            { id: 20, text: { en: "I value maintaining a secure and familiar routine.", pt: "Eu valorizo a manutenção de uma rotina segura e familiar." }, factor: "S" },
-            { id: 21, text: { en: "I am empathetic and a good listener for others' concerns.", pt: "Eu sou empático e um bom ouvinte para as preocupações dos outros." }, factor: "S" },
-            { id: 22, text: { en: "I dislike sudden, unexpected changes to plans or schedules.", pt: "Eu não gosto de mudanças repentinas e inesperadas nos planos ou horários." }, factor: "S" },
-            { id: 23, text: { en: "I tend to be quite cautious when approaching new tasks or risks.", pt: "Eu tento a ser bastante cauteloso ao abordar novas tarefas ou riscos." }, factor: "S" },
-            { id: 24, text: { en: "I am highly analytical and focused on details and accuracy.", pt: "Eu sou altamente analítico e focado em detalhes e precisão." }, factor: "C" },
-            { id: 25, text: { en: "I enjoy following established rules, procedures, and high standards.", pt: "Eu gosto de seguir regras estabelecidas, procedimentos e altos padrões." }, factor: "C" },
-            { id: 26, text: { en: "I approach problems logically, systematically, and critically.", pt: "Eu abordo problemas de forma lógica, sistemática e crítica." }, factor: "C" },
-            { id: 27, text: { en: "I take time to carefully review and critique all my work.", pt: "Eu dedico tempo para revisar e criticar cuidadosamente todo o meu trabalho." }, factor: "C" },
-            { id: 28, text: { en: "I am highly organized and meticulous about my workspace.", pt: "Eu sou altamente organizado e meticuloso com meu espaço de trabalho." }, factor: "C" },
-            { id: 29, text: { en: "I strive for perfection in everything I do, even minor tasks.", pt: "Eu me esforço para a perfeição em tudo o que faço, mesmo em tarefas menores." }, factor: "C" },
-            { id: 30, text: { en: "I base my decisions primarily on verifiable facts and data.", pt: "Eu baseio minhas decisões principalmente em fatos e dados verificáveis." }, factor: "C" }
-        ];
+// Cache for fallback questions
+let fallbackQuestionsCache = null;
+
+// Load fallback questions from JSON file
+async function loadFallbackQuestions() {
+    if (fallbackQuestionsCache) {
+        return fallbackQuestionsCache;
     }
     
-    if (testType === 'mbti') {
-    return [
-        { id: 1, optionA: { en: "You enjoy being the center of attention at social gatherings", pt: "Você gosta de ser o centro das atenções em encontros sociais" }, optionB: { en: "You prefer observing from the sidelines in social situations", pt: "Você prefere observar de fora em situações sociais" }, dimension: "EI", aValue: "E", bValue: "I" },
-        { id: 2, optionA: { en: "You feel energized after spending time with large groups", pt: "Você se sente energizado depois de passar tempo com grandes grupos" }, optionB: { en: "You need alone time to recharge after social interactions", pt: "Você precisa de tempo sozinho para recarregar após interações sociais" }, dimension: "EI", aValue: "E", bValue: "I" },
-        { id: 3, optionA: { en: "You think out loud and process ideas through conversation", pt: "Você pensa em voz alta e processa ideias através da conversa" }, optionB: { en: "You prefer to think things through quietly before speaking", pt: "Você prefere pensar nas coisas quieto antes de falar" }, dimension: "EI", aValue: "E", bValue: "I" },
-        { id: 4, optionA: { en: "You enjoy meeting new people and making new friends", pt: "Você gosta de conhecer novas pessoas e fazer novos amigos" }, optionB: { en: "You prefer spending time with a few close friends", pt: "Você prefere passar o tempo com alguns amigos próximos" }, dimension: "EI", aValue: "E", bValue: "I" },
-        { id: 5, optionA: { en: "You are often described as outgoing and sociable", pt: "Você é frequentemente descrito como extrovertido e sociável" }, optionB: { en: "You are often described as reserved and private", pt: "Você é frequentemente descrito como reservado e discreto" }, dimension: "EI", aValue: "E", bValue: "I" },
-        { id: 6, optionA: { en: "You enjoy group activities and collaborative projects", pt: "Você gosta de atividades em grupo e projetos colaborativos" }, optionB: { en: "You prefer working alone or in very small groups", pt: "Você prefere trabalhar sozinho ou em grupos muito pequenos" }, dimension: "EI", aValue: "E", bValue: "I" },
-        { id: 7, optionA: { en: "You frequently initiate social plans and gatherings", pt: "Você frequentemente inicia planos sociais e encontros" }, optionB: { en: "You usually wait for others to invite you to social events", pt: "Você geralmente espera que outros o convidem para eventos sociais" }, dimension: "EI", aValue: "E", bValue: "I" },
-        
-        { id: 8, optionA: { en: "You focus on concrete facts and practical realities", pt: "Você se concentra em fatos concretos e realidades práticas" }, optionB: { en: "You enjoy thinking about abstract concepts and future possibilities", pt: "Você gosta de pensar em conceitos abstratos e possibilidades futuras" }, dimension: "SN", aValue: "S", bValue: "N" },
-        { id: 9, optionA: { en: "You prefer clear, step-by-step instructions", pt: "Você prefere instruções claras, passo a passo" }, optionB: { en: "You like to improvise and figure things out as you go", pt: "Você gosta de improvisar e descobrir as coisas no caminho" }, dimension: "SN", aValue: "S", bValue: "N" },
-        { id: 10, optionA: { en: "You trust past experiences and proven methods", pt: "Você confia em experiências passadas e métodos comprovados" }, optionB: { en: "You get excited about new ideas and innovative approaches", pt: "Você fica animado com novas ideias e abordagens inovadoras" }, dimension: "SN", aValue: "S", bValue: "N" },
-        { id: 11, optionA: { en: "You notice specific details in your environment", pt: "Você percebe detalhes específicos no seu ambiente" }, optionB: { en: "You tend to see the big picture and overall patterns", pt: "Você tende a ver o panorama geral e os padrões totais" }, dimension: "SN", aValue: "S", bValue: "N" },
-        { id: 12, optionA: { en: "You prefer dealing with actual experiences", pt: "Você prefere lidar com experiências reais" }, optionB: { en: "You enjoy imagining what could be in the future", pt: "Você gosta de imaginar o que poderia ser no futuro" }, dimension: "SN", aValue: "S", bValue: "N" },
-        { id: 13, optionA: { en: "You are very present-oriented and practical", pt: "Você é muito orientado para o presente e prático" }, optionB: { en: "You are often thinking about future possibilities", pt: "Você frequentemente pensa sobre possibilidades futuras" }, dimension: "SN", aValue: "S", bValue: "N" },
-        { id: 14, optionA: { en: "You prefer literal and straightforward communication", pt: "Você prefere comunicação literal e direta" }, optionB: { en: "You enjoy metaphorical and symbolic meanings", pt: "Você gosta de significados metafóricos e simbólicos" }, dimension: "SN", aValue: "S", bValue: "N" },
-        
-        { id: 15, optionA: { en: "You make decisions based on logic and objective analysis", pt: "Você toma decisões baseadas em lógica e análise objetiva" }, optionB: { en: "You consider people's feelings and values when deciding", pt: "Você considera os sentimentos e valores das pessoas ao decidir" }, dimension: "TF", aValue: "T", bValue: "F" },
-        { id: 16, optionA: { en: "You value truth and fairness above harmony", pt: "Você valoriza a verdade e justiça acima da harmonia" }, optionB: { en: "You prioritize maintaining harmony in relationships", pt: "Você prioriza manter a harmonia nos relacionamentos" }, dimension: "TF", aValue: "T", bValue: "F" },
-        { id: 17, optionA: { en: "You prefer direct, straightforward communication", pt: "Você prefere comunicação direta e objetiva" }, optionB: { en: "You consider how your words might affect others emotionally", pt: "Você considera como suas palavras podem afetar outros emocionalmente" }, dimension: "TF", aValue: "T", bValue: "F" },
-        { id: 18, optionA: { en: "You tend to be more critical than compassionate", pt: "Você tende a ser mais crítico do que compassivo" }, optionB: { en: "You tend to be more compassionate than critical", pt: "Você tende a ser mais compassivo do que crítico" }, dimension: "TF", aValue: "T", bValue: "F" },
-        { id: 19, optionA: { en: "You believe consistency and fairness are most important", pt: "Você acredita que consistência e justiça são mais importantes" }, optionB: { en: "You believe empathy and circumstances should be considered", pt: "Você acredita que empatia e circunstâncias devem ser consideradas" }, dimension: "TF", aValue: "T", bValue: "F" },
-        { id: 20, optionA: { en: "You focus on objective criteria when evaluating situations", pt: "Você se concentra em critérios objetivos ao avaliar situações" }, optionB: { en: "You focus on human values and needs when evaluating situations", pt: "Você se concentra em valores humanos e necessidades ao avaliar situações" }, dimension: "TF", aValue: "T", bValue: "F" },
-        { id: 21, optionA: { en: "You prefer constructive criticism to help others improve", pt: "Você prefere críticas construtivas para ajudar outros a melhorar" }, optionB: { en: "You prefer gentle encouragement to support others", pt: "Você prefere incentivo gentil para apoiar os outros" }, dimension: "TF", aValue: "T", bValue: "F" },
-        
-        { id: 22, optionA: { en: "You like to have decisions made and plans settled", pt: "Você gosta de ter decisões tomadas e planos estabelecidos" }, optionB: { en: "You prefer to keep your options open as long as possible", pt: "Você prefere manter suas opções abertas o máximo possível" }, dimension: "JP", aValue: "J", bValue: "P" },
-        { id: 23, optionA: { en: "You work best with deadlines and clear schedules", pt: "Você trabalha melhor com prazos e cronogramas claros" }, optionB: { en: "You feel constrained by too much structure and planning", pt: "Você se sente limitado por muita estrutura e planejamento" }, dimension: "JP", aValue: "J", bValue: "P" },
-        { id: 24, optionA: { en: "You enjoy completing tasks and checking them off your list", pt: "Você gosta de completar tarefas e marcá-las na sua lista" }, optionB: { en: "You enjoy starting new projects more than finishing them", pt: "Você gosta mais de começar novos projetos do que terminá-los" }, dimension: "JP", aValue: "J", bValue: "P" },
-        { id: 25, optionA: { en: "You prefer to make decisions quickly and move forward", pt: "Você prefere tomar decisões rapidamente e seguir em frente" }, optionB: { en: "You prefer to gather more information before deciding", pt: "Você prefere coletar mais informações antes de decidir" }, dimension: "JP", aValue: "J", bValue: "P" },
-        { id: 26, optionA: { en: "You like to have a clear plan before starting projects", pt: "Você gosta de ter um plano claro antes de começar projetos" }, optionB: { en: "You prefer to be spontaneous and adapt as you go", pt: "Você prefere ser espontâneo e se adaptar no caminho" }, dimension: "JP", aValue: "J", bValue: "P" },
-        { id: 27, optionA: { en: "You feel more comfortable when things are decided", pt: "Você se sente mais confortável quando as coisas estão decididas" }, optionB: { en: "You feel more comfortable leaving things flexible", pt: "Você se sente mais confortável deixando as coisas flexíveis" }, dimension: "JP", aValue: "J", bValue: "P" },
-        { id: 28, optionA: { en: "You prefer to finish projects well before deadlines", pt: "Você prefere terminar projetos bem antes dos prazos" }, optionB: { en: "You often work best under pressure near deadlines", pt: "Você frequentemente trabalha melhor sob pressão perto dos prazos" }, dimension: "JP", aValue: "J", bValue: "P" }
-        ];
+    try {
+        const response = await fetch('./fallback-questions.json');
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        fallbackQuestionsCache = await response.json();
+        console.log('Fallback questions loaded from JSON file');
+        return fallbackQuestionsCache;
+    } catch (error) {
+        console.error('Failed to load fallback questions from JSON file:', error);
+        // Return empty structure as last resort
+        return { disc: [], mbti: [], big5: [] };
     }
-    
-    if (testType === 'big5') {
-    return [
-        // Openness (8 questions)
-        { id: 1, text: { en: "I have a rich vocabulary.", pt: "Eu tenho um vocabulário rico." }, factor: "O", reverse: false },
-        { id: 2, text: { en: "I have a vivid imagination.", pt: "Eu tenho uma imaginação vívida." }, factor: "O", reverse: false },
-        { id: 3, text: { en: "I have difficulty understanding abstract ideas.", pt: "Eu tenho dificuldade em entender ideias abstratas." }, factor: "O", reverse: true },
-        { id: 4, text: { en: "I am not interested in abstract ideas.", pt: "Eu não me interesso por ideias abstratas." }, factor: "O", reverse: true },
-        { id: 5, text: { en: "I have excellent ideas.", pt: "Eu tenho excelentes ideias." }, factor: "O", reverse: false },
-        { id: 6, text: { en: "I do not have a good imagination.", pt: "Eu não tenho uma boa imaginação." }, factor: "O", reverse: true },
-        { id: 7, text: { en: "I am quick to understand things.", pt: "Eu entendo as coisas rapidamente." }, factor: "O", reverse: false },
-        { id: 8, text: { en: "I use difficult words.", pt: "Eu uso palavras difíceis." }, factor: "O", reverse: false },
-        
-        // Conscientiousness (8 questions)
-        { id: 9, text: { en: "I am always prepared.", pt: "Eu estão sempre preparado." }, factor: "C", reverse: false },
-        { id: 10, text: { en: "I pay attention to details.", pt: "Eu presto atenção aos detalhes." }, factor: "C", reverse: false },
-        { id: 11, text: { en: "I get chores done right away.", pt: "Eu faço as tarefas imediatamente." }, factor: "C", reverse: false },
-        { id: 12, text: { en: "I like order.", pt: "Eu gosto de ordem." }, factor: "C", reverse: false },
-        { id: 13, text: { en: "I often forget to put things back in their proper place.", pt: "Eu frequentemente esqueço de colocar as coisas no lugar certo." }, factor: "C", reverse: true },
-        { id: 14, text: { en: "I make a mess of things.", pt: "Eu bagunço as coisas." }, factor: "C", reverse: true },
-        { id: 15, text: { en: "I often forget my obligations.", pt: "Eu frequentemente esqueço minhas obrigações." }, factor: "C", reverse: true },
-        { id: 16, text: { en: "I shirk my duties.", pt: "Eu evito meus deveres." }, factor: "C", reverse: true },
-        
-        // Extraversion (8 questions)
-        { id: 17, text: { en: "I am the life of the party.", pt: "Eu sou a alma da festa." }, factor: "E", reverse: false },
-        { id: 18, text: { en: "I feel comfortable around people.", pt: "Eu me sinto confortável perto de pessoas." }, factor: "E", reverse: false },
-        { id: 19, text: { en: "I start conversations.", pt: "Eu inicio conversas." }, factor: "E", reverse: false },
-        { id: 20, text: { en: "I talk to a lot of different people at parties.", pt: "Eu converso com muitas pessoas diferentes em festas." }, factor: "E", reverse: false },
-        { id: 21, text: { en: "I don't talk a lot.", pt: "Eu não falo muito." }, factor: "E", reverse: true },
-        { id: 22, text: { en: "I keep in the background.", pt: "Eu fico no fundo." }, factor: "E", reverse: true },
-        { id: 23, text: { en: "I have little to say.", pt: "Eu tenho pouco a dizer." }, factor: "E", reverse: true },
-        { id: 24, text: { en: "I don't like to draw attention to myself.", pt: "Eu não gosto de chamar atenção para mim mesmo." }, factor: "E", reverse: true },
-        
-        // Agreeableness (8 questions)
-        { id: 25, text: { en: "I am interested in people.", pt: "Eu me interesso por pessoas." }, factor: "A", reverse: false },
-        { id: 26, text: { en: "I sympathize with others' feelings.", pt: "Eu simpatizo com os sentimentos dos outros." }, factor: "A", reverse: false },
-        { id: 27, text: { en: "I have a soft heart.", pt: "Eu tenho um coração mole." }, factor: "A", reverse: false },
-        { id: 28, text: { en: "I take time out for others.", pt: "Eu reservo tempo para os outros." }, factor: "A", reverse: false },
-        { id: 29, text: { en: "I feel others' emotions.", pt: "Eu sinto as emoções dos outros." }, factor: "A", reverse: false },
-        { id: 30, text: { en: "I make people feel at ease.", pt: "Eu faço as pessoas se sentirem à vontade." }, factor: "A", reverse: false },
-        { id: 31, text: { en: "I am not really interested in others.", pt: "Eu não estou realmente interessado nos outros." }, factor: "A", reverse: true },
-        { id: 32, text: { en: "I insult people.", pt: "Eu insulte pessoas." }, factor: "A", reverse: true },
-        
-        // Neuroticism (8 questions)
-        { id: 33, text: { en: "I get stressed out easily.", pt: "Eu fico estressado facilmente." }, factor: "N", reverse: false },
-        { id: 34, text: { en: "I worry about things.", pt: "Eu me preocupo com as coisas." }, factor: "N", reverse: false },
-        { id: 35, text: { en: "I am easily disturbed.", pt: "Eu me perturbo facilmente." }, factor: "N", reverse: false },
-        { id: 36, text: { en: "I get upset easily.", pt: "Eu fico chateado facilmente." }, factor: "N", reverse: false },
-        { id: 37, text: { en: "I change my mood a lot.", pt: "Eu mudo meu humor frequentemente." }, factor: "N", reverse: false },
-        { id: 38, text: { en: "I have frequent mood swings.", pt: "Eu tenho mudanças de humor frequentes." }, factor: "N", reverse: false },
-        { id: 39, text: { en: "I get irritated easily.", pt: "Eu fico irritado facilmente." }, factor: "N", reverse: false },
-        { id: 40, text: { en: "I often feel blue.", pt: "Eu frequentemente me sinto triste." }, factor: "N", reverse: false }
-        ];
+}
+
+// Get fallback questions for specific test type
+async function getFallbackQuestions(testType, lang) {
+    try {
+        const fallbackData = await loadFallbackQuestions();
+        console.log(`Using fallback questions for ${testType} in ${lang}`);
+        return fallbackData[testType] || [];
+    } catch (error) {
+        console.error('Error getting fallback questions:', error);
+        return [];
     }
-    
-    return [];
 }
 // --- Database Integration Functions ---
 
 // Fetch questions from the database
+// Fetch questions from the database with fallback
 async function fetchQuestions(testType, lang = 'en') {
-    console.log(`Using fallback questions for ${testType} in ${lang}`);
-    
-    // Always use fallback questions for now
-    return getFallbackQuestions(testType, lang);
+    try {
+        console.log(`Attempting to fetch ${testType} questions from backend...`);
+        
+        const response = await fetch(`${CONFIG.apiBaseUrl}/questions/${testType}?lang=${lang}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            // Add timeout for better error handling
+            signal: AbortSignal.timeout(5000)
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const questions = await response.json();
+        console.log(`Successfully fetched ${questions.length} ${testType} questions from backend`);
+        
+        // Transform the questions to match the expected frontend format
+        return transformQuestions(questions, testType, lang);
+        
+    } catch (error) {
+        console.warn(`Failed to fetch questions from API: ${error.message}. Using fallback questions.`);
+        return getFallbackQuestions(testType, lang);
+    }
+}
+
+// Transform backend questions to frontend format
+function transformQuestions(backendQuestions, testType, lang) {
+    try {
+        if (testType === 'disc') {
+            return backendQuestions.map(q => ({
+                id: q.id,
+                text: { 
+                    en: q.question_text_en || q.question_text, 
+                    pt: q.question_text_pt || q.question_text 
+                },
+                factor: q.factor
+            }));
+        } else if (testType === 'mbti') {
+            return backendQuestions.map(q => {
+                let optionA, optionB;
+                
+                // Handle both stringified JSON and direct object formats
+                if (typeof q.question_text === 'string') {
+                    try {
+                        const parsed = JSON.parse(q.question_text);
+                        optionA = parsed.optionA || { en: '', pt: '' };
+                        optionB = parsed.optionB || { en: '', pt: '' };
+                    } catch (e) {
+                        // If parsing fails, use the text directly
+                        optionA = { en: q.question_text, pt: q.question_text };
+                        optionB = { en: q.question_text, pt: q.question_text };
+                    }
+                } else {
+                    optionA = q.question_text?.optionA || { en: '', pt: '' };
+                    optionB = q.question_text?.optionB || { en: '', pt: '' };
+                }
+                
+                return {
+                    id: q.id,
+                    optionA: {
+                        en: optionA.en || q.question_text_en,
+                        pt: optionA.pt || q.question_text_pt
+                    },
+                    optionB: {
+                        en: optionB.en || q.question_text_en,
+                        pt: optionB.pt || q.question_text_pt
+                    },
+                    dimension: q.factor,
+                    aValue: q.factor ? q.factor[0] : 'E', // Default fallbacks
+                    bValue: q.factor ? q.factor[1] : 'I'
+                };
+            });
+        } else if (testType === 'big5') {
+            return backendQuestions.map(q => ({
+                id: q.id,
+                text: { 
+                    en: q.question_text_en || q.question_text, 
+                    pt: q.question_text_pt || q.question_text 
+                },
+                factor: q.factor,
+                reverse: q.reverse_scoring || false
+            }));
+        }
+        
+        return backendQuestions;
+    } catch (error) {
+        console.error('Error transforming questions:', error);
+        throw error;
+    }
 }
 
 // Save progress to database
@@ -2415,6 +2409,7 @@ function restartTest() {
 }
 
 // Index Page Functions
+// Enhanced Index Page Functions
 function loadSavedResults() {
     const resultsContainer = document.getElementById('saved-results');
     const section = document.getElementById('saved-results-section');
@@ -2463,6 +2458,9 @@ function loadSavedResults() {
     if (hasResults) {
         resultsContainer.innerHTML = resultsHTML;
         section.classList.remove('hidden');
+        
+        // Re-attach event listeners for dynamically created buttons
+        attachResultCardEvents();
     } else {
         section.classList.add('hidden');
     }
@@ -2528,11 +2526,14 @@ function createResultCard(testType, result) {
     }
 
     return `
-        <div class="p-4 rounded-xl border-2 border-${color}-200 bg-${color}-50 hover:bg-${color}-100 transition duration-300 cursor-pointer" 
-             onclick="retakeTest('${testType}')">
+        <div class="result-card p-4 rounded-xl border-2 border-${color}-200 bg-${color}-50 hover:bg-${color}-100 transition duration-300 cursor-pointer" 
+             data-test-type="${testType}">
             <div class="flex justify-between items-center mb-2">
                 <span class="text-sm font-semibold text-${color}-600">${testNames[testType][currentLang]}</span>
-                <span class="text-xs text-gray-500 hover:text-${color}-700" onclick="event.stopPropagation(); deleteResult('${testType}')">🗑️</span>
+                <button class="delete-btn text-xs text-gray-500 hover:text-red-700 transition duration-200 p-1 rounded" 
+                        data-test-type="${testType}">
+                    🗑️
+                </button>
             </div>
             ${content}
         </div>
@@ -2572,6 +2573,26 @@ function analyzeBig5Traits(scores, maxScores) {
     });
     
     return analysis;
+}
+
+// Attach event listeners to result cards
+function attachResultCardEvents() {
+    // Delete button events
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation(); // Prevent card click event
+            const testType = this.getAttribute('data-test-type');
+            deleteResult(testType);
+        });
+    });
+
+    // Card click events (retake test)
+    document.querySelectorAll('.result-card').forEach(card => {
+        card.addEventListener('click', function() {
+            const testType = this.getAttribute('data-test-type');
+            viewResult(testType);
+        });
+    });
 }
 
 function createBig5FriendlyDescription(traitAnalysis, date) {
@@ -2640,30 +2661,456 @@ function createBig5FriendlyDescription(traitAnalysis, date) {
     return descriptionHTML;
 }
 
+function viewResult(testType) {
+    const resultPages = {
+        DISC: 'disc-result.html',
+        MBTI: 'mbti-result.html',
+        BIG5: 'big5-result.html'
+    };
+    
+    if (resultPages[testType]) {
+        window.location.href = resultPages[testType];
+    } else {
+        console.error('Unknown test type:', testType);
+    }
+}
+
+// Retake a test
 function retakeTest(testType) {
     const testPages = {
         DISC: 'disc.html',
         MBTI: 'mbti.html',
         BIG5: 'big5.html'
     };
-    window.location.href = testPages[testType];
+    
+    if (testPages[testType]) {
+        window.location.href = testPages[testType];
+    } else {
+        console.error('Unknown test type:', testType);
+    }
 }
 
 function deleteResult(testType) {
     const t = indexTranslations[currentLang];
-    if (confirm(t.confirmDelete)) {
+    if (confirm(t.confirmDelete || 'Are you sure you want to delete this result?')) {
         localStorage.removeItem(CONFIG.resultKeys[testType]);
+        showSuccessMessage(
+            currentLang === 'en' ? 'Result deleted successfully!' : 'Resultado excluído com sucesso!'
+        );
         loadSavedResults();
+        
+        if (accessibilityManager) {
+            accessibilityManager.announce('Result deleted', 'assertive');
+        }
     }
 }
 
+// Clear all results
 function clearAllResults() {
     const t = indexTranslations[currentLang];
-    if (confirm(t.confirmClearAll)) {
+    if (confirm(t.confirmClearAll || 'Are you sure you want to clear all your test results?')) {
         Object.values(CONFIG.resultKeys).forEach(key => {
             localStorage.removeItem(key);
         });
+        showSuccessMessage(
+            currentLang === 'en' ? 'All results cleared successfully!' : 'Todos os resultados foram limpos com sucesso!'
+        );
         loadSavedResults();
+        
+        if (accessibilityManager) {
+            accessibilityManager.announce('All results cleared', 'assertive');
+        }
+    }
+}
+
+// Load and display stored result on result pages
+function loadStoredResult(testType) {
+    try {
+        const resultKey = CONFIG.resultKeys[testType];
+        const storedResult = localStorage.getItem(resultKey);
+        
+        if (!storedResult) {
+            showNoResultMessage(testType);
+            return;
+        }
+
+        const resultData = JSON.parse(storedResult);
+        displayFullResult(testType, resultData);
+        
+    } catch (error) {
+        console.error('Error loading stored result:', error);
+        showNoResultMessage(testType);
+    }
+}
+
+function showNoResultMessage(testType) {
+    const testNames = {
+        DISC: { en: 'DISC', pt: 'DISC' },
+        MBTI: { en: 'MBTI', pt: 'MBTI' },
+        BIG5: { en: 'Big Five', pt: 'Big Five' }
+    };
+    
+    const containerId = `${testType.toLowerCase()}-result-content`;
+    const container = document.getElementById(containerId);
+    
+    if (container) {
+        container.innerHTML = `
+            <div class="text-center py-12">
+                <div class="text-6xl mb-4">😕</div>
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">${currentLang === 'en' ? 'No Results Found' : 'Nenhum Resultado Encontrado'}</h2>
+                <p class="text-gray-600 mb-6">${currentLang === 'en' 
+                    ? `No saved results found for the ${testNames[testType].en} test.` 
+                    : `Nenhum resultado salvo encontrado para o teste ${testNames[testType].pt}.`}</p>
+                <a href="${testType.toLowerCase()}.html" class="px-6 py-3 bg-indigo-500 text-white font-semibold rounded-lg hover:bg-indigo-600 transition duration-300">
+                    ${currentLang === 'en' ? 'Take the Test' : 'Fazer o Teste'}
+                </a>
+            </div>
+        `;
+    }
+}
+
+function displayFullResult(testType, resultData) {
+    const containerId = `${testType.toLowerCase()}-result-content`;
+    const container = document.getElementById(containerId);
+    
+    if (!container) return;
+
+    let resultHTML = '';
+    
+    switch (testType) {
+        case 'DISC':
+            resultHTML = generateDISCResultHTML(resultData);
+            break;
+        case 'MBTI':
+            resultHTML = generateMBTIResultHTML(resultData);
+            break;
+        case 'BIG5':
+            resultHTML = generateBig5ResultHTML(resultData);
+            break;
+    }
+    
+    container.innerHTML = resultHTML;
+    
+    // Re-attach event listeners for PDF export
+    attachResultPageEventListeners(testType);
+}
+
+function generateDISCResultHTML(resultData) {
+    const profileKey = resultData.profileKey;
+    const profileData = blendedDescriptions[profileKey];
+    const profileName = profileData ? profileData.name[currentLang] : 'Unknown Profile';
+    const description = profileData ? profileData.description[currentLang] : '';
+    
+    const factorScores = resultData.factors || [];
+    const scores = resultData.scores || {};
+    
+    let scoresHTML = '';
+    const factorOrder = ['D', 'I', 'S', 'C'];
+    
+    factorOrder.forEach(factor => {
+        const score = scores[factor] || 0;
+        const desc = discDescriptions[factor];
+        const factorCount = 8; // Default, you might want to store this in resultData
+        const maxScore = factorCount * 4;
+        const percentage = Math.round((score / maxScore) * 100);
+        
+        scoresHTML += `
+            <div class="p-6 rounded-xl border-2 ${desc.style} shadow-lg">
+                <div class="flex items-center mb-4">
+                    <span class="text-3xl mr-3">${desc.icon}</span>
+                    <h3 class="text-xl font-bold">${desc.title[currentLang]}</h3>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2.5 mb-2">
+                    <div class="h-2.5 rounded-full bg-indigo-600" style="width: ${percentage}%"></div>
+                </div>
+                <p class="text-sm font-semibold mt-2">${score} / ${maxScore} ${t('points')} (${percentage}%)</p>
+            </div>
+        `;
+    });
+
+    return `
+        <div class="text-center mb-10">
+            <h1 class="text-4xl font-extrabold text-gray-800 mb-4">${t('disc_title')}</h1>
+            <p class="text-gray-500">${currentLang === 'en' ? 'Your complete DISC personality assessment results' : 'Seus resultados completos da avaliação de personalidade DISC'}</p>
+        </div>
+
+        <!-- Profile Overview -->
+        <div class="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl p-8 text-white text-center mb-10 shadow-2xl">
+            <div class="text-6xl font-bold mb-4">${profileKey}</div>
+            <h2 class="text-3xl font-bold mb-4">${profileName}</h2>
+            <p class="text-indigo-100 text-lg">${description}</p>
+        </div>
+
+        <!-- Score Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+            ${scoresHTML}
+        </div>
+
+        <!-- Detailed Interpretation -->
+        <div class="mb-10">
+            <h3 class="text-2xl font-bold text-gray-800 mb-6 border-b pb-2">${t('interpretation_title')}</h3>
+            <div class="bg-white p-6 rounded-xl border-l-4 ${profileData.style} shadow-md">
+                <h4 class="text-xl font-bold text-gray-800 mb-3 flex items-center">
+                    <span class="text-2xl mr-3">${discDescriptions[profileKey.charAt(0)].icon}</span>
+                    ${profileName} ${currentLang === 'en' ? 'Profile' : 'Perfil'}
+                </h4>
+                <p class="text-gray-600 leading-relaxed">${description}</p>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="text-center space-x-4">
+            <button onclick="restartTestFromResult('DISC')" class="px-8 py-3 bg-indigo-500 text-white font-bold rounded-xl hover:bg-indigo-600 transition duration-300 shadow-lg">
+                ${t('restart')}
+            </button>
+            <button onclick="exportResultToPDF('DISC')" class="px-8 py-3 bg-green-500 text-white font-bold rounded-xl hover:bg-green-600 transition duration-300 shadow-lg">
+                ${t('export_pdf')}
+            </button>
+        </div>
+    `;
+}
+
+function generateMBTIResultHTML(resultData) {
+    const mbtiType = resultData.type;
+    const typeData = mbtiTypeDescriptions[mbtiType];
+    const typeName = typeData ? typeData.name[currentLang] : 'Unknown Type';
+    const description = typeData ? typeData.description[currentLang] : '';
+    const scores = resultData.scores || {};
+    
+    let dimensionsHTML = '';
+    const dimensions = [
+        { dim: 'E', opposite: 'I' },
+        { dim: 'S', opposite: 'N' },
+        { dim: 'T', opposite: 'F' },
+        { dim: 'J', opposite: 'P' }
+    ];
+
+    dimensions.forEach(({ dim, opposite }) => {
+        const dimData = mbtiDimensions[dim];
+        const oppData = mbtiDimensions[opposite];
+        const dimScore = scores[dim] || 0;
+        const oppScore = scores[opposite] || 0;
+        const totalQuestions = 7; // MBTI questions per dimension
+        const dimPercentage = Math.round((dimScore / totalQuestions) * 100);
+        const oppPercentage = Math.round((oppScore / totalQuestions) * 100);
+        const isPreferred = dimScore >= oppScore;
+
+        dimensionsHTML += `
+            <div class="p-6 rounded-xl border-2 ${dimData.style} shadow-lg transition duration-300 ${isPreferred ? 'scale-[1.02] ring-4 ring-offset-2 ring-purple-500' : ''}">
+                <div class="flex items-center mb-4">
+                    <span class="text-3xl mr-3">${dimData.icon}</span>
+                    <h3 class="text-xl font-bold">${dimData.title[currentLang]} vs ${oppData.title[currentLang]}</h3>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2.5 mb-2">
+                    <div class="h-2.5 rounded-full ${isPreferred ? 'bg-purple-600' : 'bg-gray-500'}" style="width: ${dimPercentage}%"></div>
+                </div>
+                <div class="flex justify-between text-sm font-semibold">
+                    <span>${dimData.title[currentLang]} ${dimPercentage}%</span>
+                    <span>${oppData.title[currentLang]} ${oppPercentage}%</span>
+                </div>
+                <p class="text-sm mt-2 text-gray-600">${dimData.description[currentLang]}</p>
+            </div>
+        `;
+    });
+
+    return `
+        <div class="text-center mb-10">
+            <h1 class="text-4xl font-extrabold text-gray-800 mb-4">${t('mbti_title')}</h1>
+            <p class="text-gray-500">${currentLang === 'en' ? 'Your complete MBTI personality type results' : 'Seus resultados completos do tipo de personalidade MBTI'}</p>
+        </div>
+
+        <!-- Type Display -->
+        <div class="bg-gradient-to-r from-purple-500 to-indigo-600 rounded-2xl p-8 text-white text-center mb-10 shadow-2xl">
+            <div class="text-6xl font-bold mb-4">${mbtiType}</div>
+            <h2 class="text-3xl font-bold mb-4">${typeName}</h2>
+            <p class="text-purple-100 text-lg">${currentLang === 'en' ? 'Your Personality Type' : 'Seu Tipo de Personalidade'}</p>
+        </div>
+
+        <!-- Dimension Scores -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+            ${dimensionsHTML}
+        </div>
+
+        <!-- Detailed Interpretation -->
+        <div class="mb-10">
+            <h3 class="text-2xl font-bold text-gray-800 mb-6 border-b pb-2">${t('mbti_interpretation_title')}</h3>
+            <div class="bg-white p-6 rounded-xl border-l-4 border-purple-500 shadow-md">
+                <h4 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
+                    <span class="text-3xl mr-3">${mbtiDimensions[mbtiType[0]].icon}</span>
+                    ${mbtiType} - ${typeName}
+                </h4>
+                <p class="text-gray-600 leading-relaxed text-lg">${description}</p>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="text-center space-x-4">
+            <button onclick="restartTestFromResult('MBTI')" class="px-8 py-3 bg-indigo-500 text-white font-bold rounded-xl hover:bg-indigo-600 transition duration-300 shadow-lg">
+                ${t('restart')}
+            </button>
+            <button onclick="exportResultToPDF('MBTI')" class="px-8 py-3 bg-green-500 text-white font-bold rounded-xl hover:bg-green-600 transition duration-300 shadow-lg">
+                ${t('export_pdf')}
+            </button>
+        </div>
+    `;
+}
+
+function generateBig5ResultHTML(resultData) {
+    const scores = resultData.scores || {};
+    const maxScores = resultData.maxScores || { O: 40, C: 40, E: 40, A: 40, N: 40 };
+    
+    let scoresHTML = '';
+    const factors = ['O', 'C', 'E', 'A', 'N'];
+
+    factors.forEach(factor => {
+        const desc = big5Descriptions[factor];
+        const score = scores[factor] || 0;
+        const maxScore = maxScores[factor] || 40;
+        const percentage = Math.round((score / maxScore) * 100);
+
+        let interpretation = "";
+        if (percentage >= 70) {
+            interpretation = factor === 'N' ? 
+                (currentLang === 'en' ? "High - May experience frequent emotional distress" : "Alto - Pode experimentar angústia emocional frequente") :
+                (currentLang === 'en' ? "High - Strong tendency in this trait" : "Alto - Forte tendência neste traço");
+        } else if (percentage >= 30) {
+            interpretation = currentLang === 'en' ? "Moderate - Balanced level of this trait" : "Moderado - Nível equilibrado deste traço";
+        } else {
+            interpretation = factor === 'N' ?
+                (currentLang === 'en' ? "Low - Emotionally stable and resilient" : "Baixo - Estável emocionalmente e resiliente") :
+                (currentLang === 'en' ? "Low - Limited tendency in this trait" : "Baixo - Tendência limitada neste traço");
+        }
+
+        scoresHTML += `
+            <div class="p-6 rounded-xl border-2 ${desc.style} shadow-lg">
+                <div class="flex items-center mb-4">
+                    <span class="text-3xl mr-3">${desc.icon}</span>
+                    <h3 class="text-xl font-bold">${desc.title[currentLang]}</h3>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2.5 mb-2">
+                    <div class="h-2.5 rounded-full bg-indigo-600" style="width: ${percentage}%"></div>
+                </div>
+                <p class="text-sm font-semibold mt-2">${score}/${maxScore} ${t('points')} (${percentage}%)</p>
+                <p class="text-sm mt-2 text-gray-600">${desc.description[currentLang]}</p>
+                <p class="text-sm mt-2 font-semibold ${percentage >= 70 ? 'text-green-600' : percentage >= 30 ? 'text-yellow-600' : 'text-blue-600'}">
+                    ${interpretation}
+                </p>
+            </div>
+        `;
+    });
+
+    return `
+        <div class="text-center mb-10">
+            <h1 class="text-4xl font-extrabold text-gray-800 mb-4">${t('big5_title')}</h1>
+            <p class="text-gray-500">${currentLang === 'en' ? 'Your complete Big Five personality traits results' : 'Seus resultados completos dos traços de personalidade Big Five'}</p>
+        </div>
+
+        <!-- Score Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+            ${scoresHTML}
+        </div>
+
+        <!-- Trait Interpretations -->
+        <div class="mb-10">
+            <h3 class="text-2xl font-bold text-gray-800 mb-6 border-b pb-2">${t('big5_interpretation_title')}</h3>
+            <div class="bg-white p-6 rounded-xl border-l-4 border-indigo-500 shadow-md">
+                <h4 class="text-xl font-bold text-gray-800 mb-4">${currentLang === 'en' ? 'Understanding Your Big Five Results' : 'Entendendo Seus Resultados Big Five'}</h4>
+                <p class="text-gray-600 mb-4">
+                    ${currentLang === 'en' ? 
+                    "The Big Five personality traits represent five broad domains of human personality. Your scores indicate your relative standing on each dimension compared to the general population. Remember that all traits have both strengths and challenges, and no single score is 'better' than another." :
+                    "Os cinco grandes traços de personalidade representam cinco domínios amplos da personalidade humana. Suas pontuações indicam sua posição relativa em cada dimensão em comparação com a população em geral. Lembre-se de que todos os traços têm pontos fortes e desafios, e nenhuma pontuação única é 'melhor' que outra."}
+                </p>
+                <ul class="list-disc list-inside text-gray-600 space-y-2">
+                    <li><strong>${t('big5_openness')}:</strong> ${currentLang === 'en' ? "Imagination, creativity, curiosity, and appreciation for new experiences" : "Imaginação, criatividade, curiosidade e apreço por novas experiências"}</li>
+                    <li><strong>${t('big5_conscientiousness')}:</strong> ${currentLang === 'en' ? "Organization, diligence, reliability, and goal-directed behavior" : "Organização, diligência, confiabilidade e comportamento orientado a objetivos"}</li>
+                    <li><strong>${t('big5_extraversion')}:</strong> ${currentLang === 'en' ? "Sociability, assertiveness, energy, and positive emotions" : "Sociabilidade, assertividade, energia e emoções positivas"}</li>
+                    <li><strong>${t('big5_agreeableness')}:</strong> ${currentLang === 'en' ? "Compassion, cooperation, trust, and concern for social harmony" : "Compaixão, cooperação, confiança e preocupação com a harmonia social"}</li>
+                    <li><strong>${t('big5_neuroticism')}:</strong> ${currentLang === 'en' ? "Anxiety, moodiness, emotional sensitivity, and vulnerability to stress" : "Ansiedade, instabilidade emocional, sensibilidade emocional e vulnerabilidade ao estresse"}</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="text-center space-x-4">
+            <button onclick="restartTestFromResult('BIG5')" class="px-8 py-3 bg-indigo-500 text-white font-bold rounded-xl hover:bg-indigo-600 transition duration-300 shadow-lg">
+                ${t('restart')}
+            </button>
+            <button onclick="exportResultToPDF('BIG5')" class="px-8 py-3 bg-green-500 text-white font-bold rounded-xl hover:bg-green-600 transition duration-300 shadow-lg">
+                ${t('export_pdf')}
+            </button>
+        </div>
+    `;
+}
+
+function attachResultPageEventListeners(testType) {
+    // PDF export functionality
+    const exportButtons = document.querySelectorAll('button[onclick*="exportResultToPDF"]');
+    exportButtons.forEach(button => {
+        button.addEventListener('click', () => exportResultToPDF(testType));
+    });
+
+    // Restart test functionality
+    const restartButtons = document.querySelectorAll('button[onclick*="restartTestFromResult"]');
+    restartButtons.forEach(button => {
+        button.addEventListener('click', () => restartTestFromResult(testType));
+    });
+}
+
+function exportResultToPDF(testType) {
+    const loading = showLoading(currentLang === 'en' ? 'Generating PDF...' : 'Gerando PDF...');
+    
+    try {
+        const containerId = `${testType.toLowerCase()}-result-content`;
+        const element = document.getElementById(containerId);
+        
+        let filename;
+        if (testType === 'MBTI') {
+            filename = t('mbti_filename');
+        } else if (testType === 'BIG5') {
+            filename = t('big5_filename');
+        } else {
+            filename = t('filename');
+        }
+        
+        const options = {
+            margin: 10,
+            filename: filename + '.pdf',
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { 
+                scale: 3, 
+                logging: false, 
+                useCORS: true,
+                windowWidth: element.scrollWidth,
+                windowHeight: element.scrollHeight
+            }, 
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+
+        html2pdf().set(options).from(element).save().then(() => {
+            hideLoading();
+            showSuccessMessage(currentLang === 'en' ? 'PDF exported successfully!' : 'PDF exportado com sucesso!');
+        }).catch(error => {
+            console.error('PDF generation failed:', error);
+            hideLoading();
+            showError(t('error_pdf'));
+        });
+
+    } catch (error) {
+        console.error('Error exporting to PDF:', error);
+        hideLoading();
+        showError(t('error_pdf'));
+    }
+}
+
+function restartTestFromResult(testType) {
+    const testPages = {
+        DISC: 'disc.html',
+        MBTI: 'mbti.html',
+        BIG5: 'big5.html'
+    };
+    
+    if (testPages[testType]) {
+        window.location.href = testPages[testType];
     }
 }
 
@@ -2796,6 +3243,7 @@ function initIndexPage() {
         const clearBtn = document.getElementById('clear-results-btn');
         if (clearBtn) {
             clearBtn.addEventListener('click', clearAllResults);
+            clearBtn.setAttribute('aria-label', tIndex('clearResults'));
         }
 
         // Setup enhanced keyboard navigation
