@@ -32,7 +32,7 @@ const CONFIG = {
         MBTI: 'personalityTest_mbti_result', 
         BIG5: 'personalityTest_big5_result'
     },
-    apiBaseUrl: 'http://localhost:1433/api' // Update this to your backend URL
+    apiBaseUrl: 'http://localhost:3000/api' // Update this to your backend URL
 };
 
 // --- Virtual Scrolling Implementation ---
