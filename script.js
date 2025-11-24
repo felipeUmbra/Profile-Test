@@ -435,6 +435,7 @@ const isMBTITest = currentPage === 'mbti.html';
 const isDISCTest = currentPage === 'disc.html';
 const isBig5Test = currentPage === 'big5.html';
 const isIndexPage = currentPage === 'index.html' || currentPage === '';
+const isResultPage = currentPage.includes('-result.html');
 
 // Language State and Translations
 let currentLang = 'en';
@@ -3132,7 +3133,7 @@ async function init() {
 
         if (isIndexPage) {
             initIndexPage();
-        } else {
+        } else if (!isResultPage) { // ALTERE ESTA LINHA (adicione o !isResultPage)
             await initTestPage();
         }
         
