@@ -4,21 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MBTI Personality Test</title>
-    <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Load html2pdf.js library for PDF export -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <link rel="stylesheet" href="style.css">
     <script src="script.js"></script>
 </head>
 <body class="min-h-screen flex items-center justify-center p-4">
 
-    <!-- Main Container -->
     <div class="max-w-[80vw] w-full bg-white p-8 md:p-12 rounded-2xl shadow-2xl transition duration-500">
         
-        <!-- Back Button and Language Selector -->
         <div class="flex justify-between items-center mb-4">
-            <a href="index.html" class="px-4 py-2 bg-gray-500 text-white font-bold rounded-lg hover:bg-gray-600 transition duration-300">
+            <a href="index.html" id="back-btn" class="px-4 py-2 bg-gray-500 text-white font-bold rounded-lg hover:bg-gray-600 transition duration-300">
                 ← Back to Home
             </a>
             <div class="flex space-x-2">
@@ -28,6 +24,9 @@
                 <button onclick="setLanguage('pt')" class="lang-button p-1 rounded hover:bg-gray-100">
                     <img src="https://placehold.co/24x16/000000/FFFFFF?text=BR" alt="Português" title="Português (Brasil)" class="rounded shadow">
                 </button>
+                <button onclick="setLanguage('es')" class="lang-button p-1 rounded hover:bg-gray-100">
+                    <img src="https://placehold.co/24x16/000000/FFFFFF?text=ES" alt="Español" title="Español" class="rounded shadow">
+                </button>
             </div>
         </div>
 
@@ -36,10 +35,8 @@
             <p id="header-subtitle" class="text-gray-500 mt-2">Choose the option that best describes you for each statement</p>
         </header>
 
-        <!-- Test Container -->
         <div id="test-container">
 
-            <!-- Progress Bar -->
             <div class="mb-8">
                 <div id="progress-text" class="text-sm font-medium text-indigo-600 mb-1">Question 1 of 28</div>
                 <div class="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden shadow-inner">
@@ -47,14 +44,12 @@
                 </div>
             </div>
 
-            <!-- Question Card -->
             <div class="bg-indigo-50 p-6 md:p-10 rounded-xl border-4 border-indigo-200 shadow-xl">
                 <p id="question-text" class="text-2xl font-semibold text-gray-700 min-h-[4rem] flex items-center">
-                    <span id="loading-text">Escolha a resposta que melhor te representa:</span>
+                    <span id="loading-text">Loading test data...</span>
                 </p>
             </div>
 
-            <!-- Rating Buttons -->
             <div id="rating-buttons" class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
                 <button id="option-a" onclick="handleMBTIRating('A', this)" class="rating-button p-4 text-lg font-semibold rounded-xl bg-gray-100 border border-gray-300 text-gray-600 hover:bg-blue-50 hover:border-blue-400 transition duration-200">
                     <span id="option-a-text">Option A</span>
@@ -64,14 +59,12 @@
                 </button>
             </div>
             
-            <!-- Rating guide for mobile -->
             <div id="rating-guide" class="mt-6 text-center text-sm text-gray-400">
                 Choose the statement that better describes your natural preference
             </div>
 
         </div>
 
-        <!-- Results Container (Hidden by default) -->
         <div id="results-container" class="hidden">
             
             <div class="text-center mb-10">
@@ -79,21 +72,15 @@
                 <p id="result-subtitle" class="text-gray-500">Your MBTI personality type and detailed interpretation</p>
             </div>
 
-            <!-- MBTI Type Display -->
             <div id="mbti-type-display" class="text-center mb-8 p-6 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-2xl text-white shadow-2xl">
-                <!-- MBTI type will be injected here -->
-            </div>
+                </div>
 
-            <!-- Score Cards -->
             <div id="result-scores" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10 justify-center">
-                <!-- Dimension scores will be injected here -->
-            </div>
+                </div>
 
-            <!-- Detailed Interpretation -->
             <h3 id="interpretation-title" class="text-2xl font-bold text-gray-800 mb-4 border-b pb-2">Detailed Type Interpretation</h3>
             <div id="result-interpretation" class="scroll-container space-y-4 pr-2">
-                <!-- Interpretation details will be injected here -->
-            </div>
+                </div>
             
             <div class="mt-8 text-center space-x-4">
                 <button id="restart-btn" onclick="restartTest()" class="px-8 py-3 bg-indigo-500 text-white font-bold rounded-xl hover:bg-indigo-600 transition duration-300 shadow-lg shadow-indigo-500/50">
