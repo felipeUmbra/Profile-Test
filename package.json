@@ -1,0 +1,17 @@
+{
+  "name": "question-migration",
+  "version": "1.0.0",
+  "description": "Migrate questions to SQL Server",
+  "main": "migrate-questions.js",
+  "scripts": {
+    "migrate": "node migrate-questions.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "mssql": "^12.0.0"
+  },
+  "devDependencies": {
+    "tailwindcss": "^4.1.16"
+  }
+}

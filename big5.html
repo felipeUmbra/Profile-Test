@@ -18,15 +18,18 @@
         
         <!-- Back Button and Language Selector -->
         <div class="flex justify-between items-center mb-4">
-            <a href="index.html" class="px-4 py-2 bg-gray-500 text-white font-bold rounded-lg hover:bg-gray-600 transition duration-300">
+            <a href="index.html" id="back-btn" class="px-4 py-2 bg-gray-500 text-white font-bold rounded-lg hover:bg-gray-600 transition duration-300">
                 ← Back to Home
             </a>
             <div class="flex space-x-2">
-                <button onclick="setLanguage('en')" class="lang-button p-1 rounded hover:bg-gray-100" aria-label="English">
+                <button onclick="setLanguage('en')" class="lang-button p-1 rounded hover:bg-gray-100">
                     <img src="https://placehold.co/24x16/000000/FFFFFF?text=EN" alt="English" title="English" class="rounded shadow">
                 </button>
-                <button onclick="setLanguage('pt')" class="lang-button p-1 rounded hover:bg-gray-100" aria-label="Português">
+                <button onclick="setLanguage('pt')" class="lang-button p-1 rounded hover:bg-gray-100">
                     <img src="https://placehold.co/24x16/000000/FFFFFF?text=BR" alt="Português" title="Português (Brasil)" class="rounded shadow">
+                </button>
+                <button onclick="setLanguage('es')" class="lang-button p-1 rounded hover:bg-gray-100">
+                    <img src="https://placehold.co/24x16/000000/FFFFFF?text=ES" alt="Español" title="Español" class="rounded shadow">
                 </button>
             </div>
         </div>

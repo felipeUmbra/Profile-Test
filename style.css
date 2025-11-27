@@ -68,6 +68,14 @@ body {
 .link-button:hover {
     background-color: #4338ca;
 }
+.success-message {
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
 
 /* Mobile optimizations */
 @media (max-width: 768px) {
@@ -87,6 +95,11 @@ body {
     .p-8 {
         padding: 1.5rem !important;
     }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rating-button {
+    transform: none !important;
+  }
 }
 
 /* Print styles */

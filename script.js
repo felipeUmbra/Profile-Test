@@ -6,13 +6,15 @@ const CONFIG = {
         maxRating: 4,
         factors: ['D', 'I', 'S', 'C'],
         pureThreshold: 4,
-        progressKey: 'personalityTest_disc'
+        progressKey: 'personalityTest_disc',
+        testId: 1
     },
     MBTI: {
         totalQuestions: 28,
         dimensions: ['EI', 'SN', 'TF', 'JP'],
         questionsPerDimension: 7,
-        progressKey: 'personalityTest_mbti'
+        progressKey: 'personalityTest_mbti',
+        testId: 2
     },
     BIG5: {
         totalQuestions: 40,
@@ -21,14 +23,16 @@ const CONFIG = {
         factors: ['O', 'C', 'E', 'A', 'N'],
         questionsPerFactor: 8,
         maxScorePerFactor: 40,
-        progressKey: 'personalityTest_big5'
+        progressKey: 'personalityTest_big5',
+        testId: 3
     },
     localStorageTimeout: 3600000,
     resultKeys: {
         DISC: 'personalityTest_disc_result',
         MBTI: 'personalityTest_mbti_result', 
         BIG5: 'personalityTest_big5_result'
-    }
+    },
+    apiBaseUrl: 'http://localhost:3000/api' // Update this to your backend URL
 };
 
 // --- Virtual Scrolling Implementation ---
@@ -428,9 +432,10 @@ class TestRunner {
 // Test Type Detection
 const currentPage = window.location.pathname.split('/').pop();
 const isMBTITest = currentPage === 'mbti.html';
-const isDISCTest = currentPage === 'disc.html' || currentPage === 'DISC.html';
+const isDISCTest = currentPage === 'disc.html';
 const isBig5Test = currentPage === 'big5.html';
 const isIndexPage = currentPage === 'index.html' || currentPage === '';
+const isResultPage = currentPage.includes('-result.html');
 
 // Language State and Translations
 let currentLang = 'en';
@@ -452,6 +457,7 @@ const translations = {
         restart: "Restart Test",
         export_pdf: "Export to PDF 📄",
         filename: "DISC_Personality_Results_EN",
+        back_to_home: "← Back to Home",
         
         mbti_title: "MBTI Personality Test",
         mbti_subtitle: "Choose the option that best describes you for each statement",
@@ -479,7 +485,8 @@ const translations = {
         error_pdf: "Failed to generate PDF. Please try again.",
         loading: "Loading...",
         resuming_test: "Resuming previous test...",
-        test_data_invalid: "Test data appears to be invalid. Starting fresh test."
+        test_data_invalid: "Test data appears to be invalid. Starting fresh test.",
+        error_fetch_questions: "Failed to load questions from server. Please check your connection."
     },
     'pt': {
         disc_title: "Teste de Personalidade DISC",
@@ -497,6 +504,7 @@ const translations = {
         restart: "Reiniciar Teste",
         export_pdf: "Exportar para PDF 📄",
         filename: "DISC_Personality_Results_PT",
+        back_to_home: "← Voltar para a Página Inicial",
         
         mbti_title: "Teste de Personalidade MBTI",
         mbti_subtitle: "Escolha a opção que melhor descreve você para cada afirmação",
@@ -524,7 +532,54 @@ const translations = {
         error_pdf: "Falha ao gerar PDF. Por favor, tente novamente.",
         loading: "Carregando...",
         resuming_test: "Continuando teste anterior...",
-        test_data_invalid: "Os dados do teste parecem inválidos. Iniciando novo teste."
+        test_data_invalid: "Os dados do teste parecem inválidos. Iniciando novo teste.",
+        error_fetch_questions: "Falha ao carregar perguntas do servidor. Por favor, verifique sua conexão."
+    },
+    'es': {
+        disc_title: "Test de Personalidad DISC",
+        disc_subtitle: "Evalúa cuánto te describe cada afirmación (1 = Mínimo, 4 = Máximo)",
+        progress_q_of_total: "Pregunta {q} de {total}",
+        rating_1: "1 - No soy así",
+        rating_2: "2 - Rara vez soy así",
+        rating_3: "3 - A veces soy así",
+        rating_4: "4 - Soy así",
+        rating_guide: "Toca o haz clic en un número para calificar (1=Mínimo, 4=Máximo)",
+        main_result_title: "Tu Perfil de Personalidad:",
+        result_subtitle: "A continuación, tus puntuaciones para los cuatro factores DISC, seguidas de una interpretación detallada.",
+        interpretation_title: "Interpretación Detallada del Perfil",
+        points: "Puntos",
+        restart: "Reiniciar Test",
+        export_pdf: "Exportar a PDF 📄",
+        filename: "Resultados_Personalidad_DISC_ES",
+        back_to_home: "← Volver al Inicio",
+
+        mbti_title: "Test de Personalidad MBTI",
+        mbti_subtitle: "Elige la opción que mejor te describa para cada afirmación",
+        mbti_rating_guide: "Elige la afirmación que mejor describa tu preferencia natural",
+        mbti_main_result_title: "Tu Tipo de Personalidad MBTI:",
+        mbti_result_subtitle: "Tu tipo de personalidad MBTI e interpretación detallada",
+        mbti_interpretation_title: "Interpretación Detallada del Tipo",
+        mbti_filename: "Resultados_Personalidad_MBTI_ES",
+
+        big5_title: "Test de Personalidad Big Five",
+        big5_subtitle: "Evalúa cuánto te describe cada afirmación (1 = Totalmente en desacuerdo, 5 = Totalmente de acuerdo)",
+        big5_main_result_title: "Tus Rasgos de Personalidad Big Five:",
+        big5_result_subtitle: "A continuación, tus puntuaciones para los cinco grandes factores",
+        big5_interpretation_title: "Interpretación de los Rasgos",
+        big5_filename: "Resultados_Personalidad_Big5_ES",
+
+        big5_openness: "Apertura",
+        big5_conscientiousness: "Responsabilidad",
+        big5_extraversion: "Extraversión",
+        big5_agreeableness: "Amabilidad",
+        big5_neuroticism: "Neuroticismo",
+
+        error_general: "Ocurrió un error. Por favor, inténtalo de nuevo.",
+        error_pdf: "Error al generar el PDF. Por favor, inténtalo de nuevo.",
+        loading: "Cargando...",
+        resuming_test: "Reanudando test anterior...",
+        test_data_invalid: "Datos del test inválidos. Iniciando nuevo test.",
+        error_fetch_questions: "Error al cargar preguntas. Verifica tu conexión."
     }
 };
 
@@ -541,7 +596,7 @@ const indexTranslations = {
         big5Subtitle: "Explore the five major personality dimensions",
         resultsTitle: "Your Test Results",
         clearResults: "Clear All Results",
-        footerText1: "All tests available in English and Portuguese",
+        footerText1: "All tests available in English, Portuguese and Spanish",
         footerText2: "Your results are saved automatically and can be viewed here anytime",
         confirmDelete: "Are you sure you want to delete this result?",
         confirmClearAll: "Are you sure you want to clear all your test results?",
@@ -563,7 +618,7 @@ const indexTranslations = {
         big5Subtitle: "Explore as cinco principais dimensões da personalidade",
         resultsTitle: "Seus Resultados de Teste",
         clearResults: "Limpar Todos os Resultados",
-        footerText1: "Todos os testes disponíveis em Inglês e Português",
+        footerText1: "Todos os testes disponíveis em Inglês, Português e Espanhol",
         footerText2: "Seus resultados são salvos automaticamente e podem ser vistos aqui a qualquer momento",
         confirmDelete: "Tem certeza que deseja excluir este resultado?",
         confirmClearAll: "Tem certeza que deseja limpar todos os seus resultados de teste?",
@@ -573,84 +628,121 @@ const indexTranslations = {
         developingCharacteristics: "🌱 Características em Desenvolvimento:",
         personalityProfile: "Seu Perfil de Personalidade",
         basedOnAssessment: "Baseado na sua avaliação Big Five"
+    },
+    'es': {
+        mainTitle: "Centro de Tests de Personalidad",
+        subtitle: "Elige un test de personalidad para descubrir más sobre ti:",
+        discTest: "Test de Personalidad DISC",
+        discSubtitle: "Comprende tu estilo de comunicación y trabajo",
+        mbtiTest: "Test de Personalidad MBTI",
+        mbtiSubtitle: "Descubre tu tipo psicológico",
+        big5Test: "Test de Personalidad Big Five",
+        big5Subtitle: "Explora las cinco grandes dimensiones de la personalidad",
+        resultsTitle: "Tus Resultados",
+        clearResults: "Borrar Todos los Resultados",
+        footerText1: "Todos los tests disponibles en Inglés, Portugués y Español",
+        footerText2: "Tus resultados se guardan automáticamente y puedes verlos aquí en cualquier momento",
+        confirmDelete: "¿Estás seguro de que deseas eliminar este resultado?",
+        confirmClearAll: "¿Estás seguro de que deseas borrar todos tus resultados?",
+        strongCharacteristics: "🌟 Características Fuertes:",
+        balancedCharacteristics: "⚖️ Características Equilibradas:",
+        developingCharacteristics: "🌱 Características en Desarrollo:",
+        personalityProfile: "Tu Perfil de Personalidad",
+        basedOnAssessment: "Basado en tu evaluación Big Five"
     }
+    
 };
 
 // Big Five trait descriptions for index page
 const big5TraitDescriptions = {
     'O': {
-        name: { en: 'Openness', pt: 'Abertura' },
+        name: { en: 'Openness', pt: 'Abertura', es: 'Apertura' },
         high: { 
             en: 'Imaginative, creative, curious, open to new experiences', 
-            pt: 'Imaginativo, criativo, curioso, aberto a novas experiências' 
+            pt: 'Imaginativo, criativo, curioso, aberto a novas experiências',
+            es: 'Imaginativo, creativo, curioso, abierto a nuevas experiencias'
         },
         moderate: { 
             en: 'Balanced between practicality and creativity', 
-            pt: 'Equilibrado entre praticidade e criatividade' 
+            pt: 'Equilibrado entre praticidade e criatividade',
+            es: 'Equilibrado entre practicidad y creatividad'
         },
         low: { 
             en: 'Practical, conventional, prefers routine', 
-            pt: 'Prático, convencional, prefere rotina' 
+            pt: 'Prático, convencional, prefere rotina',
+            es: 'Práctico, convencional, prefiere la rutina'
         }
     },
     'C': {
-        name: { en: 'Conscientiousness', pt: 'Conscienciosidade' },
+        name: { en: 'Conscientiousness', pt: 'Conscienciosidade', es: 'Responsabilidad' },
         high: { 
             en: 'Organized, disciplined, reliable, goal-oriented', 
-            pt: 'Organizado, disciplinado, confiável, orientado a objetivos' 
+            pt: 'Organizado, disciplinado, confiável, orientado a objetivos',
+            es: 'Organizado, disciplinado, confiable, orientado a objetivos'
         },
         moderate: { 
             en: 'Balanced between spontaneity and planning', 
-            pt: 'Equilibrado entre espontaneidade e planejamento' 
+            pt: 'Equilibrado entre espontaneidade e planejamento',
+            es: 'Equilibrado entre espontaneidad y planificación'
         },
         low: { 
             en: 'Flexible, spontaneous, adaptable to change', 
-            pt: 'Flexível, espontâneo, adaptável a mudanças' 
+            pt: 'Flexível, espontâneo, adaptável a mudanças',
+            es: 'Flexible, espontáneo, adaptable a los cambios'
         }
     },
     'E': {
-        name: { en: 'Extraversion', pt: 'Extroversão' },
+        name: { en: 'Extraversion', pt: 'Extroversão', es: 'Extraversión' },
         high: { 
             en: 'Sociable, energetic, enthusiastic, talkative', 
-            pt: 'Sociável, energético, entusiástico, comunicativo' 
+            pt: 'Sociável, energético, entusiástico, comunicativo',
+            es: 'Sociable, enérgico, entusiasta, hablador'
         },
         moderate: { 
             en: 'Balanced between social and solitary activities', 
-            pt: 'Equilibrado entre atividades sociais e solitárias' 
+            pt: 'Equilibrado entre atividades sociais e solitárias',
+            es: 'Equilibrado entre actividades sociales y solitarias'
         },
         low: { 
             en: 'Reserved, reflective, enjoys solitude', 
-            pt: 'Reservado, reflexivo, aprecia solidão' 
+            pt: 'Reservado, reflexivo, aprecia solidão',
+            es: 'Reservado, reflexivo, disfruta de la soledad'
         }
     },
     'A': {
-        name: { en: 'Agreeableness', pt: 'Amabilidade' },
+        name: { en: 'Agreeableness', pt: 'Amabilidade', es: 'Amabilidad' },
         high: { 
             en: 'Compassionate, cooperative, trusting, empathetic', 
-            pt: 'Compassivo, cooperativo, confiante, empático' 
+            pt: 'Compassivo, cooperativo, confiante, empático',
+            es: 'Compasivo, cooperativo, confiado, empático'
         },
         moderate: { 
             en: 'Balanced between cooperation and assertiveness', 
-            pt: 'Equilibrado entre cooperação e assertividade' 
+            pt: 'Equilibrado entre cooperação e assertividade',
+            es: 'Equilibrado entre cooperación y asertividad'
         },
         low: { 
             en: 'Analytical, straightforward, values independence', 
-            pt: 'Analítico, direto, valoriza independência' 
+            pt: 'Analítico, direto, valoriza independência',
+            es: 'Analítico, directo, valora la independencia'
         }
     },
     'N': {
-        name: { en: 'Neuroticism', pt: 'Neuroticismo' },
+        name: { en: 'Neuroticism', pt: 'Neuroticismo', es: 'Neuroticismo' },
         high: { 
             en: 'Sensitive to stress, experiences strong emotions', 
-            pt: 'Sensível ao estresse, experimenta emoções fortes' 
+            pt: 'Sensível ao estresse, experimenta emoções fortes',
+            es: 'Sensible al estrés, experimenta emociones fuertes'
         },
         moderate: { 
             en: 'Generally emotionally stable with occasional sensitivity', 
-            pt: 'Geralmente estável emocionalmente com sensibilidade ocasional' 
+            pt: 'Geralmente estável emocionalmente com sensibilidade ocasional',
+            es: 'Generalmente estable con sensibilidad ocasional'
         },
         low: { 
             en: 'Emotionally stable, resilient, calm under pressure', 
-            pt: 'Estável emocionalmente, resiliente, calmo sob pressão' 
+            pt: 'Estável emocionalmente, resiliente, calmo sob pressão',
+            es: 'Emocionalmente estable, resiliente, tranquilo bajo presión'
         }
     }
 };
@@ -683,6 +775,218 @@ function tIndex(key, replacements = {}) {
     }
 }
 
+// Cache for fallback questions
+let fallbackQuestionsCache = null;
+
+// Load fallback questions from JSON file
+async function loadFallbackQuestions() {
+    if (fallbackQuestionsCache) {
+        return fallbackQuestionsCache;
+    }
+    
+    try {
+        const response = await fetch('./fallback-questions.json');
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        fallbackQuestionsCache = await response.json();
+        console.log('Fallback questions loaded from JSON file');
+        return fallbackQuestionsCache;
+    } catch (error) {
+        console.error('Failed to load fallback questions from JSON file:', error);
+        // Return empty structure as last resort
+        return { disc: [], mbti: [], big5: [] };
+    }
+}
+
+// Get fallback questions for specific test type
+async function getFallbackQuestions(testType, lang) {
+    try {
+        const fallbackData = await loadFallbackQuestions();
+        console.log(`Using fallback questions for ${testType} in ${lang}`);
+        return fallbackData[testType] || [];
+    } catch (error) {
+        console.error('Error getting fallback questions:', error);
+        return [];
+    }
+}
+// --- Database Integration Functions ---
+
+// Fetch questions from the database
+// Fetch questions from the database with fallback
+async function fetchQuestions(testType, lang = 'en') {
+    try {
+        console.log(`Attempting to fetch ${testType} questions from backend...`);
+        
+        const response = await fetch(`${CONFIG.apiBaseUrl}/questions/${testType}?lang=${lang}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            // Add timeout for better error handling
+            signal: AbortSignal.timeout(5000)
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const questions = await response.json();
+        console.log(`Successfully fetched ${questions.length} ${testType} questions from backend`);
+        
+        // Transform the questions to match the expected frontend format
+        return transformQuestions(questions, testType, lang);
+        
+    } catch (error) {
+        console.warn(`Failed to fetch questions from API: ${error.message}. Using fallback questions.`);
+        return getFallbackQuestions(testType, lang);
+    }
+}
+
+// Transform backend questions to frontend format
+function transformQuestions(backendQuestions, testType, lang) {
+    try {
+        if (testType === 'disc') {
+            return backendQuestions.map(q => ({
+                id: q.id,
+                text: { 
+                    en: q.question_text_en || q.question_text, 
+                    pt: q.question_text_pt || q.question_text 
+                },
+                factor: q.factor
+            }));
+        } else if (testType === 'mbti') {
+            return backendQuestions.map(q => {
+                let optionA, optionB;
+                
+                // Handle both stringified JSON and direct object formats
+                if (typeof q.question_text === 'string') {
+                    try {
+                        const parsed = JSON.parse(q.question_text);
+                        optionA = parsed.optionA || { en: '', pt: '' };
+                        optionB = parsed.optionB || { en: '', pt: '' };
+                    } catch (e) {
+                        // If parsing fails, use the text directly
+                        optionA = { en: q.question_text, pt: q.question_text };
+                        optionB = { en: q.question_text, pt: q.question_text };
+                    }
+                } else {
+                    optionA = q.question_text?.optionA || { en: '', pt: '' };
+                    optionB = q.question_text?.optionB || { en: '', pt: '' };
+                }
+                
+                return {
+                    id: q.id,
+                    optionA: {
+                        en: optionA.en || q.question_text_en,
+                        pt: optionA.pt || q.question_text_pt
+                    },
+                    optionB: {
+                        en: optionB.en || q.question_text_en,
+                        pt: optionB.pt || q.question_text_pt
+                    },
+                    dimension: q.factor,
+                    aValue: q.factor ? q.factor[0] : 'E', // Default fallbacks
+                    bValue: q.factor ? q.factor[1] : 'I'
+                };
+            });
+        } else if (testType === 'big5') {
+            return backendQuestions.map(q => ({
+                id: q.id,
+                text: { 
+                    en: q.question_text_en || q.question_text, 
+                    pt: q.question_text_pt || q.question_text 
+                },
+                factor: q.factor,
+                reverse: q.reverse_scoring || false
+            }));
+        }
+        
+        return backendQuestions;
+    } catch (error) {
+        console.error('Error transforming questions:', error);
+        throw error;
+    }
+}
+
+// Save progress to database
+async function saveProgressToDatabase() {
+    try {
+        const sessionId = getOrCreateSessionId();
+        const testId = getCurrentTestId();
+        
+        const answers = userRatings.map((rating, index) => ({
+            questionId: currentTestQuestions[index]?.id || index + 1,
+            rating: rating.rating || rating.finalScore || 1,
+            factor: rating.factor || rating.dimension
+        }));
+
+        const response = await fetch(`${CONFIG.apiBaseUrl}/save-progress`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                sessionId: sessionId,
+                testId: testId,
+                currentQuestion: currentQuestionIndex,
+                answers: answers
+            })
+        });
+        
+        if (!response.ok) throw new Error('Failed to save progress to database');
+        
+        console.log('Progress saved to database');
+    } catch (error) {
+        console.warn('Could not save progress to database:', error);
+        // Continue with local storage as fallback
+        saveProgressToLocalStorage();
+    }
+}
+
+// Save result to database
+async function saveResultToDatabase(resultData) {
+    try {
+        const sessionId = getOrCreateSessionId();
+        const testId = getCurrentTestId();
+        
+        const response = await fetch(`${CONFIG.apiBaseUrl}/save-result`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                sessionId: sessionId,
+                testId: testId,
+                scores: resultData.scores,
+                profileKey: resultData.profileKey || resultData.type
+            })
+        });
+        
+        if (!response.ok) throw new Error('Failed to save result to database');
+        
+        console.log('Result saved to database');
+        return true;
+    } catch (error) {
+        console.warn('Could not save result to database:', error);
+        return false;
+    }
+}
+
+// Get or create session ID
+function getOrCreateSessionId() {
+    let sessionId = localStorage.getItem('personalityTest_sessionId');
+    if (!sessionId) {
+        sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        localStorage.setItem('personalityTest_sessionId', sessionId);
+    }
+    return sessionId;
+}
+
+// Get current test ID
+function getCurrentTestId() {
+    if (isDISCTest) return CONFIG.DISC.testId;
+    if (isMBTITest) return CONFIG.MBTI.testId;
+    if (isBig5Test) return CONFIG.BIG5.testId;
+    return 0;
+}
+
 // Performance Optimization: Debounce Function
 function debounce(func, wait) {
     let timeout;
@@ -696,14 +1000,14 @@ function debounce(func, wait) {
     };
 }
 
-// Local Storage Management
+// Local Storage Management (Fallback)
 function getStorageKey() {
     if (isMBTITest) return CONFIG.MBTI.progressKey;
     if (isBig5Test) return CONFIG.BIG5.progressKey;
     return CONFIG.DISC.progressKey;
 }
 
-function saveProgress() {
+function saveProgressToLocalStorage() {
     try {
         const progress = {
             currentQuestionIndex,
@@ -720,7 +1024,7 @@ function saveProgress() {
     }
 }
 
-function loadProgress() {
+function loadProgressFromLocalStorage() {
     try {
         const saved = localStorage.getItem(getStorageKey());
         if (saved) {
@@ -739,7 +1043,7 @@ function loadProgress() {
     return null;
 }
 
-function clearProgress() {
+function clearProgressFromLocalStorage() {
     try {
         localStorage.removeItem(getStorageKey());
     } catch (error) {
@@ -747,8 +1051,43 @@ function clearProgress() {
     }
 }
 
+// Combined progress management
+function saveProgress() {
+    // Try database first, then localStorage as fallback
+    saveProgressToDatabase().catch(() => {
+        saveProgressToLocalStorage();
+    });
+}
+
+function loadProgress() {
+    // For now, we'll use localStorage for progress resumption
+    // In a future version, we could try to load from database first
+    return loadProgressFromLocalStorage();
+}
+
+function clearProgress() {
+    clearProgressFromLocalStorage();
+    // Note: We don't clear database progress as it's meant for analytics
+}
+
 // Test Result Storage Management
 function saveTestResult(resultData) {
+    // Save to database
+    saveResultToDatabase(resultData).then(success => {
+        if (success) {
+            // Also save to localStorage for display on index page
+            saveTestResultToLocalStorage(resultData);
+        } else {
+            // Fallback to localStorage only
+            saveTestResultToLocalStorage(resultData);
+        }
+    }).catch(() => {
+        // Fallback to localStorage only
+        saveTestResultToLocalStorage(resultData);
+    });
+}
+
+function saveTestResultToLocalStorage(resultData) {
     try {
         let storageKey;
         let resultObject = {
@@ -815,18 +1154,20 @@ function showSuccessMessage(message, duration = 3000) {
 // Data Validation
 function validateTestData() {
     try {
-        if (isMBTITest && mbtiQuestions.length !== CONFIG.MBTI.totalQuestions) {
-            console.warn(`MBTI questions count mismatch: expected ${CONFIG.MBTI.totalQuestions}, got ${mbtiQuestions.length}`);
+        if (!currentTestQuestions || currentTestQuestions.length === 0) {
+            console.warn('No questions loaded from database');
             return false;
         }
-        if (isDISCTest && discQuestions.length !== CONFIG.DISC.totalQuestions) {
-            console.warn(`DISC questions count mismatch: expected ${CONFIG.DISC.totalQuestions}, got ${discQuestions.length}`);
+        
+        const expectedCount = isMBTITest ? CONFIG.MBTI.totalQuestions : 
+                            isBig5Test ? CONFIG.BIG5.totalQuestions : 
+                            CONFIG.DISC.totalQuestions;
+        
+        if (currentTestQuestions.length !== expectedCount) {
+            console.warn(`Questions count mismatch: expected ${expectedCount}, got ${currentTestQuestions.length}`);
             return false;
         }
-        if (isBig5Test && big5Questions.length !== CONFIG.BIG5.totalQuestions) {
-            console.warn(`Big5 questions count mismatch: expected ${CONFIG.BIG5.totalQuestions}, got ${big5Questions.length}`);
-            return false;
-        }
+        
         return true;
     } catch (error) {
         console.error('Error validating test data:', error);
@@ -1084,450 +1425,166 @@ function cleanupVirtualScrolling() {
     virtualScrollers.clear();
 }
 
-// --- EMBEDDED TEST DATA (No external loading) ---
-
-// DISC Test Data (30 Questions)
-const discQuestions = [
-    // D - Dominance (8 Questions total)
-    { text: { en: "I prioritize getting measurable results quickly.", pt: "Eu priorizo a obtenção de resultados mensuráveis rapidamente." }, factor: "D" },
-    { text: { en: "I am direct and assertive in my communication style.", pt: "Eu sou direto e assertivo no meu estilo de comunicação." }, factor: "D" },
-    { text: { en: "I enjoy taking charge and leading group activities.", pt: "Eu gosto de assumir o comando e liderar atividades em grupo." }, factor: "D" },
-    { text: { en: "I thrive on challenge and competitive environments.", pt: "Eu prospero em ambientes desafiadores e competitivos." }, factor: "D" },
-    { text: { en: "I feel comfortable making decisions without extensive consultation.", pt: "Sinto-me à vontade para tomar decisões sem consulta extensa." }, factor: "D" },
-    { text: { en: "I am focused on overcoming obstacles and achieving immediate goals.", pt: "Estou focado em superar obstáculos e alcançar objetivos imediatos." }, factor: "D" },
-    { text: { en: "I appreciate an environment where speed is valued over thoroughness.", pt: "Eu aprecio um ambiente onde a velocidade é mais valorizada do que a exaustividade." }, factor: "D" },
-    { text: { en: "I confront issues and people directly when conflict arises.", pt: "Eu confronto problemas e pessoas diretamente quando surge um conflito." }, factor: "D" },
-
-    // I - Influence (7 Questions total)
-    { text: { en: "I am outgoing and enjoy meeting new people frequently.", pt: "Eu sou extrovertido e gosto de conhecer novas pessoas frequentemente." }, factor: "I" },
-    { text: { en: "I use enthusiasm and positive language to motivate others.", pt: "Eu uso entusiasmo e linguagem positiva para motivar os outros." }, factor: "I" },
-    { text: { en: "I am naturally optimistic and look for the best in situations.", pt: "Eu sou naturalmente otimista e procuro o melhor nas situações." }, factor: "I" },
-    { text: { en: "I like to talk and express my ideas freely and openly.", pt: "Eu gosto de conversar e expressar minhas ideias livre e abertamente." }, factor: "I" },
-    { text: { en: "I enjoy being the center of attention in a social setting.", pt: "Eu gosto de ser o centro das atenções em um ambiente social." }, factor: "I" },
-    { text: { en: "I am skilled at persuading others to adopt my ideas.", pt: "Sou hábil em persuadir os outros a adotarem minhas ideias." }, factor: "I" },
-    { text: { en: "I often rely on intuition and feelings rather than facts.", pt: "Muitas vezes, confio na intuição e nos sentimentos em vez de em fatos." }, factor: "I" },
-
-    // S - Steadiness (8 Questions total)
-    { text: { en: "I am patient and prefer a predictable, stable work environment.", pt: "Eu sou paciente e prefiro um ambiente de trabalho previsível e estável." }, factor: "S" },
-    { text: { en: "I am supportive and value harmony in my team and relationships.", pt: "Eu sou prestativo e valorizo a harmonia na minha equipe e relacionamentos." }, factor: "S" },
-    { text: { en: "I am a reliable team player who follows through on commitments.", pt: "Eu sou um membro de equipe confiável que cumpre os compromissos." }, factor: "S" },
-    { text: { en: "I prefer to work at a steady, deliberate, and consistent pace.", pt: "Eu prefiro trabalhar em um ritmo constante, deliberado e consistente." }, factor: "S" },
-    { text: { en: "I value maintaining a secure and familiar routine.", pt: "Eu valorizo a manutenção de uma rotina segura e familiar." }, factor: "S" },
-    { text: { en: "I am empathetic and a good listener for others' concerns.", pt: "Eu sou empático e um bom ouvinte para as preocupações dos outros." }, factor: "S" },
-    { text: { en: "I dislike sudden, unexpected changes to plans or schedules.", pt: "Eu não gosto de mudanças repentinas e inesperadas nos planos ou horários." }, factor: "S" },
-    { text: { en: "I tend to be quite cautious when approaching new tasks or risks.", pt: "Eu tento a ser bastante cauteloso ao abordar novas tarefas ou riscos." }, factor: "S" },
-
-    // C - Conscientiousness (7 Questions total)
-    { text: { en: "I am highly analytical and focused on details and accuracy.", pt: "Eu sou altamente analítico e focado em detalhes e precisão." }, factor: "C" },
-    { text: { en: "I enjoy following established rules, procedures, and high standards.", pt: "Eu gosto de seguir regras estabelecidas, procedimentos e altos padrões." }, factor: "C" },
-    { text: { en: "I approach problems logically, systematically, and critically.", pt: "Eu abordo problemas de forma lógica, sistemática e crítica." }, factor: "C" },
-    { text: { en: "I take time to carefully review and critique all my work.", pt: "Eu dedico tempo para revisar e criticar cuidadosamente todo o meu trabalho." }, factor: "C" },
-    { text: { en: "I am highly organized and meticulous about my workspace.", pt: "Eu sou altamente organizado e meticuloso com meu espaço de trabalho." }, factor: "C" },
-    { text: { en: "I strive for perfection in everything I do, even minor tasks.", pt: "Eu me esforço para a perfeição em tudo o que faço, mesmo em tarefas menores." }, factor: "C" },
-    { text: { en: "I base my decisions primarily on verifiable facts and data.", pt: "Eu baseio minhas decisões principalmente em fatos e dados verificáveis." }, factor: "C" },
-];
-
-// MBTI Test Data (28 Questions - 7 per dimension)
-const mbtiQuestions = [
-    // E/I Questions (7 total)
-    { 
-        optionA: { en: "You enjoy being the center of attention at social gatherings", pt: "Você gosta de ser o centro das atenções em encontros sociais" }, 
-        optionB: { en: "You prefer observing from the sidelines in social situations", pt: "Você prefere observar de fora em situações sociais" },
-        dimension: "EI",
-        aValue: "E",
-        bValue: "I"
-    },
-    { 
-        optionA: { en: "You feel energized after spending time with large groups", pt: "Você se sente energizado depois de passar tempo com grandes grupos" }, 
-        optionB: { en: "You need alone time to recharge after social interactions", pt: "Você precisa de tempo sozinho para recarregar após interações sociais" },
-        dimension: "EI",
-        aValue: "E", 
-        bValue: "I"
-    },
-    { 
-        optionA: { en: "You think out loud and process ideas through conversation", pt: "Você pensa em voz alta e processa ideias através da conversa" }, 
-        optionB: { en: "You prefer to think things through quietly before speaking", pt: "Você prefere pensar nas coisas quieto antes de falar" },
-        dimension: "EI",
-        aValue: "E",
-        bValue: "I"
-    },
-    { 
-        optionA: { en: "You enjoy meeting new people and making new friends", pt: "Você gosta de conhecer novas pessoas e fazer novos amigos" }, 
-        optionB: { en: "You prefer spending time with a few close friends", pt: "Você prefere passar o tempo com alguns amigos próximos" },
-        dimension: "EI",
-        aValue: "E",
-        bValue: "I"
-    },
-    { 
-        optionA: { en: "You are often described as outgoing and sociable", pt: "Você é frequentemente descrito como extrovertido e sociável" }, 
-        optionB: { en: "You are often described as reserved and private", pt: "Você é frequentemente descrito como reservado e discreto" },
-        dimension: "EI",
-        aValue: "E",
-        bValue: "I"
-    },
-    { 
-        optionA: { en: "You enjoy group activities and collaborative projects", pt: "Você gosta de atividades em grupo e projetos colaborativos" }, 
-        optionB: { en: "You prefer working alone or in very small groups", pt: "Você prefere trabalhar sozinho ou em grupos muito pequenos" },
-        dimension: "EI",
-        aValue: "E",
-        bValue: "I"
-    },
-    { 
-        optionA: { en: "You frequently initiate social plans and gatherings", pt: "Você frequentemente inicia planos sociais e encontros" }, 
-        optionB: { en: "You usually wait for others to invite you to social events", pt: "Você geralmente espera que outros o convidem para eventos sociais" },
-        dimension: "EI",
-        aValue: "E",
-        bValue: "I"
-    },
-    
-    // S/N Questions (7 total)
-    { 
-        optionA: { en: "You focus on concrete facts and practical realities", pt: "Você se concentra em fatos concretos e realidades práticas" }, 
-        optionB: { en: "You enjoy thinking about abstract concepts and future possibilities", pt: "Você gosta de pensar em conceitos abstratos e possibilidades futuras" },
-        dimension: "SN",
-        aValue: "S",
-        bValue: "N"
-    },
-    { 
-        optionA: { en: "You prefer clear, step-by-step instructions", pt: "Você prefere instruções claras, passo a passo" }, 
-        optionB: { en: "You like to improvise and figure things out as you go", pt: "Você gosta de improvisar e descobrir as coisas no caminho" },
-        dimension: "SN",
-        aValue: "S",
-        bValue: "N"
-    },
-    { 
-        optionA: { en: "You trust past experiences and proven methods", pt: "Você confia em experiências passadas e métodos comprovados" }, 
-        optionB: { en: "You get excited about new ideas and innovative approaches", pt: "Você fica animado com novas ideias e abordagens inovadoras" },
-        dimension: "SN",
-        aValue: "S",
-        bValue: "N"
-    },
-    { 
-        optionA: { en: "You notice specific details in your environment", pt: "Você percebe detalhes específicos no seu ambiente" }, 
-        optionB: { en: "You tend to see the big picture and overall patterns", pt: "Você tende a ver o panorama geral e os padrões totais" },
-        dimension: "SN",
-        aValue: "S",
-        bValue: "N"
-    },
-    { 
-        optionA: { en: "You prefer dealing with actual experiences", pt: "Você prefere lidar com experiências reais" }, 
-        optionB: { en: "You enjoy imagining what could be in the future", pt: "Você gosta de imaginar o que poderia ser no futuro" },
-        dimension: "SN",
-        aValue: "S",
-        bValue: "N"
-    },
-    { 
-        optionA: { en: "You are very present-oriented and practical", pt: "Você é muito orientado para o presente e prático" }, 
-        optionB: { en: "You are often thinking about future possibilities", pt: "Você frequentemente pensa sobre possibilidades futuras" },
-        dimension: "SN",
-        aValue: "S",
-        bValue: "N"
-    },
-    { 
-        optionA: { en: "You prefer literal and straightforward communication", pt: "Você prefere comunicação literal e direta" }, 
-        optionB: { en: "You enjoy metaphorical and symbolic meanings", pt: "Você gosta de significados metafóricos e simbólicos" },
-        dimension: "SN",
-        aValue: "S",
-        bValue: "N"
-    },
-    
-    // T/F Questions (7 total)
-    { 
-        optionA: { en: "You make decisions based on logic and objective analysis", pt: "Você toma decisões baseadas em lógica e análise objetiva" }, 
-        optionB: { en: "You consider people's feelings and values when deciding", pt: "Você considera os sentimentos e valores das pessoas ao decidir" },
-        dimension: "TF",
-        aValue: "T",
-        bValue: "F"
-    },
-    { 
-        optionA: { en: "You value truth and fairness above harmony", pt: "Você valoriza a verdade e justiça acima da harmonia" }, 
-        optionB: { en: "You prioritize maintaining harmony in relationships", pt: "Você prioriza manter a harmonia nos relacionamentos" },
-        dimension: "TF",
-        aValue: "T",
-        bValue: "F"
-    },
-    { 
-        optionA: { en: "You prefer direct, straightforward communication", pt: "Você prefere comunicação direta e objetiva" }, 
-        optionB: { en: "You consider how your words might affect others emotionally", pt: "Você considera como suas palavras podem afetar outros emocionalmente" },
-        dimension: "TF",
-        aValue: "T",
-        bValue: "F"
-    },
-    { 
-        optionA: { en: "You tend to be more critical than compassionate", pt: "Você tende a ser mais crítico do que compassivo" }, 
-        optionB: { en: "You tend to be more compassionate than critical", pt: "Você tende a ser mais compassivo do que crítico" },
-        dimension: "TF",
-        aValue: "T",
-        bValue: "F"
-    },
-    { 
-        optionA: { en: "You believe consistency and fairness are most important", pt: "Você acredita que consistência e justiça são mais importantes" }, 
-        optionB: { en: "You believe empathy and circumstances should be considered", pt: "Você acredita que empatia e circunstâncias devem ser consideradas" },
-        dimension: "TF",
-        aValue: "T",
-        bValue: "F"
-    },
-    { 
-        optionA: { en: "You focus on objective criteria when evaluating situations", pt: "Você se concentra em critérios objetivos ao avaliar situações" }, 
-        optionB: { en: "You focus on human values and needs when evaluating situations", pt: "Você se concentra em valores humanos e necessidades ao avaliar situações" },
-        dimension: "TF",
-        aValue: "T",
-        bValue: "F"
-    },
-    { 
-        optionA: { en: "You prefer constructive criticism to help others improve", pt: "Você prefere críticas construtivas para ajudar outros a melhorar" }, 
-        optionB: { en: "You prefer gentle encouragement to support others", pt: "Você prefere incentivo gentil para apoiar os outros" },
-        dimension: "TF",
-        aValue: "T",
-        bValue: "F"
-    },
-    
-    // J/P Questions (7 total)
-    { 
-        optionA: { en: "You like to have decisions made and plans settled", pt: "Você gosta de ter decisões tomadas e planos estabelecidos" }, 
-        optionB: { en: "You prefer to keep your options open as long as possible", pt: "Você prefere manter suas opções abertas o máximo possível" },
-        dimension: "JP",
-        aValue: "J",
-        bValue: "P"
-    },
-    { 
-        optionA: { en: "You work best with deadlines and clear schedules", pt: "Você trabalha melhor com prazos e cronogramas claros" }, 
-        optionB: { en: "You feel constrained by too much structure and planning", pt: "Você se sente limitado por muita estrutura e planejamento" },
-        dimension: "JP",
-        aValue: "J",
-        bValue: "P"
-    },
-    { 
-        optionA: { en: "You enjoy completing tasks and checking them off your list", pt: "Você gosta de completar tarefas e marcá-las na sua lista" }, 
-        optionB: { en: "You enjoy starting new projects more than finishing them", pt: "Você gosta mais de começar novos projetos do que terminá-los" },
-        dimension: "JP",
-        aValue: "J",
-        bValue: "P"
-    },
-    { 
-        optionA: { en: "You prefer to make decisions quickly and move forward", pt: "Você prefere tomar decisões rapidamente e seguir em frente" }, 
-        optionB: { en: "You prefer to gather more information before deciding", pt: "Você prefere coletar mais informações antes de decidir" },
-        dimension: "JP",
-        aValue: "J",
-        bValue: "P"
-    },
-    { 
-        optionA: { en: "You like to have a clear plan before starting projects", pt: "Você gosta de ter um plano claro antes de começar projetos" }, 
-        optionB: { en: "You prefer to be spontaneous and adapt as you go", pt: "Você prefere ser espontâneo e se adaptar no caminho" },
-        dimension: "JP",
-        aValue: "J",
-        bValue: "P"
-    },
-    { 
-        optionA: { en: "You feel more comfortable when things are decided", pt: "Você se sente mais confortável quando as coisas estão decididas" }, 
-        optionB: { en: "You feel more comfortable leaving things flexible", pt: "Você se sente mais confortável deixando as coisas flexíveis" },
-        dimension: "JP",
-        aValue: "J",
-        bValue: "P"
-    },
-    { 
-        optionA: { en: "You prefer to finish projects well before deadlines", pt: "Você prefere terminar projetos bem antes dos prazos" }, 
-        optionB: { en: "You often work best under pressure near deadlines", pt: "Você frequentemente trabalha melhor sob pressão perto dos prazos" },
-        dimension: "JP",
-        aValue: "J",
-        bValue: "P"
-    }
-];
-
-// Big Five Test Data (40 Questions)
-const big5Questions = [
-    // Openness (8 questions)
-    { text: { en: "I have a rich vocabulary.", pt: "Eu tenho um vocabulário rico." }, factor: "O", reverse: false },
-    { text: { en: "I have a vivid imagination.", pt: "Eu tenho uma imaginação vívida." }, factor: "O", reverse: false },
-    { text: { en: "I have difficulty understanding abstract ideas.", pt: "Eu tenho dificuldade em entender ideias abstratas." }, factor: "O", reverse: true },
-    { text: { en: "I am not interested in abstract ideas.", pt: "Eu não me interesso por ideias abstratas." }, factor: "O", reverse: true },
-    { text: { en: "I have excellent ideas.", pt: "Eu tenho excelentes ideias." }, factor: "O", reverse: false },
-    { text: { en: "I do not have a good imagination.", pt: "Eu não tenho uma boa imaginação." }, factor: "O", reverse: true },
-    { text: { en: "I am quick to understand things.", pt: "Eu entendo as coisas rapidamente." }, factor: "O", reverse: false },
-    { text: { en: "I use difficult words.", pt: "Eu uso palavras difíceis." }, factor: "O", reverse: false },
-    
-    // Conscientiousness (8 questions)
-    { text: { en: "I am always prepared.", pt: "Eu estou sempre preparado." }, factor: "C", reverse: false },
-    { text: { en: "I pay attention to details.", pt: "Eu presto atenção aos detalhes." }, factor: "C", reverse: false },
-    { text: { en: "I get chores done right away.", pt: "Eu faço as tarefas imediatamente." }, factor: "C", reverse: false },
-    { text: { en: "I like order.", pt: "Eu gosto de ordem." }, factor: "C", reverse: false },
-    { text: { en: "I often forget to put things back in their proper place.", pt: "Eu frequentemente esqueço de colocar as coisas no lugar certo." }, factor: "C", reverse: true },
-    { text: { en: "I make a mess of things.", pt: "Eu bagunço as coisas." }, factor: "C", reverse: true },
-    { text: { en: "I often forget my obligations.", pt: "Eu frequentemente esqueço minhas obrigações." }, factor: "C", reverse: true },
-    { text: { en: "I shirk my duties.", pt: "Eu evito meus deveres." }, factor: "C", reverse: true },
-    
-    // Extraversion (8 questions)
-    { text: { en: "I am the life of the party.", pt: "Eu sou a alma da festa." }, factor: "E", reverse: false },
-    { text: { en: "I feel comfortable around people.", pt: "Eu me sinto confortável perto de pessoas." }, factor: "E", reverse: false },
-    { text: { en: "I start conversations.", pt: "Eu inicio conversas." }, factor: "E", reverse: false },
-    { text: { en: "I talk to a lot of different people at parties.", pt: "Eu converso com muitas pessoas diferentes em festas." }, factor: "E", reverse: false },
-    { text: { en: "I don't talk a lot.", pt: "Eu não falo muito." }, factor: "E", reverse: true },
-    { text: { en: "I keep in the background.", pt: "Eu fico no fundo." }, factor: "E", reverse: true },
-    { text: { en: "I have little to say.", pt: "Eu tenho pouco a dizer." }, factor: "E", reverse: true },
-    { text: { en: "I don't like to draw attention to myself.", pt: "Eu não gosto de chamar atenção para mim mesmo." }, factor: "E", reverse: true },
-    
-    // Agreeableness (8 questions)
-    { text: { en: "I am interested in people.", pt: "Eu me interesso por pessoas." }, factor: "A", reverse: false },
-    { text: { en: "I sympathize with others' feelings.", pt: "Eu simpatizo com os sentimentos dos outros." }, factor: "A", reverse: false },
-    { text: { en: "I have a soft heart.", pt: "Eu tenho um coração mole." }, factor: "A", reverse: false },
-    { text: { en: "I take time out for others.", pt: "Eu reservo tempo para os outros." }, factor: "A", reverse: false },
-    { text: { en: "I feel others' emotions.", pt: "Eu sinto as emoções dos outros." }, factor: "A", reverse: false },
-    { text: { en: "I make people feel at ease.", pt: "Eu faço as pessoas se sentirem à vontade." }, factor: "A", reverse: false },
-    { text: { en: "I am not really interested in others.", pt: "Eu não estou realmente interessado nos outros." }, factor: "A", reverse: true },
-    { text: { en: "I insult people.", pt: "Eu insulte pessoas." }, factor: "A", reverse: true },
-    
-    // Neuroticism (8 questions)
-    { text: { en: "I get stressed out easily.", pt: "Eu fico estressado facilmente." }, factor: "N", reverse: false },
-    { text: { en: "I worry about things.", pt: "Eu me preocupo com as coisas." }, factor: "N", reverse: false },
-    { text: { en: "I am easily disturbed.", pt: "Eu me perturbo facilmente." }, factor: "N", reverse: false },
-    { text: { en: "I get upset easily.", pt: "Eu fico chateado facilmente." }, factor: "N", reverse: false },
-    { text: { en: "I change my mood a lot.", pt: "Eu mudo meu humor frequentemente." }, factor: "N", reverse: false },
-    { text: { en: "I have frequent mood swings.", pt: "Eu tenho mudanças de humor frequentes." }, factor: "N", reverse: false },
-    { text: { en: "I get irritated easily.", pt: "Eu fico irritado facilmente." }, factor: "N", reverse: false },
-    { text: { en: "I often feel blue.", pt: "Eu frequentemente me sinto triste." }, factor: "N", reverse: false }
-];
+// --- QUESTION DATA (Now loaded from database) ---
+let currentTestQuestions = [];
 
 // Base descriptions for DISC factors
 const discDescriptions = {
-    D: { title: { en: "Dominance (D)", pt: "Dominância (D)" }, style: "bg-red-100 border-red-500 text-red-700", icon: "⚡" },
-    I: { title: { en: "Influence (I)", pt: "Influência (I)" }, style: "bg-yellow-100 border-yellow-500 text-yellow-700", icon: "✨" },
-    S: { title: { en: "Steadiness (S)", pt: "Estabilidade (S)" }, style: "bg-green-100 border-green-500 text-green-700", icon: "🌿" },
-    C: { title: { en: "Conscientiousness (C)", pt: "Conscienciosidade (C)" }, style: "bg-blue-100 border-blue-500 text-blue-700", icon: "🔬" }
+    D: { title: { en: "Dominance (D)", pt: "Dominância (D)", es: "Dominancia (D)" }, style: "bg-red-100 border-red-500 text-red-700", icon: "⚡" },
+    I: { title: { en: "Influence (I)", pt: "Influência (I)", es: "Influencia (I)" }, style: "bg-yellow-100 border-yellow-500 text-yellow-700", icon: "✨" },
+    S: { title: { en: "Steadiness (S)", pt: "Estabilidade (S)", es: "Estabilidad (S)" }, style: "bg-green-100 border-green-500 text-green-700", icon: "🌿" },
+    C: { title: { en: "Conscientiousness (C)", pt: "Conscienciosidade (C)", es: "Cumplimiento (C)" }, style: "bg-blue-100 border-blue-500 text-blue-700", icon: "🔬" }
 };
 
 // MBTI Dimension descriptions
 const mbtiDimensions = {
-    E: { title: { en: "Extraversion", pt: "Extroversão" }, style: "bg-blue-100 border-blue-500 text-blue-700", icon: "🗣️", description: { en: "Energized by social interaction", pt: "Energizado por interação social" } },
-    I: { title: { en: "Introversion", pt: "Introversão" }, style: "bg-indigo-100 border-indigo-500 text-indigo-700", icon: "🤫", description: { en: "Energized by solitude and reflection", pt: "Energizado por solidão e reflexão" } },
-    S: { title: { en: "Sensing", pt: "Sensação" }, style: "bg-green-100 border-green-500 text-green-700", icon: "🔍", description: { en: "Focus on concrete, practical details", pt: "Foco em detalhes concretos e práticos" } },
-    N: { title: { en: "Intuition", pt: "Intuição" }, style: "bg-purple-100 border-purple-500 text-purple-700", icon: "💡", description: { en: "Focus on patterns and possibilities", pt: "Foco em padrões e possibilidades" } },
-    T: { title: { en: "Thinking", pt: "Pensamento" }, style: "bg-orange-100 border-orange-500 text-orange-700", icon: "⚖️", description: { en: "Decisions based on logic and objectivity", pt: "Decisões baseadas em lógica e objetividade" } },
-    F: { title: { en: "Feeling", pt: "Sentimento" }, style: "bg-pink-100 border-pink-500 text-pink-700", icon: "❤️", description: { en: "Decisions based on values and harmony", pt: "Decisões baseadas em valores e harmonia" } },
-    J: { title: { en: "Judging", pt: "Julgamento" }, style: "bg-teal-100 border-teal-500 text-teal-700", icon: "📋", description: { en: "Prefer structure and decidedness", pt: "Prefere estrutura e decisões tomadas" } },
-    P: { title: { en: "Perceiving", pt: "Percepção" }, style: "bg-amber-100 border-amber-500 text-amber-700", icon: "🔄", description: { en: "Prefer flexibility and spontaneity", pt: "Prefere flexibilidade e espontaneidade" } }
+    E: { title: { en: "Extraversion", pt: "Extroversão", es: "Extraversión" }, style: "bg-blue-100 border-blue-500 text-blue-700", icon: "🗣️", description: { en: "Energized by social interaction", pt: "Energizado por interação social", es: "Energizado por interacción social"} },
+    I: { title: { en: "Introversion", pt: "Introversão", es: "Introversión" }, style: "bg-indigo-100 border-indigo-500 text-indigo-700", icon: "🤫", description: { en: "Energized by solitude and reflection", pt: "Energizado por solidão e reflexão", es: "Energizado por soledad y reflexión"} },
+    S: { title: { en: "Sensing", pt: "Sensação", es: "Sensación" }, style: "bg-green-100 border-green-500 text-green-700", icon: "🔍", description: { en: "Focus on concrete, practical details", pt: "Foco em detalhes concretos e práticos", es: "Foco en detalles concretos y prácticos"} },
+    N: { title: { en: "Intuition", pt: "Intuição",es: "Intuición" }, style: "bg-purple-100 border-purple-500 text-purple-700", icon: "💡", description: { en: "Focus on patterns and possibilities", pt: "Foco em padrões e possibilidades", es: "Foco en patrones y posibilidades"} },
+    T: { title: { en: "Thinking", pt: "Pensamento", es: "Pensamiento"}, style: "bg-orange-100 border-orange-500 text-orange-700", icon: "⚖️", description: { en: "Decisions based on logic and objectivity", pt: "Decisões baseadas em lógica e objetividade", es: "Decisión basado en la lógica y objetividad"} },
+    F: { title: { en: "Feeling", pt: "Sentimento", es: "Sentimiento"}, style: "bg-pink-100 border-pink-500 text-pink-700", icon: "❤️", description: { en: "Decisions based on values and harmony", pt: "Decisões baseadas em valores e harmonia", es: "Decisión basado en valores y harmonía"} },
+    J: { title: { en: "Judging", pt: "Julgamento", es: "Juicio"}, style: "bg-teal-100 border-teal-500 text-teal-700", icon: "📋", description: { en: "Prefer structure and decidedness", pt: "Prefere estrutura e decisões tomadas", es: "Prefer estructura y decisiones tomadas"} },
+    P: { title: { en: "Perceiving", pt: "Percepção", es: "Percepción"}, style: "bg-amber-100 border-amber-500 text-amber-700", icon: "🔄", description: { en: "Prefer flexibility and spontaneity", pt: "Prefere flexibilidade e espontaneidade", es: "Prefer flexibilidad y estigmatismo"} }
 };
 
 // Big Five Dimension descriptions
 const big5Descriptions = {
-    O: { title: { en: "Openness", pt: "Abertura" }, style: "bg-purple-100 border-purple-500 text-purple-700", icon: "🌈", description: { en: "Imagination, creativity, curiosity", pt: "Imaginação, criatividade, curiosidade" } },
-    C: { title: { en: "Conscientiousness", pt: "Conscienciosidade" }, style: "bg-blue-100 border-blue-500 text-blue-700", icon: "📊", description: { en: "Organization, diligence, reliability", pt: "Organização, diligência, confiabilidade" } },
-    E: { title: { en: "Extraversion", pt: "Extroversão" }, style: "bg-yellow-100 border-yellow-500 text-yellow-700", icon: "🌟", description: { en: "Sociability, assertiveness, energy", pt: "Sociabilidade, assertividade, energia" } },
-    A: { title: { en: "Agreeableness", pt: "Amabilidade" }, style: "bg-green-100 border-green-500 text-green-700", icon: "🤝", description: { en: "Compassion, cooperation, trust", pt: "Compaixão, cooperação, confiança" } },
-    N: { title: { en: "Neuroticism", pt: "Neuroticismo" }, style: "bg-red-100 border-red-500 text-red-700", icon: "🌊", description: { en: "Anxiety, moodiness, emotional sensitivity", pt: "Ansiedade, instabilidade emocional, sensibilidade" } }
+    O: { title: { en: "Openness", pt: "Abertura", es: "Apertura"}, style: "bg-purple-100 border-purple-500 text-purple-700", icon: "🌈", description: { en: "Imagination, creativity, curiosity", pt: "Imaginação, criatividade, curiosidade" } },
+    C: { title: { en: "Conscientiousness", pt: "Conscienciosidade", es: "Responsabilidad"}, style: "bg-blue-100 border-blue-500 text-blue-700", icon: "📊", description: { en: "Organization, diligence, reliability", pt: "Organização, diligência, confiabilidade" } },
+    E: { title: { en: "Extraversion", pt: "Extroversão", es: "Extraversión"}, style: "bg-yellow-100 border-yellow-500 text-yellow-700", icon: "🌟", description: { en: "Sociability, assertiveness, energy", pt: "Sociabilidade, assertividade, energia" } },
+    A: { title: { en: "Agreeableness", pt: "Amabilidade", es: "Amistabilidad"}, style: "bg-green-100 border-green-500 text-green-700", icon: "🤝", description: { en: "Compassion, cooperation, trust", pt: "Compaixão, cooperação, confiança" } },
+    N: { title: { en: "Neuroticism", pt: "Neuroticismo", es: "Neuroticismo"}, style: "bg-red-100 border-red-500 text-red-700", icon: "🌊", description: { en: "Anxiety, moodiness, emotional sensitivity", pt: "Ansiedade, instabilidade emocional, sensibilidade" } }
 };
 
 // MBTI Type Descriptions
 const mbtiTypeDescriptions = {
     "ISTJ": {
-        name: { en: "The Inspector", pt: "O Inspetor" },
+        name: { en: "The Inspector", pt: "O Inspetor", es: "El Inspector" },
         description: {
             en: "Practical, fact-minded, and reliable. You value tradition, order, and stability. You are thorough and dutiful, following through on commitments. Your strength is your reliability and attention to detail, but you may be resistant to change and overly focused on established procedures.",
-            pt: "Prático, centrado em fatos e confiável. Você valoriza tradição, ordem e estabilidade. Você é minucioso e cumpre seus deveres, honrando compromissos. Sua força é sua confiabilidade e atenção aos detalhes, mas você pode ser resistente a mudanças e excessivamente focado em procedimentos estabelecidos."
+            pt: "Prático, centrado em fatos e confiável. Você valoriza tradição, ordem e estabilidade. Você é minucioso e cumpre seus deveres, honrando compromissos. Sua força é sua confiabilidade e atenção aos detalhes, mas você pode ser resistente a mudanças e excessivamente focado em procedimentos estabelecidos.",
+            es: "Práctico, orientado a los hechos y confiable. Valoras la tradición, el orden y la estabilidad. Eres minucioso y cumplidor, cumpliendo con tus compromisos. Tu fortaleza es tu fiabilidad y atención al detalle, pero puedes ser resistente al cambio y demasiado enfocado en los procedimientos establecidos."
         }
     },
     "ISFJ": {
-        name: { en: "The Protector", pt: "O Protetor" },
+        name: { en: "The Protector", pt: "O Protetor", es: "El Protector" },
         description: {
             en: "Warm, caring, and responsible. You are committed to your duties and loyal to your relationships. You have a strong sense of responsibility and work well in structured environments. Your strength is your dedication and practicality, but you may be overly sensitive to criticism and resistant to change.",
-            pt: "Caloroso, cuidadoso e responsável. Você é comprometido com seus deveres e leal aos seus relacionamentos. Você tem um forte senso de responsabilidade e trabalha bem em ambientes estruturados. Sua força é sua dedicação e praticidade, mas você pode ser excessivamente sensível a críticas e resistente a mudanças."
+            pt: "Caloroso, cuidadoso e responsável. Você é comprometido com seus deveres e leal aos seus relacionamentos. Você tem um forte senso de responsabilidade e trabalha bem em ambientes estruturados. Sua força é sua dedicação e praticidade, mas você pode ser excessivamente sensível a críticas e resistente a mudanças.",
+            es: "Cálido, cariñoso y responsable. Estás comprometido con tus deberes y leal a tus relaciones. Tienes un fuerte sentido de responsabilidad y trabajas bien en entornos estructurados. Tu fortaleza es tu dedicación y practicidad, pero puedes ser demasiado sensible a las críticas y resistente al cambio."
         }
     },
     "INFJ": {
-        name: { en: "The Advocate", pt: "O Advogado" },
+        name: { en: "The Advocate", pt: "O Advogado", es: "El Abogado" },
         description: {
             en: "Insightful, principled, and organized. You have a strong sense of purpose and work towards your ideals with determination. You are creative and deeply caring about others. Your strength is your insight and conviction, but you may be perfectionistic and sensitive to conflict.",
-            pt: "Perspicaz, principista e organizado. Você tem um forte senso de propósito e trabalha em direção aos seus ideais com determinação. Você é criativo e profundamente preocupado com os outros. Sua força é sua percepção e convicção, mas você pode ser perfeccionista e sensível a conflitos."
+            pt: "Perspicaz, principista e organizado. Você tem um forte senso de propósito e trabalha em direção aos seus ideais com determinação. Você é criativo e profundamente preocupado com os outros. Sua força é sua percepção e convicção, mas você pode ser perfeccionista e sensível a conflitos.",
+            es: "Perspicaz, principista y organizado. Tienes un fuerte sentido de propósito y trabajas hacia tus ideales con determinación. Eres creativo y profundamente preocupado por los demás. Tu fortaleza es tu percepción y convicción, pero puedes ser perfeccionista y sensible a los conflictos."
         }
     },
     "INTJ": {
-        name: { en: "The Architect", pt: "O Arquiteto" },
+        name: { en: "The Architect", pt: "O Arquiteto", es: "El Arquitecto" },
         description: {
             en: "Strategic, independent, and determined. You have a vision for the future and work systematically to achieve your goals. You are analytical and value competence and knowledge. Your strength is your strategic thinking and independence, but you may be overly critical and dismissive of others' input.",
-            pt: "Estratégico, independente e determinado. Você tem uma visão para o futuro e trabalha sistematicamente para alcançar seus objetivos. Você é analítico e valoriza competência e conhecimento. Sua força é seu pensamento estratégico e independência, mas você pode ser excessivamente crítico e desdenhoso das contribuições dos outros."
+            pt: "Estratégico, independente e determinado. Você tem uma visão para o futuro e trabalha sistematicamente para alcançar seus objetivos. Você é analítico e valoriza competência e conhecimento. Sua força é seu pensamento estratégico e independência, mas você pode ser excessivamente crítico e desdenhoso das contribuições dos outros.",
+            es: "Estratégico, independiente y determinado. Tienes una visión para el futuro y trabajas sistemáticamente para lograr tus objetivos. Eres analítico y valoras la competencia y el conocimiento. Tu fortaleza es tu pensamiento estratégico e independencia, pero puedes ser demasiado crítico y desdeñoso con las aportaciones de los demás."
         }
     },
     "ISTP": {
-        name: { en: "The Craftsman", pt: "O Artesão" },
+        name: { en: "The Craftsman", pt: "O Artesão", es: "El Artesano" },
         description: {
             en: "Practical, observant, and flexible. You enjoy understanding how things work and are skilled at solving practical problems. You are adaptable and prefer hands-on learning. Your strength is your resourcefulness and calm under pressure, but you may be risk-prone and easily bored.",
-            pt: "Prático, observador e flexível. Você gosta de entender como as coisas funcionam e é habilidoso em resolver problemas práticos. Você é adaptável e prefere aprendizado prático. Sua força é sua capacidade de improvisação e calma sob pressão, mas você pode ser propenso a riscos e facilmente entediado."
+            pt: "Prático, observador e flexível. Você gosta de entender como as coisas funcionam e é habilidoso em resolver problemas práticos. Você é adaptável e prefere aprendizado prático. Sua força é sua capacidade de improvisação e calma sob pressão, mas você pode ser propenso a riscos e facilmente entediado.",
+            es: "Práctico, observador y flexible. Te gusta entender cómo funcionan las cosas y eres hábil para resolver problemas prácticos. Eres adaptable y prefieres el aprendizaje práctico. Tu fortaleza es tu ingenio y calma bajo presión, pero puedes ser propenso al riesgo y aburrirte fácilmente."
         }
     },
     "ISFP": {
-        name: { en: "The Artist", pt: "O Artista" },
+        name: { en: "The Artist", pt: "O Artista", es: "El Artista" },
         description: {
             en: "Gentle, sensitive, and artistic. You value harmony and enjoy creating beauty in your surroundings. You are loyal to your values and attentive to others' needs. Your strength is your compassion and aesthetic sense, but you may be overly self-critical and avoid conflict.",
-            pt: "Gentil, sensível e artístico. Você valoriza harmonia e gosta de criar beleza em seu entorno. Você é leal aos seus valores e atento às necessidades dos outros. Sua força é sua compaixão e senso estético, mas você pode ser excessivamente autocrítico e evitar conflitos."
+            pt: "Gentil, sensível e artístico. Você valoriza harmonia e gosta de criar beleza em seu entorno. Você é leal aos seus valores e atento às necessidades dos outros. Sua força é sua compaixão e senso estético, mas você pode ser excessivamente autocrítico e evitar conflitos.",
+            es: "Gentil, sensible y artístico. Valorás la armonía y disfrutás creando belleza en tu entorno. Sos leal a tus valores y atento a las necesidades de los demás. Tu fortaleza es tu compasión y sentido estético, pero podés ser demasiado autocrítico y evitar el conflicto."
         }
     },
     "INFP": {
-        name: { en: "The Mediator", pt: "O Mediador" },
+        name: { en: "The Mediator", pt: "O Mediador", es: "El Mediador" },
         description: {
             en: "Idealistic, creative, and empathetic. You are guided by your strong values and desire to make the world a better place. You are adaptable and supportive of others. Your strength is your empathy and idealism, but you may be overly idealistic and sensitive to criticism.",
-            pt: "Idealista, criativo e empático. Você é guiado por seus fortes valores e desejo de tornar o mundo um lugar melhor. Você é adaptável e apoia os outros. Sua força é sua empatia e idealismo, mas você pode ser excessivamente idealista e sensível a críticas."
+            pt: "Idealista, criativo e empático. Você é guiado por seus fortes valores e desejo de tornar o mundo um lugar melhor. Você é adaptável e apoia os outros. Sua força é sua empatia e idealismo, mas você pode ser excessivamente idealista e sensível a críticas.",
+            es: "Idealista, creativo y empático. Estás guiado por tus fuertes valores y deseo de hacer del mundo un lugar mejor. Eres adaptable y apoyas a los demás. Tu fortaleza es tu empatía e idealismo, pero puedes ser demasiado idealista y sensible a las críticas."
         }
     },
     "INTP": {
-        name: { en: "The Thinker", pt: "O Pensador" },
+        name: { en: "The Thinker", pt: "O Pensador", es: "El Pensador" },
         description: {
             en: "Analytical, innovative, and curious. You enjoy theoretical problems and exploring complex ideas. You are logical and value precision in thought. Your strength is your intellectual curiosity and objectivity, but you may be overly abstract and inattentive to practical matters.",
-            pt: "Analítico, inovador e curioso. Você gosta de problemas teóricos e explorar ideias complexas. Você é lógico e valoriza precisão no pensamento. Sua força é sua curiosidade intelectual e objetividade, mas você pode ser excessivamente abstrato e desatento a questões práticas."
+            pt: "Analítico, inovador e curioso. Você gosta de problemas teóricos e explorar ideias complexas. Você é lógico e valoriza precisão no pensamento. Sua força é sua curiosidade intelectual e objetividade, mas você pode ser excessivamente abstrato e desatento a questões práticas.",
+            es: "Analítico, innovador y curioso. Disfrutas de problemas teóricos y explorar ideas complejas. Eres lógico y valoras la precisión en el pensamiento. Tu fortaleza es tu curiosidad intelectual y objetividad, pero puedes ser demasiado abstracto y desatento a asuntos prácticos."
         }
     },
     "ESTP": {
-        name: { en: "The Persuader", pt: "O Persuador" },
+        name: { en: "The Persuader", pt: "O Persuador", es: "El Persuasor" },
         description: {
             en: "Energetic, practical, and spontaneous. You enjoy action and are skilled at navigating immediate challenges. You are observant and adaptable in the moment. Your strength is your practicality and boldness, but you may be impulsive and impatient with theory.",
-            pt: "Energético, prático e espontâneo. Você gosta de ação e é habilidoso em navegar desafios imediatos. Você é observador e adaptável no momento. Sua força é sua praticidade e ousadia, mas você pode ser impulsivo e impaciente com a teoria."
+            pt: "Energético, prático e espontâneo. Você gosta de ação e é habilidoso em navegar desafios imediatos. Você é observador e adaptável no momento. Sua força é sua praticidade e ousadia, mas você pode ser impulsivo e impaciente com a teoria.",
+            es: "Enérgico, práctico y espontáneo. Disfrutas de la acción y eres hábil para navegar desafíos inmediatos. Eres observador y adaptable en el momento. Tu fortaleza es tu practicidad y audacia, pero puedes ser impulsivo e impaciente con la teoría."
         }
     },
     "ESFP": {
-        name: { en: "The Performer", pt: "O Performista" },
+        name: { en: "The Performer", pt: "O Performista", es: "El Intérprete" },
         description: {
             en: "Outgoing, friendly, and enthusiastic. You enjoy bringing energy and fun to social situations. You are practical and observant of your environment. Your strength is your spontaneity and people skills, but you may be easily distracted and dislike routine.",
-            pt: "Extrovertido, amigável e entusiástico. Você gosta de trazer energia e diversão para situações sociais. Você é prático e observador do seu ambiente. Sua força é sua espontaneidade e habilidades com pessoas, mas você pode ser facilmente distraído e não gostar de rotina."
+            pt: "Extrovertido, amigável e entusiástico. Você gosta de trazer energia e diversão para situações sociais. Você é prático e observador do seu ambiente. Sua força é sua espontaneidade e habilidades com pessoas, mas você pode ser facilmente distraído e não gostar de rotina.",
+            es: "Extrovertido, amigable y entusiasta. Disfrutas de aportar energía y diversión a las situaciones sociales. Eres práctico y observador de tu entorno. Tu fortaleza es tu espontaneidad y habilidades sociales, pero puedes distraerte fácilmente y no te gusta la rutina."
         }
     },
     "ENFP": {
-        name: { en: "The Champion", pt: "O Campeão" },
+        name: { en: "The Champion", pt: "O Campeão", es: "El Campeón" },
         description: {
             en: "Enthusiastic, creative, and sociable. You see possibilities everywhere and enjoy inspiring others. You are adaptable and value deep connections. Your strength is your enthusiasm and creativity, but you may be overly optimistic and struggle with follow-through.",
-            pt: "Entusiástico, criativo e sociável. Você vê possibilidades em todos os lugares e gosta de inspirar os outros. Você é adaptável e valoriza conexões profundas. Sua força é seu entusiasmo e criatividade, mas você pode ser excessivamente otimista e ter dificuldade com a implementação."
+            pt: "Entusiástico, criativo e sociável. Você vê possibilidades em todos os lugares e gosta de inspirar os outros. Você é adaptável e valoriza conexões profundas. Sua força é seu entusiasmo e criatividade, mas você pode ser excessivamente otimista e ter dificuldade com a implementação.",
+            es: "Entusiasta, creativo y sociable. Ves posibilidades en todas partes y disfrutas inspirando a los demás. Eres adaptable y valoras las conexiones profundas. Tu fortaleza es tu entusiasmo y creatividad, pero puedes ser demasiado optimista y tener dificultades para llevar las cosas a cabo."
         }
     },
     "ENTP": {
-        name: { en: "The Debater", pt: "O Debatedor" },
+        name: { en: "The Debater", pt: "O Debatedor", es: "El Debateador" },
         description: {
             en: "Innovative, quick-witted, and outspoken. You enjoy intellectual challenges and debating ideas. You are energetic and value knowledge. Your strength is your ingenuity and verbal skill, but you may be argumentative and inattentive to details.",
-            pt: "Inovador, perspicaz e franco. Você gosta de desafios intelectuais e debater ideias. Você é energético e valoriza conhecimento. Sua força é sua engenhosidade e habilidade verbal, mas você pode ser argumentativo e desatento a detalhes."
+            pt: "Inovador, perspicaz e franco. Você gosta de desafios intelectuais e debater ideias. Você é energético e valoriza conhecimento. Sua força é sua engenhosidade e habilidade verbal, mas você pode ser argumentativo e desatento a detalhes.",
+            es: "Innovador, ingenioso y franco. Disfrutas de desafíos intelectuales y debatir ideas. Eres enérgico y valoras el conocimiento. Tu fortaleza es tu ingenio y habilidad verbal, pero puedes ser argumentativo y desatento a los detalles."
         }
     },
     "ESTJ": {
-        name: { en: "The Supervisor", pt: "O Supervisor" },
+        name: { en: "The Supervisor", pt: "O Supervisor", es: "El Supervisor" },
         description: {
             en: "Practical, traditional, and organized. You value order and structure in your environment. You are dependable and take your responsibilities seriously. Your strength is your reliability and decisiveness, but you may be inflexible and judgmental.",
-            pt: "Prático, tradicional e organizado. Você valoriza ordem e estrutura em seu ambiente. Você é confiável e leva suas responsabilidades a sério. Sua força é sua confiabilidade e decisão, mas você pode ser inflexível e crítico."
+            pt: "Prático, tradicional e organizado. Você valoriza ordem e estrutura em seu ambiente. Você é confiável e leva suas responsabilidades a sério. Sua força é sua confiabilidade e decisão, mas você pode ser inflexível e crítico.",
+            es: "Práctico, tradicional y organizado. Valoras el orden y la estructura en tu entorno. Eres confiable y tomas tus responsabilidades en serio. Tu fortaleza es tu fiabilidad y capacidad de decisión, pero puedes ser inflexible y crítico."
         }
     },
     "ESFJ": {
-        name: { en: "The Caregiver", pt: "O Cuidador" },
+        name: { en: "The Caregiver", pt: "O Cuidador", es: "El Cuidador" },
         description: {
             en: "Sociable, caring, and popular. You enjoy helping others and creating harmonious environments. You are conscientious and value cooperation. Your strength is your warmth and practicality, but you may be overly sensitive and need approval from others.",
-            pt: "Sociável, cuidadoso e popular. Você gosta de ajudar os outros e criar ambientes harmoniosos. Você é consciencioso e valoriza cooperação. Sua força é seu calor e praticidade, mas você pode ser excessivamente sensível e precisar de aprovação dos outros."
+            pt: "Sociável, cuidadoso e popular. Você gosta de ajudar os outros e criar ambientes harmoniosos. Você é consciencioso e valoriza cooperação. Sua força é seu calor e praticidade, mas você pode ser excessivamente sensível e precisar de aprovação dos outros.",
+            es: "Sociable, cariñoso y popular. Disfrutas ayudando a los demás y creando ambientes armoniosos. Eres consciente y valoras la cooperación. Tu fortaleza es tu calidez y practicidad, pero puedes ser demasiado sensible y necesitar la aprobación de los demás."
         }
     },
     "ENFJ": {
-        name: { en: "The Teacher", pt: "O Professor" },
+        name: { en: "The Teacher", pt: "O Professor", es: "El Maestro" },
         description: {
             en: "Empathetic, organized, and inspiring. You are skilled at understanding others and motivating them towards growth. You value harmony and personal development. Your strength is your charisma and insight, but you may be overly idealistic and sensitive to conflict.",
-            pt: "Empático, organizado e inspirador. Você é habilidoso em entender os outros e motivá-los para o crescimento. Você valoriza harmonia e desenvolvimento pessoal. Sua força é seu carisma e percepção, mas você pode ser excessivamente idealista e sensível a conflitos."
+            pt: "Empático, organizado e inspirador. Você é habilidoso em entender os outros e motivá-los para o crescimento. Você valoriza harmonia e desenvolvimento pessoal. Sua força é seu carisma e percepção, mas você pode ser excessivamente idealista e sensível a conflitos.",
+            es: "Empático, organizado e inspirador. Eres hábil para entender a los demás y motivarlos hacia el crecimiento. Valoras la armonía y el desarrollo personal. Tu fortaleza es tu carisma y percepción, pero puedes ser demasiado idealista y sensible a los conflictos."
         }
     },
     "ENTJ": {
-        name: { en: "The Commander", pt: "O Comandante" },
+        name: { en: "The Commander", pt: "O Comandante", es: "El Comandante" },
         description: {
             en: "Strategic, assertive, and efficient. You are a natural leader who enjoys organizing people and resources towards goals. You value competence and long-term planning. Your strength is your leadership and strategic thinking, but you may be impatient and overly critical.",
-            pt: "Estratégico, assertivo e eficiente. Você é um líder natural que gosta de organizar pessoas e recursos para atingir objetivos. Você valoriza competência e planejamento de longo prazo. Sua força é sua liderança e pensamento estratégico, mas você pode ser impaciente e excessivamente crítico."
+            pt: "Estratégico, assertivo e eficiente. Você é um líder natural que gosta de organizar pessoas e recursos para atingir objetivos. Você valoriza competência e planejamento de longo prazo. Sua força é sua liderança e pensamento estratégico, mas você pode ser impaciente e excessivamente crítico.",
+            es: "Estratégico, asertivo y eficiente. Eres un líder natural que disfruta organizando personas y recursos hacia metas. Valoras la competencia y la planificación a largo plazo. Tu fortaleza es tu liderazgo y pensamiento estratégico, pero puedes ser impaciente y demasiado crítico."
         }
     }
 };
@@ -1535,99 +1592,111 @@ const mbtiTypeDescriptions = {
 // Detailed Blended Profile Descriptions for DISC
 const blendedDescriptions = {
     "D": {
-        name: { en: "Dominant", pt: "Dominante" },
+        name: { en: "Dominant", pt: "Dominante", es: "Dominante" },
         style: "bg-red-100 border-red-500 text-red-700",
         description: {
             en: "You are direct, results-oriented, and assertive. You thrive on challenges and take charge in situations. Your natural confidence and determination help you overcome obstacles quickly. You prefer environments where you can make decisions and see immediate progress.",
-            pt: "Você é direto, orientado a resultados e assertivo. Você prospera em desafios e assume o comando em situações. Sua confiança natural e determinação ajudam você a superar obstáculos rapidamente. Você prefere ambientes onde pode tomar decisões e ver progresso imediato."
+            pt: "Você é direto, orientado a resultados e assertivo. Você prospera em desafios e assume o comando em situações. Sua confiança natural e determinação ajudam você a superar obstáculos rapidamente. Você prefere ambientes onde pode tomar decisões e ver progresso imediato.",
+            es: "Eres directo, orientado a resultados y asertivo. Prosperas ante los desafíos y tomas el mando en las situaciones. Tu confianza natural y determinación te ayudan a superar obstáculos rápidamente. Prefieres entornos donde puedas tomar decisiones y ver un progreso inmediato."
         }
     },
     "I": {
-        name: { en: "Influential", pt: "Influente" },
+        name: { en: "Influential", pt: "Influente", es: "Influyente" },
         style: "bg-yellow-100 border-yellow-500 text-yellow-700",
         description: {
             en: "You are outgoing, enthusiastic, and persuasive. You excel at building relationships and motivating others. Your optimism and communication skills make you effective in social and team settings. You thrive in environments that value collaboration and positive energy.",
-            pt: "Você é extrovertido, entusiástico e persuasivo. Você se destaca em construir relacionamentos e motivar os outros. Seu otimismo e habilidades de comunicação tornam você eficaz em ambientes sociais e de equipe. Você prospera em ambientes que valorizam colaboração e energia positiva."
+            pt: "Você é extrovertido, entusiástico e persuasivo. Você se destaca em construir relacionamentos e motivar os outros. Seu otimismo e habilidades de comunicação tornam você eficaz em ambientes sociais e de equipe. Você prospera em ambientes que valorizam colaboração e energia positiva.",
+            es: "Eres extrovertido, entusiasta y persuasivo. Te destacas en la construcción de relaciones y en motivar a los demás. Tu optimismo y habilidades de comunicación te hacen efectivo en entornos sociales y de equipo. Prosperas en entornos que valoran la colaboración y la energía positiva."
         }
     },
     "S": {
-        name: { en: "Steady", pt: "Estável" },
+        name: { en: "Steady", pt: "Estável", es: "Estable" },
         style: "bg-green-100 border-green-500 text-green-700",
         description: {
             en: "You are patient, reliable, and supportive. You value stability and work well in consistent environments. Your calm demeanor and listening skills make you an excellent team player. You excel in roles that require persistence, cooperation, and attention to established processes.",
-            pt: "Você é paciente, confiável e solidário. Você valoriza estabilidade e trabalha bem em ambientes consistentes. Sua serenidade e habilidades de escuta tornam você um excelente membro de equipe. Você se destaca em funções que exigem persistência, cooperação e atenção aos processos estabelecidos."
+            pt: "Você é paciente, confiável e solidário. Você valoriza estabilidade e trabalha bem em ambientes consistentes. Sua serenidade e habilidades de escuta tornam você um excelente membro de equipe. Você se destaca em funções que exigem persistência, cooperação e atenção aos processos estabelecidos.",
+            es: "Eres paciente, confiable y solidario. Valoras la estabilidad y trabajas bien en entornos consistentes. Tu comportamiento tranquilo y habilidades de escucha te convierten en un excelente miembro de equipo. Te destacas en roles que requieren persistencia, cooperación y atención a procesos establecidos."
         }
     },
     "C": {
-        name: { en: "Conscientious", pt: "Consciencioso" },
+        name: { en: "Conscientious", pt: "Consciencioso", es: "Concienzudo" },
         style: "bg-blue-100 border-blue-500 text-blue-700",
         description: {
             en: "You are analytical, precise, and quality-focused. You value accuracy and enjoy working with detailed information. Your systematic approach and high standards ensure excellent results. You thrive in environments that require careful analysis, planning, and attention to detail.",
-            pt: "Você é analítico, preciso e focado na qualidade. Você valoriza precisão e gosta de trabalhar com informações detalhadas. Sua abordagem sistemática e altos padrões garantem resultados excelentes. Você prospera em ambientes que exigem análise cuidadosa, planejamento e atenção aos detalhes."
+            pt: "Você é analítico, preciso e focado na qualidade. Você valoriza precisão e gosta de trabalhar com informações detalhadas. Sua abordagem sistemática e altos padrões garantem resultados excelentes. Você prospera em ambientes que exigem análise cuidadosa, planejamento e atenção aos detalhes.",
+            es: "Eres analítico, preciso y centrado en la calidad. Valoras la exactitud y disfrutas trabajando con información detallada. Tu enfoque sistemático y altos estándares aseguran resultados excelentes. Prosperas en entornos que requieren análisis cuidadoso, planificación y atención al detalle."
         }
     },
     "DI": {
-        name: { en: "Driver-Influencer", pt: "Condutor-Influenciador" },
+        name: { en: "Driver-Influencer", pt: "Condutor-Influenciador", es: "Conductor-Influyente" },
         style: "bg-orange-100 border-orange-500 text-orange-700",
         description: {
             en: "You combine determination with social energy. You're both goal-oriented and people-focused, able to drive results while maintaining positive relationships. Your blend of assertiveness and enthusiasm makes you effective in leadership and sales roles.",
-            pt: "Você combina determinação com energia social. Você é orientado a objetivos e focado em pessoas, capaz de conduzir resultados mantendo relacionamentos positivos. Sua mistura de assertividade e entusiasmo torna você eficaz em funções de liderança e vendas."
+            pt: "Você combina determinação com energia social. Você é orientado a objetivos e focado em pessoas, capaz de conduzir resultados mantendo relacionamentos positivos. Sua mistura de assertividade e entusiasmo torna você eficaz em funções de liderança e vendas.",
+            es: "Combinas determinación con energía social. Estás orientado tanto a objetivos como a personas, capaz de impulsar resultados manteniendo relaciones positivas. Tu mezcla de asertividad y entusiasmo te hace efectivo en roles de liderazgo y ventas."
         }
     },
     "ID": {
-        name: { en: "Influencer-Driver", pt: "Influenciador-Condutor" },
+        name: { en: "Influencer-Driver", pt: "Influenciador-Condutor", es: "Influyente-Conductor" },
         style: "bg-amber-100 border-amber-500 text-amber-700",
         description: {
             en: "You lead with enthusiasm backed by determination. Your primary focus is on relationships and inspiration, but you can be decisive when needed. You excel at motivating teams while ensuring progress toward objectives.",
-            pt: "Você lidera com entusiasmo apoiado por determinação. Seu foco principal está em relacionamentos e inspiração, mas você pode ser decisivo quando necessário. Você se destaca em motivar equipes enquanto garante progresso em direção aos objetivos."
+            pt: "Você lidera com entusiasmo apoiado por determinação. Seu foco principal está em relacionamentos e inspiração, mas você pode ser decisivo quando necessário. Você se destaca em motivar equipes enquanto garante progresso em direção aos objetivos.",
+            es: "Lideras con entusiasmo respaldado por determinación. Tu enfoque principal está en las relaciones y la inspiración, pero puedes ser decisivo cuando es necesario. Te destacas motivando equipos mientras aseguras el progreso hacia los objetivos."
         }
     },
     "IS": {
-        name: { en: "Influencer-Steady", pt: "Influenciador-Estável" },
+        name: { en: "Influencer-Steady", pt: "Influenciador-Estável", es: "Influyente-Estable" },
         style: "bg-lime-100 border-lime-500 text-lime-700",
         description: {
             en: "You blend social energy with supportive stability. You're great at building lasting relationships and creating harmonious environments. Your combination of enthusiasm and reliability makes you a trusted team member who balances optimism with practical support.",
-            pt: "Você combina energia social com estabilidade solidária. Você é ótimo em construir relacionamentos duradouros e criar ambientes harmoniosos. Sua combinação de entusiasmo e confiabilidade torna você um membro da equipe confiável que equilibra otimismo com suporte prático."
+            pt: "Você combina energia social com estabilidade solidária. Você é ótimo em construir relacionamentos duradouros e criar ambientes harmoniosos. Sua combinação de entusiasmo e confiabilidade torna você um membro da equipe confiável que equilibra otimismo com suporte prático.",
+            es: "Mezclas energía social con estabilidad de apoyo. Eres excelente construyendo relaciones duraderas y creando entornos armoniosos. Tu combinación de entusiasmo y confiabilidad te convierte en un miembro de equipo de confianza que equilibra el optimismo con el apoyo práctico."
         }
     },
     "SI": {
-        name: { en: "Steady-Influencer", pt: "Estável-Influenciador" },
+        name: { en: "Steady-Influencer", pt: "Estável-Influenciador", es: "Estable-Influyente" },
         style: "bg-emerald-100 border-emerald-500 text-emerald-700",
         description: {
             en: "You provide stable support with warm enthusiasm. Your primary strength is reliability and patience, complemented by good people skills. You create comfortable environments where people feel supported and valued.",
-            pt: "Você fornece suporte estável com entusiasmo caloroso. Sua principal força é confiabilidade e paciência, complementada por boas habilidades com pessoas. Você cria ambientes confortáveis onde as pessoas se sentem apoiadas e valorizadas."
+            pt: "Você fornece suporte estável com entusiasmo caloroso. Sua principal força é confiabilidade e paciência, complementada por boas habilidades com pessoas. Você cria ambientes confortáveis onde as pessoas se sentem apoiadas e valorizadas.",
+            es: "Proporcionas apoyo estable con un entusiasmo cálido. Tu principal fortaleza es la confiabilidad y la paciencia, complementada con buenas habilidades interpersonales. Creas entornos cómodos donde las personas se sienten apoyadas y valoradas."
         }
     },
     "SC": {
-        name: { en: "Steady-Conscientious", pt: "Estável-Consciencioso" },
+        name: { en: "Steady-Conscientious", pt: "Estável-Consciencioso", es: "Estable-Concienzudo" },
         style: "bg-cyan-100 border-cyan-500 text-cyan-700",
         description: {
             en: "You combine reliability with analytical precision. You're both patient and thorough, excellent at following through on commitments with careful attention to detail. Your methodical approach ensures quality results in stable environments.",
-            pt: "Você combina confiabilidade com precisão analítica. Você é paciente e minucioso, excelente em cumprir compromissos com cuidadosa atenção aos detalhes. Sua abordagem metódica garante resultados de qualidade em ambientes estáveis."
+            pt: "Você combina confiabilidade com precisão analítica. Você é paciente e minucioso, excelente em cumprir compromissos com cuidadosa atenção aos detalhes. Sua abordagem metódica garante resultados de qualidade em ambientes estáveis.",
+            es: "Combinas confiabilidad con precisión analítica. Eres paciente y minucioso, excelente para cumplir compromisos con cuidadosa atención al detalle. Tu enfoque metódico asegura resultados de calidad en entornos estables."
         }
     },
     "CS": {
-        name: { en: "Conscientious-Steady", pt: "Consciencioso-Estável" },
+        name: { en: "Conscientious-Steady", pt: "Consciencioso-Estável", es: "Concienzudo-Estable" },
         style: "bg-sky-100 border-sky-500 text-sky-700",
         description: {
             en: "You approach tasks with careful analysis and consistent follow-through. Your primary focus is accuracy and quality, supported by reliable work habits. You excel in roles that require both precision and persistence.",
-            pt: "Você aborda tarefas com análise cuidadosa e acompanhamento consistente. Seu foco principal é precisão e qualidade, apoiado por hábitos de trabalho confiáveis. Você se destaca em funções que exigem precisão e persistência."
+            pt: "Você aborda tarefas com análise cuidadosa e acompanhamento consistente. Seu foco principal é precisão e qualidade, apoiado por hábitos de trabalho confiáveis. Você se destaca em funções que exigem precisão e persistência.",
+            es: "Abordas las tareas con un análisis cuidadoso y un seguimiento constante. Tu enfoque principal es la exactitud y la calidad, respaldado por hábitos de trabajo confiables. Te destacas en roles que requieren tanto precisión como persistencia."
         }
     },
     "CD": {
-        name: { en: "Conscientious-Driver", pt: "Consciencioso-Condutor" },
+        name: { en: "Conscientious-Driver", pt: "Consciencioso-Condutor", es: "Concienzudo-Conductor" },
         style: "bg-violet-100 border-violet-500 text-violet-700",
         description: {
             en: "You blend analytical thinking with determined action. You're both precise and results-oriented, able to analyze situations thoroughly then drive toward solutions. Your combination of critical thinking and decisiveness makes you effective in complex problem-solving.",
-            pt: "Você combina pensamento analítico com ação determinada. Você é preciso e orientado a resultados, capaz de analisar situações minuciosamente e depois conduzir em direção a soluções. Sua combinação de pensamento crítico e decisão torna você eficaz na resolução de problemas complexos."
+            pt: "Você combina pensamento analítico com ação determinada. Você é preciso e orientado a resultados, capaz de analisar situações minuciosamente e depois conduzir em direção a soluções. Sua combinação de pensamento crítico e decisão torna você eficaz na resolução de problemas complexos.",
+            es: "Mezclas pensamiento analítico con acción determinada. Eres preciso y orientado a resultados, capaz de analizar situaciones a fondo y luego impulsar soluciones. Tu combinación de pensamiento crítico y decisión te hace efectivo en la resolución de problemas complejos."
         }
     },
     "DC": {
-        name: { en: "Driver-Conscientious", pt: "Condutor-Consciencioso" },
+        name: { en: "Driver-Conscientious", pt: "Condutor-Consciencioso", es: "Conductor-Concienzudo" },
         style: "bg-purple-100 border-purple-500 text-purple-700",
         description: {
             en: "You lead with determination supported by careful analysis. Your primary drive is achieving results, but you ensure they meet high standards of quality. You're effective at driving projects forward while maintaining attention to important details.",
-            pt: "Você lidera com determinação apoiada por análise cuidadosa. Sua principal motivação é alcançar resultados, mas você garante que eles atendam a altos padrões de qualidade. Você é eficaz em conduzir projetos para frente enquanto mantém atenção a detalhes importantes."
+            pt: "Você lidera com determinação apoiada por análise cuidadosa. Sua principal motivação é alcançar resultados, mas você garante que eles atendam a altos padrões de qualidade. Você é eficaz em conduzir projetos para frente enquanto mantém atenção a detalhes importantes.",
+            es: "Lideras con determinación respaldada por un análisis cuidadoso. Tu principal impulso es lograr resultados, pero aseguras que cumplan con altos estándares de calidad. Eres efectivo impulsando proyectos mientras mantienes atención a los detalles importantes."
         }
     }
 };
@@ -1666,17 +1735,20 @@ function setLanguage(lang) {
         
         if (isIndexPage) {
             updateIndexStaticText();
-            loadSavedResults();
+            loadSavedResults();  // Reload results to apply new language
         } else {
             updateStaticText();
             
             if (resultsContainer && resultsContainer.classList.contains('hidden')) {
-                if (isMBTITest) {
-                    renderMBTIQuestion();
-                } else if (isBig5Test) {
-                    renderBig5Question();
-                } else {
-                    renderQuestion();
+                // Re-render current question with new language
+                if (currentTestQuestions.length > 0) {
+                    if (isMBTITest) {
+                        renderMBTIQuestion();
+                    } else if (isBig5Test) {
+                        renderBig5Question();
+                    } else {
+                        renderQuestion();
+                    }
                 }
             } else if (resultsContainer) {
                 showResults(true);
@@ -1700,43 +1772,75 @@ function setLanguage(lang) {
 
 function updateStaticText() {
     try {
-        if (isMBTITest) {
-            document.getElementById('header-title').textContent = t('mbti_title');
-            document.getElementById('header-subtitle').textContent = t('mbti_subtitle');
-            document.getElementById('rating-guide').textContent = t('mbti_rating_guide');
-        } else if (isBig5Test) {
-            document.getElementById('header-title').textContent = t('big5_title');
-            document.getElementById('header-subtitle').textContent = t('big5_subtitle');
-            
-            const ratingLabels = currentLang === 'en' 
-                ? ["Strongly Disagree", "Disagree", "Neutral", "Agree", "Strongly Agree"]
-                : ["Discordo Totalmente", "Discordo", "Neutro", "Concordo", "Concordo Totalmente"];
-            
-            for (let i = 1; i <= 5; i++) {
-                const button = document.getElementById(`rating-${i}`);
-                const label = document.getElementById(`label-${i}`);
-                if (button) button.textContent = i;
-                if (label) label.textContent = ratingLabels[i-1];
+        // 1. Atualiza elementos específicos de TESTE (apenas se não for página de resultado)
+        if (!isResultPage) {
+            const headerTitle = document.getElementById('header-title');
+            const headerSubtitle = document.getElementById('header-subtitle');
+            const ratingGuide = document.getElementById('rating-guide');
+
+            if (isMBTITest) {
+                if (headerTitle) headerTitle.textContent = t('mbti_title');
+                if (headerSubtitle) headerSubtitle.textContent = t('mbti_subtitle');
+                if (ratingGuide) ratingGuide.textContent = t('mbti_rating_guide');
+            } else if (isBig5Test) {
+                if (headerTitle) headerTitle.textContent = t('big5_title');
+                if (headerSubtitle) headerSubtitle.textContent = t('big5_subtitle');
+                
+                // Traduções específicas dos labels do Big 5
+                const ratingLabels = currentLang === 'en' 
+                    ? ["Strongly Disagree", "Disagree", "Neutral", "Agree", "Strongly Agree"]
+                    : (currentLang === 'pt' 
+                        ? ["Discordo Totalmente", "Discordo", "Neutro", "Concordo", "Concordo Totalmente"]
+                        : ["Totalmente en desacuerdo", "En desacuerdo", "Neutral", "De acuerdo", "Totalmente de acuerdo"]);
+                
+                for (let i = 1; i <= 5; i++) {
+                    const button = document.getElementById(`rating-${i}`);
+                    const label = document.getElementById(`label-${i}`);
+                    if (button) button.textContent = i;
+                    if (label) label.textContent = ratingLabels[i-1];
+                }
+                
+                if (ratingGuide) {
+                    ratingGuide.textContent = currentLang === 'en' 
+                        ? "Tap or click a number to rate the statement (1=Strongly Disagree, 5=Strongly Agree)"
+                        : (currentLang === 'pt'
+                            ? "Toque ou clique em um número para avaliar a afirmação (1=Discordo Totalmente, 5=Concordo Totalmente)"
+                            : "Toca o haz clic en un número para calificar (1=Totalmente en desacuerdo, 5=Totalmente de acuerdo)");
+                }
+            } else {
+                // Padrão DISC
+                if (headerTitle) headerTitle.textContent = t('disc_title');
+                if (headerSubtitle) headerSubtitle.textContent = t('disc_subtitle');
+                
+                const r1 = document.getElementById('rating-1');
+                const r2 = document.getElementById('rating-2');
+                const r3 = document.getElementById('rating-3');
+                const r4 = document.getElementById('rating-4');
+                
+                if (r1) r1.textContent = t('rating_1');
+                if (r2) r2.textContent = t('rating_2');
+                if (r3) r3.textContent = t('rating_3');
+                if (r4) r4.textContent = t('rating_4');
+                if (ratingGuide) ratingGuide.textContent = t('rating_guide');
             }
-            
-            document.getElementById('rating-guide').textContent = currentLang === 'en' 
-                ? "Tap or click a number to rate the statement (1=Strongly Disagree, 5=Strongly Agree)"
-                : "Toque ou clique em um número para avaliar a afirmação (1=Discordo Totalmente, 5=Concordo Totalmente)";
-        } else {
-            document.getElementById('header-title').textContent = t('disc_title');
-            document.getElementById('header-subtitle').textContent = t('disc_subtitle');
-            document.getElementById('rating-1').textContent = t('rating_1');
-            document.getElementById('rating-2').textContent = t('rating_2');
-            document.getElementById('rating-3').textContent = t('rating_3');
-            document.getElementById('rating-4').textContent = t('rating_4');
-            document.getElementById('rating-guide').textContent = t('rating_guide');
         }
         
+        // 2. Atualiza elementos COMUNS (existem em teste e resultado)
         const restartBtn = document.getElementById('restart-btn');
         const exportBtn = document.getElementById('export-btn');
+        const backBtn = document.getElementById('back-btn'); // NOVO: Seleciona o botão de voltar
 
         if (restartBtn) restartBtn.textContent = t('restart');
         if (exportBtn) exportBtn.textContent = t('export_pdf');
+        if (backBtn) backBtn.textContent = t('back_to_home'); // NOVO: Aplica a tradução
+        
+        // 3. Se estiver na página de resultados, força recarga do conteúdo dinâmico
+        if (isResultPage) {
+            const type = window.location.pathname.includes('disc') ? 'DISC' : 
+                         (window.location.pathname.includes('mbti') ? 'MBTI' : 'BIG5');
+            loadStoredResult(type);
+        }
+
     } catch (error) {
         console.error('Error updating static text:', error);
     }
@@ -1771,13 +1875,13 @@ function updateIndexStaticText() {
 // Enhanced Question Rendering with Accessibility
 function renderQuestion() {
     try {
-        if (currentQuestionIndex >= discQuestions.length) {
+        if (currentQuestionIndex >= currentTestQuestions.length) {
             showResults();
             return;
         }
 
-        const currentQ = discQuestions[currentQuestionIndex];
-        const totalQuestions = discQuestions.length;
+        const currentQ = currentTestQuestions[currentQuestionIndex];
+        const totalQuestions = currentTestQuestions.length;
 
         questionTextElement.textContent = currentQ.text[currentLang];
         questionTextElement.setAttribute('aria-live', 'polite');
@@ -1804,13 +1908,13 @@ function renderQuestion() {
 
 function renderMBTIQuestion() {
     try {
-        if (currentQuestionIndex >= mbtiQuestions.length) {
+        if (currentQuestionIndex >= currentTestQuestions.length) {
             showResults();
             return;
         }
 
-        const currentQ = mbtiQuestions[currentQuestionIndex];
-        const totalQuestions = mbtiQuestions.length;
+        const currentQ = currentTestQuestions[currentQuestionIndex];
+        const totalQuestions = currentTestQuestions.length;
 
         document.getElementById('option-a-text').textContent = currentQ.optionA[currentLang];
         document.getElementById('option-b-text').textContent = currentQ.optionB[currentLang];
@@ -1845,13 +1949,13 @@ function renderMBTIQuestion() {
 
 function renderBig5Question() {
     try {
-        if (currentQuestionIndex >= big5Questions.length) {
+        if (currentQuestionIndex >= currentTestQuestions.length) {
             showResults();
             return;
         }
 
-        const currentQ = big5Questions[currentQuestionIndex];
-        const totalQuestions = big5Questions.length;
+        const currentQ = currentTestQuestions[currentQuestionIndex];
+        const totalQuestions = currentTestQuestions.length;
 
         questionTextElement.textContent = currentQ.text[currentLang];
         questionTextElement.setAttribute('aria-live', 'polite');
@@ -1879,15 +1983,19 @@ function renderBig5Question() {
 // Enhanced Rating Handlers with Accessibility
 function handleRating(rating, buttonElement) {
     try {
-        if (currentQuestionIndex >= discQuestions.length) return;
+        if (currentQuestionIndex >= currentTestQuestions.length) return;
 
-        const currentQ = discQuestions[currentQuestionIndex];
+        const currentQ = currentTestQuestions[currentQuestionIndex];
 
         Array.from(ratingButtonsContainer.children).forEach(btn => btn.classList.remove('selected'));
         buttonElement.classList.add('selected');
 
         scores[currentQ.factor] += rating;
-        userRatings.push({ factor: currentQ.factor, rating: rating });
+        userRatings.push({ 
+            questionId: currentQ.id,
+            factor: currentQ.factor, 
+            rating: rating 
+        });
         
         // Announce selection for screen readers
         if (accessibilityManager) {
@@ -1908,9 +2016,9 @@ function handleRating(rating, buttonElement) {
 
 function handleMBTIRating(option, buttonElement) {
     try {
-        if (currentQuestionIndex >= mbtiQuestions.length) return;
+        if (currentQuestionIndex >= currentTestQuestions.length) return;
 
-        const currentQ = mbtiQuestions[currentQuestionIndex];
+        const currentQ = currentTestQuestions[currentQuestionIndex];
         const selectedValue = option === 'A' ? currentQ.aValue : currentQ.bValue;
 
         document.getElementById('option-a').classList.remove('selected', 'bg-blue-200', 'border-blue-500', 'bg-gray-100');
@@ -1923,7 +2031,12 @@ function handleMBTIRating(option, buttonElement) {
         }
 
         mbtiScores[selectedValue] += 1;
-        userRatings.push({ dimension: currentQ.dimension, choice: option, value: selectedValue });
+        userRatings.push({ 
+            questionId: currentQ.id,
+            dimension: currentQ.dimension, 
+            choice: option, 
+            value: selectedValue 
+        });
 
         // Announce selection for screen readers
         const selectedText = option === 'A' ? currentQ.optionA[currentLang] : currentQ.optionB[currentLang];
@@ -1945,9 +2058,9 @@ function handleMBTIRating(option, buttonElement) {
 
 function handleBig5Rating(rating, buttonElement) {
     try {
-        if (currentQuestionIndex >= big5Questions.length) return;
+        if (currentQuestionIndex >= currentTestQuestions.length) return;
 
-        const currentQ = big5Questions[currentQuestionIndex];
+        const currentQ = currentTestQuestions[currentQuestionIndex];
 
         Array.from(ratingButtonsContainer.children).forEach(btn => btn.classList.remove('selected'));
         buttonElement.classList.add('selected');
@@ -1955,7 +2068,12 @@ function handleBig5Rating(rating, buttonElement) {
         const finalScore = currentQ.reverse ? (6 - rating) : rating;
         
         big5Scores[currentQ.factor] += finalScore;
-        userRatings.push({ factor: currentQ.factor, rating: rating, finalScore: finalScore });
+        userRatings.push({ 
+            questionId: currentQ.id,
+            factor: currentQ.factor, 
+            rating: rating, 
+            finalScore: finalScore 
+        });
 
         // Announce selection for screen readers
         if (accessibilityManager) {
@@ -2081,8 +2199,6 @@ function showMBTIResults(resultScores, resultInterpretation) {
         saveTestResult({
             testType: 'MBTI',
             type: mbtiType,
-            typeName: typeData.name[currentLang],
-            description: typeData.description[currentLang],
             scores: { ...mbtiScores },
             dimensions: ['EI', 'SN', 'TF', 'JP']
         });
@@ -2248,7 +2364,7 @@ function showBig5Results(resultScores, resultInterpretation) {
 // Enhanced DISC Results with Accessibility
 function showDISCResults(resultScores, resultInterpretation) {
     try {
-        const factorCounts = discQuestions.reduce((acc, q) => {
+        const factorCounts = currentTestQuestions.reduce((acc, q) => {
             acc[q.factor] = (acc[q.factor] || 0) + 1;
             return acc;
         }, {});
@@ -2279,8 +2395,6 @@ function showDISCResults(resultScores, resultInterpretation) {
         saveTestResult({
             testType: 'DISC',
             profileKey: profileKey,
-            profileName: profileData.name[currentLang],
-            description: profileData.description[currentLang],
             scores: { ...scores },
             factors: factorScores
         });
@@ -2441,6 +2555,7 @@ function restartTest() {
 }
 
 // Index Page Functions
+// Enhanced Index Page Functions
 function loadSavedResults() {
     const resultsContainer = document.getElementById('saved-results');
     const section = document.getElementById('saved-results-section');
@@ -2489,6 +2604,9 @@ function loadSavedResults() {
     if (hasResults) {
         resultsContainer.innerHTML = resultsHTML;
         section.classList.remove('hidden');
+        
+        // Re-attach event listeners for dynamically created buttons
+        attachResultCardEvents();
     } else {
         section.classList.add('hidden');
     }
@@ -2496,9 +2614,9 @@ function loadSavedResults() {
 
 function createResultCard(testType, result) {
     const testNames = {
-        DISC: { en: 'DISC Personality', pt: 'Personalidade DISC' },
-        MBTI: { en: 'MBTI Personality', pt: 'Personalidade MBTI' }, 
-        BIG5: { en: 'Big Five Personality', pt: 'Personalidade Big Five' }
+        DISC: { en: 'DISC Personality', pt: 'Personalidade DISC', es: 'Personalidad DISC' },
+        MBTI: { en: 'MBTI Personality', pt: 'Personalidade MBTI', es: 'Personalidad MBTI' }, 
+        BIG5: { en: 'Big Five Personality', pt: 'Personalidade Big Five', es: 'Personalidad Big Five' }
     };
 
     const testColors = {
@@ -2513,43 +2631,55 @@ function createResultCard(testType, result) {
     let content = '';
     
     if (testType === 'DISC') {
+        const profileKey = result.profileKey;
+        const profileData = blendedDescriptions[profileKey];
+        const profileName = profileData ? profileData.name[currentLang] : (result.profileName || 'Unknown Profile');
+        const description = profileData ? profileData.description[currentLang] : (result.description || '');
+        
         content = `
             <div class="flex items-center justify-between">
                 <div>
-                    <h3 class="font-bold text-lg text-${color}-700">${result.profileName}</h3>
-                    <p class="text-gray-600 text-sm">${result.description}</p>
+                    <h3 class="font-bold text-lg text-${color}-700">${profileName}</h3>
+                    <p class="text-gray-600 text-sm">${description}</p>
                 </div>
                 <div class="text-right">
-                    <div class="text-2xl font-bold text-${color}-600">${result.profileKey}</div>
+                    <div class="text-2xl font-bold text-${color}-600">${profileKey}</div>
                     <div class="text-xs text-gray-500">${date}</div>
                 </div>
             </div>
         `;
     } else if (testType === 'MBTI') {
+        const mbtiType = result.type;
+        const typeData = mbtiTypeDescriptions[mbtiType];
+        const typeName = typeData ? typeData.name[currentLang] : (result.typeName || 'Unknown Type');
+        const description = typeData ? typeData.description[currentLang] : (result.description || '');
+        
         content = `
             <div class="flex items-center justify-between">
                 <div>
-                    <h3 class="font-bold text-lg text-${color}-700">${result.typeName}</h3>
-                    <p class="text-gray-600 text-sm">${result.description}</p>
+                    <h3 class="font-bold text-lg text-${color}-700">${typeName}</h3>
+                    <p class="text-gray-600 text-sm">${description}</p>
                 </div>
                 <div class="text-right">
-                    <div class="text-2xl font-bold text-${color}-600">${result.type}</div>
+                    <div class="text-2xl font-bold text-${color}-600">${mbtiType}</div>
                     <div class="text-xs text-gray-500">${date}</div>
                 </div>
             </div>
         `;
     } else if (testType === 'BIG5') {
-        // Calculate trait levels and create friendly description
         const traitAnalysis = analyzeBig5Traits(result.scores, result.maxScores);
         content = createBig5FriendlyDescription(traitAnalysis, date);
     }
 
     return `
-        <div class="p-4 rounded-xl border-2 border-${color}-200 bg-${color}-50 hover:bg-${color}-100 transition duration-300 cursor-pointer" 
-             onclick="retakeTest('${testType}')">
+        <div class="result-card p-4 rounded-xl border-2 border-${color}-200 bg-${color}-50 hover:bg-${color}-100 transition duration-300 cursor-pointer" 
+             data-test-type="${testType}">
             <div class="flex justify-between items-center mb-2">
                 <span class="text-sm font-semibold text-${color}-600">${testNames[testType][currentLang]}</span>
-                <span class="text-xs text-gray-500 hover:text-${color}-700" onclick="event.stopPropagation(); deleteResult('${testType}')">🗑️</span>
+                <button class="delete-btn text-xs text-gray-500 hover:text-red-700 transition duration-200 p-1 rounded" 
+                        data-test-type="${testType}">
+                    🗑️
+                </button>
             </div>
             ${content}
         </div>
@@ -2589,6 +2719,26 @@ function analyzeBig5Traits(scores, maxScores) {
     });
     
     return analysis;
+}
+
+// Attach event listeners to result cards
+function attachResultCardEvents() {
+    // Delete button events
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation(); // Prevent card click event
+            const testType = this.getAttribute('data-test-type');
+            deleteResult(testType);
+        });
+    });
+
+    // Card click events (retake test)
+    document.querySelectorAll('.result-card').forEach(card => {
+        card.addEventListener('click', function() {
+            const testType = this.getAttribute('data-test-type');
+            viewResult(testType);
+        });
+    });
 }
 
 function createBig5FriendlyDescription(traitAnalysis, date) {
@@ -2657,35 +2807,461 @@ function createBig5FriendlyDescription(traitAnalysis, date) {
     return descriptionHTML;
 }
 
+function viewResult(testType) {
+    const resultPages = {
+        DISC: 'disc-result.html',
+        MBTI: 'mbti-result.html',
+        BIG5: 'big5-result.html'
+    };
+    
+    if (resultPages[testType]) {
+        window.location.href = resultPages[testType];
+    } else {
+        console.error('Unknown test type:', testType);
+    }
+}
+
+// Retake a test
 function retakeTest(testType) {
     const testPages = {
-        DISC: 'DISC.html',
+        DISC: 'disc.html',
         MBTI: 'mbti.html',
         BIG5: 'big5.html'
     };
-    window.location.href = testPages[testType];
+    
+    if (testPages[testType]) {
+        window.location.href = testPages[testType];
+    } else {
+        console.error('Unknown test type:', testType);
+    }
 }
 
 function deleteResult(testType) {
     const t = indexTranslations[currentLang];
-    if (confirm(t.confirmDelete)) {
+    if (confirm(t.confirmDelete || 'Are you sure you want to delete this result?')) {
         localStorage.removeItem(CONFIG.resultKeys[testType]);
+        showSuccessMessage(
+            currentLang === 'en' ? 'Result deleted successfully!' : 'Resultado excluído com sucesso!'
+        );
         loadSavedResults();
+        
+        if (accessibilityManager) {
+            accessibilityManager.announce('Result deleted', 'assertive');
+        }
     }
 }
 
+// Clear all results
 function clearAllResults() {
     const t = indexTranslations[currentLang];
-    if (confirm(t.confirmClearAll)) {
+    if (confirm(t.confirmClearAll || 'Are you sure you want to clear all your test results?')) {
         Object.values(CONFIG.resultKeys).forEach(key => {
             localStorage.removeItem(key);
         });
+        showSuccessMessage(
+            currentLang === 'en' ? 'All results cleared successfully!' : 'Todos os resultados foram limpos com sucesso!'
+        );
         loadSavedResults();
+        
+        if (accessibilityManager) {
+            accessibilityManager.announce('All results cleared', 'assertive');
+        }
+    }
+}
+
+// Load and display stored result on result pages
+function loadStoredResult(testType) {
+    try {
+        const resultKey = CONFIG.resultKeys[testType];
+        const storedResult = localStorage.getItem(resultKey);
+        
+        if (!storedResult) {
+            showNoResultMessage(testType);
+            return;
+        }
+
+        const resultData = JSON.parse(storedResult);
+        displayFullResult(testType, resultData);
+        
+    } catch (error) {
+        console.error('Error loading stored result:', error);
+        showNoResultMessage(testType);
+    }
+}
+
+function showNoResultMessage(testType) {
+    const testNames = {
+        DISC: { en: 'DISC', pt: 'DISC' },
+        MBTI: { en: 'MBTI', pt: 'MBTI' },
+        BIG5: { en: 'Big Five', pt: 'Big Five' }
+    };
+    
+    const containerId = `${testType.toLowerCase()}-result-content`;
+    const container = document.getElementById(containerId);
+    
+    if (container) {
+        container.innerHTML = `
+            <div class="text-center py-12">
+                <div class="text-6xl mb-4">😕</div>
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">${currentLang === 'en' ? 'No Results Found' : 'Nenhum Resultado Encontrado'}</h2>
+                <p class="text-gray-600 mb-6">${currentLang === 'en' 
+                    ? `No saved results found for the ${testNames[testType].en} test.` 
+                    : `Nenhum resultado salvo encontrado para o teste ${testNames[testType].pt}.`}</p>
+                <a href="${testType.toLowerCase()}.html" class="px-6 py-3 bg-indigo-500 text-white font-semibold rounded-lg hover:bg-indigo-600 transition duration-300">
+                    ${currentLang === 'en' ? 'Take the Test' : 'Fazer o Teste'}
+                </a>
+            </div>
+        `;
+    }
+}
+
+function displayFullResult(testType, resultData) {
+    const containerId = `${testType.toLowerCase()}-result-content`;
+    const container = document.getElementById(containerId);
+    
+    if (!container) return;
+
+    let resultHTML = '';
+    
+    switch (testType) {
+        case 'DISC':
+            resultHTML = generateDISCResultHTML(resultData);
+            break;
+        case 'MBTI':
+            resultHTML = generateMBTIResultHTML(resultData);
+            break;
+        case 'BIG5':
+            resultHTML = generateBig5ResultHTML(resultData);
+            break;
+    }
+    
+    container.innerHTML = resultHTML;
+    
+    // Re-attach event listeners for PDF export
+    attachResultPageEventListeners(testType);
+}
+
+function generateDISCResultHTML(resultData) {
+    const profileKey = resultData.profileKey;
+    const profileData = blendedDescriptions[profileKey];
+    const profileName = profileData ? profileData.name[currentLang] : 'Unknown Profile';
+    const description = profileData ? profileData.description[currentLang] : '';
+    
+    const factorScores = resultData.factors || [];
+    const scores = resultData.scores || {};
+    
+    let scoresHTML = '';
+    const factorOrder = ['D', 'I', 'S', 'C'];
+    
+    factorOrder.forEach(factor => {
+        const score = scores[factor] || 0;
+        const desc = discDescriptions[factor];
+        const factorCount = 8; // Default, you might want to store this in resultData
+        const maxScore = factorCount * 4;
+        const percentage = Math.round((score / maxScore) * 100);
+        
+        scoresHTML += `
+            <div class="p-6 rounded-xl border-2 ${desc.style} shadow-lg">
+                <div class="flex items-center mb-4">
+                    <span class="text-3xl mr-3">${desc.icon}</span>
+                    <h3 class="text-xl font-bold">${desc.title[currentLang]}</h3>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2.5 mb-2">
+                    <div class="h-2.5 rounded-full bg-indigo-600" style="width: ${percentage}%"></div>
+                </div>
+                <p class="text-sm font-semibold mt-2">${score} / ${maxScore} ${t('points')} (${percentage}%)</p>
+            </div>
+        `;
+    });
+
+    return `
+        <div class="text-center mb-10">
+            <h1 class="text-4xl font-extrabold text-gray-800 mb-4">${t('disc_title')}</h1>
+            <p class="text-gray-500">${currentLang === 'en' ? 'Your complete DISC personality assessment results' : 'Seus resultados completos da avaliação de personalidade DISC'}</p>
+        </div>
+
+        <!-- Profile Overview -->
+        <div class="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl p-8 text-white text-center mb-10 shadow-2xl">
+            <div class="text-6xl font-bold mb-4">${profileKey}</div>
+            <h2 class="text-3xl font-bold mb-4">${profileName}</h2>
+            <p class="text-indigo-100 text-lg">${description}</p>
+        </div>
+
+        <!-- Score Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+            ${scoresHTML}
+        </div>
+
+        <!-- Detailed Interpretation -->
+        <div class="mb-10">
+            <h3 class="text-2xl font-bold text-gray-800 mb-6 border-b pb-2">${t('interpretation_title')}</h3>
+            <div class="bg-white p-6 rounded-xl border-l-4 ${profileData.style} shadow-md">
+                <h4 class="text-xl font-bold text-gray-800 mb-3 flex items-center">
+                    <span class="text-2xl mr-3">${discDescriptions[profileKey.charAt(0)].icon}</span>
+                    ${profileName} ${currentLang === 'en' ? 'Profile' : 'Perfil'}
+                </h4>
+                <p class="text-gray-600 leading-relaxed">${description}</p>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="text-center space-x-4">
+            <button onclick="restartTestFromResult('DISC')" class="px-8 py-3 bg-indigo-500 text-white font-bold rounded-xl hover:bg-indigo-600 transition duration-300 shadow-lg">
+                ${t('restart')}
+            </button>
+            <button onclick="exportResultToPDF('DISC')" class="px-8 py-3 bg-green-500 text-white font-bold rounded-xl hover:bg-green-600 transition duration-300 shadow-lg">
+                ${t('export_pdf')}
+            </button>
+        </div>
+    `;
+}
+
+function generateMBTIResultHTML(resultData) {
+    const mbtiType = resultData.type;
+    const typeData = mbtiTypeDescriptions[mbtiType];
+    const typeName = typeData ? typeData.name[currentLang] : 'Unknown Type';
+    const description = typeData ? typeData.description[currentLang] : '';
+    const scores = resultData.scores || {};
+    
+    let dimensionsHTML = '';
+    const dimensions = [
+        { dim: 'E', opposite: 'I' },
+        { dim: 'S', opposite: 'N' },
+        { dim: 'T', opposite: 'F' },
+        { dim: 'J', opposite: 'P' }
+    ];
+
+    dimensions.forEach(({ dim, opposite }) => {
+        const dimData = mbtiDimensions[dim];
+        const oppData = mbtiDimensions[opposite];
+        const dimScore = scores[dim] || 0;
+        const oppScore = scores[opposite] || 0;
+        const totalQuestions = 7; // MBTI questions per dimension
+        const dimPercentage = Math.round((dimScore / totalQuestions) * 100);
+        const oppPercentage = Math.round((oppScore / totalQuestions) * 100);
+        const isPreferred = dimScore >= oppScore;
+
+        dimensionsHTML += `
+            <div class="p-6 rounded-xl border-2 ${dimData.style} shadow-lg transition duration-300 ${isPreferred ? 'scale-[1.02] ring-4 ring-offset-2 ring-purple-500' : ''}">
+                <div class="flex items-center mb-4">
+                    <span class="text-3xl mr-3">${dimData.icon}</span>
+                    <h3 class="text-xl font-bold">${dimData.title[currentLang]} vs ${oppData.title[currentLang]}</h3>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2.5 mb-2">
+                    <div class="h-2.5 rounded-full ${isPreferred ? 'bg-purple-600' : 'bg-gray-500'}" style="width: ${dimPercentage}%"></div>
+                </div>
+                <div class="flex justify-between text-sm font-semibold">
+                    <span>${dimData.title[currentLang]} ${dimPercentage}%</span>
+                    <span>${oppData.title[currentLang]} ${oppPercentage}%</span>
+                </div>
+                <p class="text-sm mt-2 text-gray-600">${dimData.description[currentLang]}</p>
+            </div>
+        `;
+    });
+
+    return `
+        <div class="text-center mb-10">
+            <h1 class="text-4xl font-extrabold text-gray-800 mb-4">${t('mbti_title')}</h1>
+            <p class="text-gray-500">${currentLang === 'en' ? 'Your complete MBTI personality type results' : 'Seus resultados completos do tipo de personalidade MBTI'}</p>
+        </div>
+
+        <!-- Type Display -->
+        <div class="bg-gradient-to-r from-purple-500 to-indigo-600 rounded-2xl p-8 text-white text-center mb-10 shadow-2xl">
+            <div class="text-6xl font-bold mb-4">${mbtiType}</div>
+            <h2 class="text-3xl font-bold mb-4">${typeName}</h2>
+            <p class="text-purple-100 text-lg">${currentLang === 'en' ? 'Your Personality Type' : 'Seu Tipo de Personalidade'}</p>
+        </div>
+
+        <!-- Dimension Scores -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+            ${dimensionsHTML}
+        </div>
+
+        <!-- Detailed Interpretation -->
+        <div class="mb-10">
+            <h3 class="text-2xl font-bold text-gray-800 mb-6 border-b pb-2">${t('mbti_interpretation_title')}</h3>
+            <div class="bg-white p-6 rounded-xl border-l-4 border-purple-500 shadow-md">
+                <h4 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
+                    <span class="text-3xl mr-3">${mbtiDimensions[mbtiType[0]].icon}</span>
+                    ${mbtiType} - ${typeName}
+                </h4>
+                <p class="text-gray-600 leading-relaxed text-lg">${description}</p>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="text-center space-x-4">
+            <button onclick="restartTestFromResult('MBTI')" class="px-8 py-3 bg-indigo-500 text-white font-bold rounded-xl hover:bg-indigo-600 transition duration-300 shadow-lg">
+                ${t('restart')}
+            </button>
+            <button onclick="exportResultToPDF('MBTI')" class="px-8 py-3 bg-green-500 text-white font-bold rounded-xl hover:bg-green-600 transition duration-300 shadow-lg">
+                ${t('export_pdf')}
+            </button>
+        </div>
+    `;
+}
+
+function generateBig5ResultHTML(resultData) {
+    const scores = resultData.scores || {};
+    const maxScores = resultData.maxScores || { O: 40, C: 40, E: 40, A: 40, N: 40 };
+    
+    let scoresHTML = '';
+    const factors = ['O', 'C', 'E', 'A', 'N'];
+
+    factors.forEach(factor => {
+        const desc = big5Descriptions[factor];
+        const score = scores[factor] || 0;
+        const maxScore = maxScores[factor] || 40;
+        const percentage = Math.round((score / maxScore) * 100);
+
+        let interpretation = "";
+        if (percentage >= 70) {
+            interpretation = factor === 'N' ? 
+                (currentLang === 'en' ? "High - May experience frequent emotional distress" : "Alto - Pode experimentar angústia emocional frequente") :
+                (currentLang === 'en' ? "High - Strong tendency in this trait" : "Alto - Forte tendência neste traço");
+        } else if (percentage >= 30) {
+            interpretation = currentLang === 'en' ? "Moderate - Balanced level of this trait" : "Moderado - Nível equilibrado deste traço";
+        } else {
+            interpretation = factor === 'N' ?
+                (currentLang === 'en' ? "Low - Emotionally stable and resilient" : "Baixo - Estável emocionalmente e resiliente") :
+                (currentLang === 'en' ? "Low - Limited tendency in this trait" : "Baixo - Tendência limitada neste traço");
+        }
+
+        scoresHTML += `
+            <div class="p-6 rounded-xl border-2 ${desc.style} shadow-lg">
+                <div class="flex items-center mb-4">
+                    <span class="text-3xl mr-3">${desc.icon}</span>
+                    <h3 class="text-xl font-bold">${desc.title[currentLang]}</h3>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2.5 mb-2">
+                    <div class="h-2.5 rounded-full bg-indigo-600" style="width: ${percentage}%"></div>
+                </div>
+                <p class="text-sm font-semibold mt-2">${score}/${maxScore} ${t('points')} (${percentage}%)</p>
+                <p class="text-sm mt-2 text-gray-600">${desc.description[currentLang]}</p>
+                <p class="text-sm mt-2 font-semibold ${percentage >= 70 ? 'text-green-600' : percentage >= 30 ? 'text-yellow-600' : 'text-blue-600'}">
+                    ${interpretation}
+                </p>
+            </div>
+        `;
+    });
+
+    return `
+        <div class="text-center mb-10">
+            <h1 class="text-4xl font-extrabold text-gray-800 mb-4">${t('big5_title')}</h1>
+            <p class="text-gray-500">${currentLang === 'en' ? 'Your complete Big Five personality traits results' : 'Seus resultados completos dos traços de personalidade Big Five'}</p>
+        </div>
+
+        <!-- Score Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+            ${scoresHTML}
+        </div>
+
+        <!-- Trait Interpretations -->
+        <div class="mb-10">
+            <h3 class="text-2xl font-bold text-gray-800 mb-6 border-b pb-2">${t('big5_interpretation_title')}</h3>
+            <div class="bg-white p-6 rounded-xl border-l-4 border-indigo-500 shadow-md">
+                <h4 class="text-xl font-bold text-gray-800 mb-4">${currentLang === 'en' ? 'Understanding Your Big Five Results' : 'Entendendo Seus Resultados Big Five'}</h4>
+                <p class="text-gray-600 mb-4">
+                    ${currentLang === 'en' ? 
+                    "The Big Five personality traits represent five broad domains of human personality. Your scores indicate your relative standing on each dimension compared to the general population. Remember that all traits have both strengths and challenges, and no single score is 'better' than another." :
+                    "Os cinco grandes traços de personalidade representam cinco domínios amplos da personalidade humana. Suas pontuações indicam sua posição relativa em cada dimensão em comparação com a população em geral. Lembre-se de que todos os traços têm pontos fortes e desafios, e nenhuma pontuação única é 'melhor' que outra."}
+                </p>
+                <ul class="list-disc list-inside text-gray-600 space-y-2">
+                    <li><strong>${t('big5_openness')}:</strong> ${currentLang === 'en' ? "Imagination, creativity, curiosity, and appreciation for new experiences" : "Imaginação, criatividade, curiosidade e apreço por novas experiências"}</li>
+                    <li><strong>${t('big5_conscientiousness')}:</strong> ${currentLang === 'en' ? "Organization, diligence, reliability, and goal-directed behavior" : "Organização, diligência, confiabilidade e comportamento orientado a objetivos"}</li>
+                    <li><strong>${t('big5_extraversion')}:</strong> ${currentLang === 'en' ? "Sociability, assertiveness, energy, and positive emotions" : "Sociabilidade, assertividade, energia e emoções positivas"}</li>
+                    <li><strong>${t('big5_agreeableness')}:</strong> ${currentLang === 'en' ? "Compassion, cooperation, trust, and concern for social harmony" : "Compaixão, cooperação, confiança e preocupação com a harmonia social"}</li>
+                    <li><strong>${t('big5_neuroticism')}:</strong> ${currentLang === 'en' ? "Anxiety, moodiness, emotional sensitivity, and vulnerability to stress" : "Ansiedade, instabilidade emocional, sensibilidade emocional e vulnerabilidade ao estresse"}</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="text-center space-x-4">
+            <button onclick="restartTestFromResult('BIG5')" class="px-8 py-3 bg-indigo-500 text-white font-bold rounded-xl hover:bg-indigo-600 transition duration-300 shadow-lg">
+                ${t('restart')}
+            </button>
+            <button onclick="exportResultToPDF('BIG5')" class="px-8 py-3 bg-green-500 text-white font-bold rounded-xl hover:bg-green-600 transition duration-300 shadow-lg">
+                ${t('export_pdf')}
+            </button>
+        </div>
+    `;
+}
+
+function attachResultPageEventListeners(testType) {
+    // PDF export functionality
+    const exportButtons = document.querySelectorAll('button[onclick*="exportResultToPDF"]');
+    exportButtons.forEach(button => {
+        button.addEventListener('click', () => exportResultToPDF(testType));
+    });
+
+    // Restart test functionality
+    const restartButtons = document.querySelectorAll('button[onclick*="restartTestFromResult"]');
+    restartButtons.forEach(button => {
+        button.addEventListener('click', () => restartTestFromResult(testType));
+    });
+}
+
+function exportResultToPDF(testType) {
+    const loading = showLoading(currentLang === 'en' ? 'Generating PDF...' : 'Gerando PDF...');
+    
+    try {
+        const containerId = `${testType.toLowerCase()}-result-content`;
+        const element = document.getElementById(containerId);
+        
+        let filename;
+        if (testType === 'MBTI') {
+            filename = t('mbti_filename');
+        } else if (testType === 'BIG5') {
+            filename = t('big5_filename');
+        } else {
+            filename = t('filename');
+        }
+        
+        const options = {
+            margin: 10,
+            filename: filename + '.pdf',
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { 
+                scale: 3, 
+                logging: false, 
+                useCORS: true,
+                windowWidth: element.scrollWidth,
+                windowHeight: element.scrollHeight
+            }, 
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+
+        html2pdf().set(options).from(element).save().then(() => {
+            hideLoading();
+            showSuccessMessage(currentLang === 'en' ? 'PDF exported successfully!' : 'PDF exportado com sucesso!');
+        }).catch(error => {
+            console.error('PDF generation failed:', error);
+            hideLoading();
+            showError(t('error_pdf'));
+        });
+
+    } catch (error) {
+        console.error('Error exporting to PDF:', error);
+        hideLoading();
+        showError(t('error_pdf'));
+    }
+}
+
+function restartTestFromResult(testType) {
+    const testPages = {
+        DISC: 'disc.html',
+        MBTI: 'mbti.html',
+        BIG5: 'big5.html'
+    };
+    
+    if (testPages[testType]) {
+        window.location.href = testPages[testType];
     }
 }
 
 // Enhanced Initialization
-function init() {
+async function init() {
     try {
         // Load language preference
         try {
@@ -2702,8 +3278,8 @@ function init() {
 
         if (isIndexPage) {
             initIndexPage();
-        } else {
-            initTestPage();
+        } else if (!isResultPage) { // ALTERE ESTA LINHA (adicione o !isResultPage)
+            await initTestPage();
         }
         
     } catch (error) {
@@ -2712,7 +3288,7 @@ function init() {
     }
 }
 
-function initTestPage() {
+async function initTestPage() {
     try {
         testContainer = document.getElementById('test-container');
         resultsContainer = document.getElementById('results-container');
@@ -2724,9 +3300,24 @@ function initTestPage() {
         // Initialize accessibility manager
         accessibilityManager = new AccessibilityManager();
 
+        // Show loading while fetching questions
+        const loading = showLoading(t('loading'));
+
+        // Fetch questions from database
+        let testType = '';
+        if (isDISCTest) testType = 'disc';
+        else if (isMBTITest) testType = 'mbti';
+        else if (isBig5Test) testType = 'big5';
+
+        currentTestQuestions = await fetchQuestions(testType, currentLang);
+        
+        hideLoading();
+
         // Validate test data
         if (!validateTestData()) {
             console.warn(t('test_data_invalid'));
+            showError(t('test_data_invalid'));
+            return;
         }
 
         // Load progress if available
@@ -2753,19 +3344,19 @@ function initTestPage() {
         
         // Render initial question based on test type
         if (isMBTITest) {
-            if (currentQuestionIndex < mbtiQuestions.length) {
+            if (currentQuestionIndex < currentTestQuestions.length) {
                 renderMBTIQuestion();
             } else {
                 showResults();
             }
         } else if (isBig5Test) {
-            if (currentQuestionIndex < big5Questions.length) {
+            if (currentQuestionIndex < currentTestQuestions.length) {
                 renderBig5Question();
             } else {
                 showResults();
             }
         } else {
-            if (currentQuestionIndex < discQuestions.length) {
+            if (currentQuestionIndex < currentTestQuestions.length) {
                 renderQuestion();
             } else {
                 showResults();
@@ -2798,6 +3389,7 @@ function initIndexPage() {
         const clearBtn = document.getElementById('clear-results-btn');
         if (clearBtn) {
             clearBtn.addEventListener('click', clearAllResults);
+            clearBtn.setAttribute('aria-label', tIndex('clearResults'));
         }
 
         // Setup enhanced keyboard navigation
@@ -2825,6 +3417,7 @@ if (typeof module !== 'undefined' && module.exports) {
         getProfileKey,
         calculateMBTIType,
         TestRunner,
-        saveTestResult
+        saveTestResult,
+        fetchQuestions
     };
 }
