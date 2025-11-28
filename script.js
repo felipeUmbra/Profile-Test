@@ -1450,11 +1450,11 @@ const mbtiDimensions = {
 
 // Big Five Dimension descriptions
 const big5Descriptions = {
-    O: { title: { en: "Openness", pt: "Abertura", es: "Apertura"}, style: "bg-purple-100 border-purple-500 text-purple-700", icon: "🌈", description: { en: "Imagination, creativity, curiosity", pt: "Imaginação, criatividade, curiosidade" } },
-    C: { title: { en: "Conscientiousness", pt: "Conscienciosidade", es: "Responsabilidad"}, style: "bg-blue-100 border-blue-500 text-blue-700", icon: "📊", description: { en: "Organization, diligence, reliability", pt: "Organização, diligência, confiabilidade" } },
-    E: { title: { en: "Extraversion", pt: "Extroversão", es: "Extraversión"}, style: "bg-yellow-100 border-yellow-500 text-yellow-700", icon: "🌟", description: { en: "Sociability, assertiveness, energy", pt: "Sociabilidade, assertividade, energia" } },
-    A: { title: { en: "Agreeableness", pt: "Amabilidade", es: "Amistabilidad"}, style: "bg-green-100 border-green-500 text-green-700", icon: "🤝", description: { en: "Compassion, cooperation, trust", pt: "Compaixão, cooperação, confiança" } },
-    N: { title: { en: "Neuroticism", pt: "Neuroticismo", es: "Neuroticismo"}, style: "bg-red-100 border-red-500 text-red-700", icon: "🌊", description: { en: "Anxiety, moodiness, emotional sensitivity", pt: "Ansiedade, instabilidade emocional, sensibilidade" } }
+    O: { title: { en: "Openness", pt: "Abertura", es: "Apertura"}, style: "bg-purple-100 border-purple-500 text-purple-700", icon: "🌈", description: { en: "Imagination, creativity, curiosity", pt: "Imaginação, criatividade, curiosidade", es: "Imaginación, creatividad, curiosidad"} },
+    C: { title: { en: "Conscientiousness", pt: "Conscienciosidade", es: "Responsabilidad"}, style: "bg-blue-100 border-blue-500 text-blue-700", icon: "📊", description: { en: "Organization, diligence, reliability", pt: "Organização, diligência, confiabilidade", es: "Organización, diligencia, fiabilidad"} },
+    E: { title: { en: "Extraversion", pt: "Extroversão", es: "Extraversión"}, style: "bg-yellow-100 border-yellow-500 text-yellow-700", icon: "🌟", description: { en: "Sociability, assertiveness, energy", pt: "Sociabilidade, assertividade, energia", es: "Sociabilidad, assertividad, energía"} },
+    A: { title: { en: "Agreeableness", pt: "Amabilidade", es: "Amistabilidad"}, style: "bg-green-100 border-green-500 text-green-700", icon: "🤝", description: { en: "Compassion, cooperation, trust", pt: "Compaixão, cooperação, confiança", es: "Compación, colaboración, confianza"} },
+    N: { title: { en: "Neuroticism", pt: "Neuroticismo", es: "Neuroticismo"}, style: "bg-red-100 border-red-500 text-red-700", icon: "🌊", description: { en: "Anxiety, moodiness, emotional sensitivity", pt: "Ansiedade, instabilidade emocional, sensibilidade", es:"Ansiedad, cambios de humor, sensibilidad emocional" } }
 };
 
 // MBTI Type Descriptions
