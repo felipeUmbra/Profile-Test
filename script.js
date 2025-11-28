@@ -3266,7 +3266,7 @@ async function init() {
         // Load language preference
         try {
             const savedLang = localStorage.getItem('personalityTest_language');
-            if (savedLang && (savedLang === 'en' || savedLang === 'pt')) {
+            if (savedLang && (savedLang === 'en' || savedLang === 'pt' || savedLang === 'es')) {
                 currentLang = savedLang;
             }
         } catch (e) {

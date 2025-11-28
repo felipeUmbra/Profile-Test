@@ -4,14 +4,18 @@
   "description": "Migrate questions to SQL Server",
   "main": "migrate-questions.js",
   "scripts": {
-    "migrate": "node migrate-questions.js"
+    "migrate": "node migrate-questions.js",
+    "start": "node server.js",
+    "dev:css": "tailwindcss -i ./input.css -o ./output.css --watch",
+    "build:css": "tailwindcss -i ./input.css -o ./output.css --minify"
   },
   "dependencies": {
     "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "mssql": "^12.0.0"
   },
   "devDependencies": {
-    "tailwindcss": "^4.1.16"
+    "tailwindcss": "^4.1.17"
   }
 }
