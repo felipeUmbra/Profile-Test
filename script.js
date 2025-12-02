@@ -846,6 +846,25 @@ async function fetchQuestions(testType, lang = 'en') {
 // Transform backend questions to frontend format
 function transformQuestions(backendQuestions, testType, lang) {
     try {
+        if (!backendQuestions || backendQuestions.length === 0) return [];
+
+        // ✅ NEW: MongoDB Detection
+        // If the data is already in the correct format (has 'text' object or 'optionA' object), 
+        // return it directly without trying to transform it again.
+        const firstQ = backendQuestions[0];
+        const isAlreadyFormatted = 
+            (testType !== 'mbti' && firstQ.text && typeof firstQ.text === 'object') ||
+            (testType === 'mbti' && firstQ.optionA && typeof firstQ.optionA === 'object');
+
+        if (isAlreadyFormatted) {
+            console.log(`✅ Data already formatted for ${testType} (MongoDB source)`);
+            return backendQuestions;
+        }
+
+        // ⚠️ OLD: SQL Server / Fallback Logic
+        // This runs only if the data looks like the old flat format
+        console.log(`⚠️ Transforming data for ${testType} (Legacy/Fallback source)`);
+        
         if (testType === 'disc') {
             return backendQuestions.map(q => ({
                 id: q.id,
@@ -866,7 +885,6 @@ function transformQuestions(backendQuestions, testType, lang) {
                         optionA = parsed.optionA || { en: '', pt: '' };
                         optionB = parsed.optionB || { en: '', pt: '' };
                     } catch (e) {
-                        // If parsing fails, use the text directly
                         optionA = { en: q.question_text, pt: q.question_text };
                         optionB = { en: q.question_text, pt: q.question_text };
                     }
@@ -886,7 +904,7 @@ function transformQuestions(backendQuestions, testType, lang) {
                         pt: optionB.pt || q.question_text_pt
                     },
                     dimension: q.factor,
-                    aValue: q.factor ? q.factor[0] : 'E', // Default fallbacks
+                    aValue: q.factor ? q.factor[0] : 'E',
                     bValue: q.factor ? q.factor[1] : 'I'
                 };
             });
