@@ -1,7 +1,7 @@
 import { CONFIG, translations, discDescriptions, blendedDescriptions, 
     mbtiDimensions, big5TraitDescriptions } from './data.js';
 import { t, AccessibilityManager, debounce } from './utils.js';
-import { fetchQuestions, saveProgress, saveResult } from './js/api.js';
+import { fetchQuestions, saveProgress, saveResult } from './api.js';
 import { calculateDISCScore, calculateMBTIType, calculateBig5Score } from './scoring.js';
 
 // --- Global State ---
@@ -40,25 +40,20 @@ async function init() {
 }
 
 // --- Page Logic: Index ---
-// --- Page Logic: Index ---
 function initIndexPage() {
     try {
-        // FIX: Don't re-assign AccessibilityManager. Use state.a11y instead.
-        // state.a11y was already initialized in init()
+        // Fix: Use state.a11y instead of overwriting the class
         
         // Initialize static text
-        // Note: You need to define updateIndexStaticText and other helpers or import them
         if (typeof updateIndexStaticText === 'function') updateIndexStaticText();
         if (typeof loadSavedResults === 'function') loadSavedResults();
         
         // Add event listener to clear button
         const clearBtn = document.getElementById('clear-results-btn');
         if (clearBtn) {
-            // Ensure clearAllResults is defined or imported
             if (typeof clearAllResults === 'function') {
                 clearBtn.addEventListener('click', clearAllResults);
             }
-            // Use the t() helper if tIndex isn't defined
             const label = (typeof tIndex === 'function') ? tIndex('clearResults') : t('clearResults', state.lang);
             clearBtn.setAttribute('aria-label', label);
         }
@@ -68,7 +63,7 @@ function initIndexPage() {
             setupEnhancedKeyboardNavigation();
         }
         
-        // Announce application ready using the STATE instance
+        // Announce application ready
         setTimeout(() => {
             if (state.a11y) {
                 state.a11y.announce('Personality test hub loaded and ready. Choose a test to begin.', 'polite');
@@ -77,7 +72,6 @@ function initIndexPage() {
         
     } catch (error) {
         console.error('Error initializing index page:', error);
-        // Ensure showError is defined
         if (typeof showError === 'function') showError(t('error_general', state.lang));
     }
 }
@@ -157,7 +151,6 @@ function renderQuestion() {
 }
 
 function getQuestionText(q) {
-    // Handle MongoDB structure ({en: "", pt: ""}) vs Flat
     if (q.text && typeof q.text === 'object') return q.text[state.lang] || q.text['en'];
     return q.text || '';
 }
@@ -166,9 +159,8 @@ function getQuestionText(q) {
 
 function renderLikertQuestion(container, q) {
     const text = getQuestionText(q);
-    const options = [1, 2, 3, 4, 5]; // 1=Strongly Disagree, 5=Strongly Agree
+    const options = [1, 2, 3, 4, 5]; 
     
-    // Labels for accessibility
     const labels = {
         1: t('strongly_disagree', state.lang),
         5: t('strongly_agree', state.lang)
@@ -192,8 +184,14 @@ function renderLikertQuestion(container, q) {
 }
 
 function renderMBTIQuestion(container, q) {
-    const optA = q.optionA[state.lang] || q.optionA['en'];
-    const optB = q.optionB[state.lang] || q.optionB['en'];
+    // ✅ FIX: Handle nested Mongo structure (q.options.optionA) OR flat structure
+    const optionsObj = q.options || q;
+    const optionA = optionsObj.optionA;
+    const optionB = optionsObj.optionB;
+
+    // Safely access language with fallback
+    const optA = optionA?.[state.lang] || optionA?.['en'] || "Option A";
+    const optB = optionB?.[state.lang] || optionB?.['en'] || "Option B";
 
     container.innerHTML = `
         <h2 class="text-xl font-bold mb-6 text-gray-800 dark:text-white mb-8">${t('choose_option', state.lang)}</h2>
@@ -226,32 +224,36 @@ function renderNavButtons() {
 
 // --- Interaction Handlers ---
 
-// Exposed to window for HTML onclick access
 window.handleRating = async (rating) => {
     const q = state.questions[state.currentQuestionIndex];
     
-    // Save Answer Locally
     state.answers[state.currentQuestionIndex] = { questionId: q.id, rating, factor: q.factor };
     
-    // Update Scores (Optimistic)
-    // Note: Real scoring logic should ideally be recalculated at the end to handle 'reverse' properly
     if (state.testType === 'disc') {
         state.scores[q.factor] = (state.scores[q.factor] || 0) + rating;
     } else if (state.testType === 'big5') {
-        // Handle reverse scoring inside the handler or scoring util
         const score = q.reverse ? (6 - rating) : rating;
         state.scores[q.factor] = (state.scores[q.factor] || 0) + score;
     }
 
-    // Save to Backend (Fire and forget)
     saveProgress(state.sessionId, CONFIG[state.testType.toUpperCase()].testId, state.currentQuestionIndex, state.answers);
-
     nextQuestion();
 };
 
 window.handleMBTIOption = async (optionChar) => {
     const q = state.questions[state.currentQuestionIndex];
-    const value = optionChar === 'A' ? q.aValue : q.bValue; // e.g. 'E' or 'I'
+    
+    // ✅ FIX: Handle nested Mongo values (q.values.a) OR flat structure
+    let valA, valB;
+    if (q.values) {
+        valA = q.values.a;
+        valB = q.values.b;
+    } else {
+        valA = q.aValue;
+        valB = q.bValue;
+    }
+
+    const value = optionChar === 'A' ? valA : valB;
     
     state.answers[state.currentQuestionIndex] = { questionId: q.id, selected: optionChar, value };
     state.scores[value] = (state.scores[value] || 0) + 1;
@@ -277,7 +279,6 @@ window.setLanguage = (lang) => {
     localStorage.setItem('lang', lang);
     updatePageTranslations();
     
-    // Re-render if inside a test
     if (state.questions.length > 0) {
         renderQuestion();
     }
@@ -291,26 +292,22 @@ async function finishTest() {
 
     let profileKey;
     
-    // Final Calculation
     if (state.testType === 'disc') {
         profileKey = calculateDISCScore(state.scores);
     } else if (state.testType === 'mbti') {
         profileKey = calculateMBTIType(state.scores);
     } else if (state.testType === 'big5') {
-        profileKey = 'completed'; // Big5 usually shows a chart, not a single key
+        profileKey = 'completed';
     }
 
-    // Save Final Result
     await saveResult(state.sessionId, CONFIG[state.testType.toUpperCase()].testId, state.scores, profileKey);
 
-    // Redirect
     const resultPage = `${state.testType}-result.html`;
     let queryParams = `?s=${state.sessionId}`;
     
     if (state.testType === 'disc') queryParams += `&type=${profileKey}`;
     if (state.testType === 'mbti') queryParams += `&type=${profileKey}`;
     if (state.testType === 'big5') {
-        // Pass scores in URL for simplicity, or fetch from DB by sessionId on result page
         queryParams += `&o=${state.scores.O}&c=${state.scores.C}&e=${state.scores.E}&a=${state.scores.A}&n=${state.scores.N}`;
     }
 
@@ -323,25 +320,20 @@ async function initResultPage() {
     updatePageTranslations();
     
     const params = new URLSearchParams(window.location.search);
-    const sessionId = params.get('s');
-    const container = document.getElementById('results-content'); // Ensure this ID exists in your result HTMLs
+    const container = document.getElementById('results-content');
     
     if (!container) return;
 
-    // 1. DISC Result Logic
     if (window.location.pathname.includes('disc')) {
         const type = params.get('type');
-        // Try to get detailed scores from LocalStorage if available (since URL only has type)
-        // In a production app, you would fetch this from the API using sessionId
         const storedResult = JSON.parse(localStorage.getItem(CONFIG.DISC.resultKeys?.DISC || 'personalityTest_disc_result')) || {};
-        const scores = storedResult.scores || { D:0, I:0, S:0, C:0 }; // Fallback/Empty
+        const scores = storedResult.scores || { D:0, I:0, S:0, C:0 };
 
         if (type) {
             renderDISCResults(container, type, scores);
         }
     }
 
-    // 2. MBTI Result Logic
     if (window.location.pathname.includes('mbti')) {
         const type = params.get('type');
         const storedResult = JSON.parse(localStorage.getItem(CONFIG.MBTI.resultKeys?.MBTI || 'personalityTest_mbti_result')) || {};
@@ -352,9 +344,7 @@ async function initResultPage() {
         }
     }
 
-    // 3. Big5 Result Logic
     if (window.location.pathname.includes('big5')) {
-        // Big5 passes scores in URL: ?o=30&c=20...
         const scores = {
             O: parseInt(params.get('o')) || 0,
             C: parseInt(params.get('c')) || 0,
@@ -366,7 +356,6 @@ async function initResultPage() {
         renderBig5Results(container, scores);
     }
 
-    // 4. Charts (Optional Shared Logic)
     if (typeof Chart !== 'undefined') {
         renderCharts(params);
     }
@@ -378,9 +367,8 @@ function renderDISCResults(container, profileKey, scores) {
     const profileData = blendedDescriptions[profileKey];
     if (!profileData) return;
 
-    // Calculate percentages for the Bar Charts
     const factors = ['D', 'I', 'S', 'C'];
-    const maxScore = 30; // approx max per factor
+    const maxScore = 30;
     
     const scoresHTML = factors.map(factor => {
         const score = scores[factor] || 0;
@@ -435,7 +423,6 @@ function renderMBTIResults(container, type, scores) {
     const typeData = mbtiDimensions[type];
     if (!typeData) return;
 
-    // Dimension Bars
     const pairs = [['E', 'I'], ['S', 'N'], ['T', 'F'], ['J', 'P']];
     
     const barsHTML = pairs.map(([a, b]) => {
@@ -502,7 +489,6 @@ function renderBig5Results(container, scores) {
         const desc = big5TraitDescriptions[factor];
         
         let levelText = percent > 66 ? 'High' : (percent > 33 ? 'Moderate' : 'Low'); 
-        // Simple translation map for levels
         const levels = {
             'High': { en: 'High', pt: 'Alto', es: 'Alto' },
             'Moderate': { en: 'Moderate', pt: 'Moderado', es: 'Moderado' },
@@ -547,10 +533,7 @@ function renderBig5Results(container, scores) {
     `;
 }
 
-// --- Chart Rendering Logic ---
-
 function renderCharts(params) {
-    // 1. Safety Check: Ensure Chart.js is loaded
     if (typeof Chart === 'undefined') {
         console.warn('Chart.js not loaded. Skipping chart render.');
         return;
@@ -562,12 +545,10 @@ function renderCharts(params) {
         return;
     }
 
-    // 2. Destroy existing chart instance if it exists to prevent overlap
     if (window.myResultsChart) {
         window.myResultsChart.destroy();
     }
 
-    // 3. Determine Context & Data
     let testType = '';
     let labels = [];
     let dataPoints = [];
@@ -576,22 +557,16 @@ function renderCharts(params) {
     let chartType = 'bar';
     let options = {};
 
-    // Helper to get translated label or fallback
     const getLabel = (key, defaultText) => {
-        // Tries to find translation in discDescriptions/big5TraitDescriptions/mbtiDimensions 
-        // or falls back to the t() helper
         return defaultText; 
     };
 
-    // --- DISC CONFIGURATION ---
     if (window.location.pathname.includes('disc')) {
         testType = 'DISC';
         
-        // Retrieve Data
         const stored = JSON.parse(localStorage.getItem(CONFIG.DISC.resultKeys?.DISC || 'personalityTest_disc_result')) || {};
         const scores = stored.scores || { D:0, I:0, S:0, C:0 };
 
-        // Setup Chart Data
         labels = [
             discDescriptions.D.title[state.lang], 
             discDescriptions.I.title[state.lang], 
@@ -600,12 +575,11 @@ function renderCharts(params) {
         ];
         dataPoints = [scores.D, scores.I, scores.S, scores.C];
         
-        // DISC Colors (Red, Yellow, Green, Blue)
         backgroundColors = [
-            'rgba(239, 68, 68, 0.6)',   // D - Red
-            'rgba(234, 179, 8, 0.6)',   // I - Yellow
-            'rgba(34, 197, 94, 0.6)',   // S - Green
-            'rgba(59, 130, 246, 0.6)'   // C - Blue
+            'rgba(239, 68, 68, 0.6)',
+            'rgba(234, 179, 8, 0.6)',
+            'rgba(34, 197, 94, 0.6)',
+            'rgba(59, 130, 246, 0.6)'
         ];
         borderColors = [
             'rgba(239, 68, 68, 1)',
@@ -616,9 +590,9 @@ function renderCharts(params) {
 
         chartType = 'bar';
         options = {
-            indexAxis: 'y', // Horizontal Bar Chart for better readability on mobile
+            indexAxis: 'y',
             scales: {
-                x: { beginAtZero: true, max: 40 } // Approx max score
+                x: { beginAtZero: true, max: 40 }
             },
             plugins: {
                 legend: { display: false }
@@ -626,14 +600,12 @@ function renderCharts(params) {
         };
     } 
     
-    // --- MBTI CONFIGURATION ---
     else if (window.location.pathname.includes('mbti')) {
         testType = 'MBTI';
         
         const stored = JSON.parse(localStorage.getItem(CONFIG.MBTI.resultKeys?.MBTI || 'personalityTest_mbti_result')) || {};
         const scores = stored.scores || { E:0, I:0, S:0, N:0, T:0, F:0, J:0, P:0 };
 
-        // Radar chart showing all 8 facets
         labels = [
             mbtiDimensions.E.title[state.lang], mbtiDimensions.I.title[state.lang],
             mbtiDimensions.S.title[state.lang], mbtiDimensions.N.title[state.lang],
@@ -648,8 +620,8 @@ function renderCharts(params) {
             scores.J, scores.P
         ];
 
-        backgroundColors = 'rgba(147, 51, 234, 0.2)'; // Purple transparent
-        borderColors = 'rgba(147, 51, 234, 1)';       // Purple solid
+        backgroundColors = 'rgba(147, 51, 234, 0.2)';
+        borderColors = 'rgba(147, 51, 234, 1)';
         
         chartType = 'radar';
         options = {
@@ -667,11 +639,9 @@ function renderCharts(params) {
         };
     } 
     
-    // --- BIG 5 CONFIGURATION ---
     else if (window.location.pathname.includes('big5')) {
         testType = 'BIG5';
         
-        // Retrieve scores from Params (priority) or LocalStorage
         let scores = {};
         if (params.has('o')) {
             scores = {
@@ -696,15 +666,15 @@ function renderCharts(params) {
 
         dataPoints = [scores.O, scores.C, scores.E, scores.A, scores.N];
 
-        backgroundColors = 'rgba(79, 70, 229, 0.2)'; // Indigo transparent
-        borderColors = 'rgba(79, 70, 229, 1)';       // Indigo solid
+        backgroundColors = 'rgba(79, 70, 229, 0.2)';
+        borderColors = 'rgba(79, 70, 229, 1)';
         
         chartType = 'radar';
         options = {
             scales: {
                 r: {
                     beginAtZero: true,
-                    max: 40, // Standard max for Big5
+                    max: 40,
                     angleLines: { color: 'rgba(0,0,0,0.1)' },
                     grid: { color: 'rgba(0,0,0,0.05)' },
                     pointLabels: {
@@ -718,9 +688,8 @@ function renderCharts(params) {
         };
     }
 
-    if (!testType) return; // Exit if no known test type found
+    if (!testType) return;
 
-    // 4. Render the Chart
     window.myResultsChart = new Chart(canvas, {
         type: chartType,
         data: {
@@ -743,8 +712,6 @@ function renderCharts(params) {
     });
 }
 
-// --- Utilities ---
-
 function updatePageTranslations() {
     document.querySelectorAll('[data-i18n]').forEach(el => {
         const key = el.getAttribute('data-i18n');
@@ -759,5 +726,4 @@ function setupLanguageToggles() {
     });
 }
 
-// Start
 window.addEventListener('DOMContentLoaded', init);

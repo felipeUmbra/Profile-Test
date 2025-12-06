@@ -4,21 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Big Five Test Results</title>
-    <link href="./output.css" rel="stylesheet">
+    <link href="css/output.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <link rel="stylesheet" href="style.css">
-    <!-- 
-
-    <script src="script.js"></script>
-
-    Load main.js to handle result loading -->
+    <link rel="stylesheet" href="css/style.css">
+    
     <script type="module" src="js/main.js"></script>
 </head>
 <body class="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-blue-50 to-indigo-100">
     <div class="max-w-4xl w-full bg-white p-8 rounded-2xl shadow-2xl">
-        <!-- Back Button and Language Selector -->
         <div class="flex justify-between items-center mb-8">
-            <a href="index.html" id="back-btn"  class="px-4 py-2 bg-gray-500 text-white font-bold rounded-lg hover:bg-gray-600 transition duration-300">
+            <a href="index.html" id="back-btn" class="px-4 py-2 bg-gray-500 text-white font-bold rounded-lg hover:bg-gray-600 transition duration-300">
                 ← Back to Home
             </a>
             <div class="flex space-x-2">
@@ -34,20 +29,19 @@
             </div>
         </div>
 
-        <div id="big5-result-content">
-            <!-- Result will be loaded here by JavaScript -->
+        <div id="results-content">
             <div class="text-center">
                 <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
                 <p class="mt-4 text-gray-600">Loading your Big Five results...</p>
             </div>
         </div>
+
+        <div class="mt-8 mx-auto w-full md:w-2/3 h-64">
+            <canvas id="resultsChart"></canvas>
+        </div>
     </div>
 
-    <script>
-        // Load and display the Big Five result when page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            loadStoredResult('BIG5');
-        });
-    </script>
-</body>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    </body>
 </html>

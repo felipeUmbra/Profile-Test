@@ -4,14 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MBTI Personality Test</title>
-    <link href="./output.css" rel="stylesheet">
+    <link href="css/output.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <link rel="stylesheet" href="style.css">
-    <!-- 
-
-    <script src="script.js"></script>
-
-    Load main.js to handle result loading -->
+    <link rel="stylesheet" href="css/style.css">
+    
     <script type="module" src="js/main.js"></script>
 </head>
 <body class="min-h-screen flex items-center justify-center p-4">
@@ -43,61 +39,27 @@
         <div id="test-container">
 
             <div class="mb-8">
-                <div id="progress-text" class="text-sm font-medium text-indigo-600 mb-1">Question 1 of 28</div>
+                <div id="question-counter" class="text-sm font-medium text-indigo-600 mb-1">Question 1 of 28</div>
                 <div class="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden shadow-inner">
-                    <div id="progress-bar-inner" class="bg-indigo-500 h-2.5 rounded-full progress-bar-inner" style="width: 0%"></div>
+                    <div id="progress-bar" class="bg-indigo-500 h-2.5 rounded-full progress-bar-inner" style="width: 0%"></div>
                 </div>
             </div>
 
-            <div class="bg-indigo-50 p-6 md:p-10 rounded-xl border-4 border-indigo-200 shadow-xl">
-                <p id="question-text" class="text-2xl font-semibold text-gray-700 min-h-[4rem] flex items-center">
-                    <span id="loading-text">Loading test data...</span>
-                </p>
-            </div>
-
-            <div id="rating-buttons" class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
-                <button id="option-a" onclick="handleMBTIRating('A', this)" class="rating-button p-4 text-lg font-semibold rounded-xl bg-gray-100 border border-gray-300 text-gray-600 hover:bg-blue-50 hover:border-blue-400 transition duration-200">
-                    <span id="option-a-text">Option A</span>
-                </button>
-                <button id="option-b" onclick="handleMBTIRating('B', this)" class="rating-button p-4 text-lg font-semibold rounded-xl bg-gray-100 border border-gray-300 text-gray-600 hover:bg-purple-50 hover:border-purple-400 transition duration-200">
-                    <span id="option-b-text">Option B</span>
-                </button>
-            </div>
-            
-            <div id="rating-guide" class="mt-6 text-center text-sm text-gray-400">
-                Choose the statement that better describes your natural preference
+            <div id="question-container">
+                <div class="text-center p-8 text-gray-500">Loading test...</div>
             </div>
 
         </div>
 
         <div id="results-container" class="hidden">
-            
-            <div class="text-center mb-10">
-                <h2 id="main-result-title" class="text-3xl md:text-4xl font-extrabold text-gray-800 mb-4"></h2>
-                <p id="result-subtitle" class="text-gray-500">Your MBTI personality type and detailed interpretation</p>
+            <div id="results-content">
+                </div>
+             <div class="mt-8 mx-auto w-full md:w-2/3 h-64">
+                <canvas id="resultsChart"></canvas>
             </div>
-
-            <div id="mbti-type-display" class="text-center mb-8 p-6 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-2xl text-white shadow-2xl">
-                </div>
-
-            <div id="result-scores" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10 justify-center">
-                </div>
-
-            <h3 id="interpretation-title" class="text-2xl font-bold text-gray-800 mb-4 border-b pb-2">Detailed Type Interpretation</h3>
-            <div id="result-interpretation" class="scroll-container space-y-4 pr-2">
-                </div>
-            
-            <div class="mt-8 text-center space-x-4">
-                <button id="restart-btn" onclick="restartTest()" class="px-8 py-3 bg-indigo-500 text-white font-bold rounded-xl hover:bg-indigo-600 transition duration-300 shadow-lg shadow-indigo-500/50">
-                    Restart Test
-                </button>
-                <button id="export-btn" onclick="exportToPDF()" class="px-8 py-3 bg-green-500 text-white font-bold rounded-xl hover:bg-green-600 transition duration-300 shadow-lg shadow-green-500/50">
-                    Export to PDF 📄
-                </button>
-            </div>
-
         </div>
     </div>
-
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </body>
 </html>
