@@ -248,7 +248,7 @@ export const indexTranslations = {
     
 };
 
-// Also move discDescriptions, mbtiTypeDescriptions, big5TraitDescriptions here
+// Also move discDescriptions, mbtiTypeDescriptions, big5Descriptions here
 export const discDescriptions = {
     D: { title: { en: "Dominance (D)", pt: "Dominância (D)", es: "Dominancia (D)" }, style: "bg-red-100 border-red-500 text-red-700", icon: "⚡" },
     I: { title: { en: "Influence (I)", pt: "Influência (I)", es: "Influencia (I)" }, style: "bg-yellow-100 border-yellow-500 text-yellow-700", icon: "✨" },
@@ -267,7 +267,7 @@ export const mbtiDimensions = {
     P: { title: { en: "Perceiving", pt: "Percepção", es: "Percepción"}, style: "bg-amber-100 border-amber-500 text-amber-700", icon: "🔄", description: { en: "Prefer flexibility and spontaneity", pt: "Prefere flexibilidade e espontaneidade", es: "Prefer flexibilidad y estigmatismo"} }
 };
 
-export const big5TraitDescriptions = {
+export const big5Descriptions = {
     O: { title: { en: "Openness", pt: "Abertura", es: "Apertura"}, style: "bg-purple-100 border-purple-500 text-purple-700", icon: "🌈", description: { en: "Imagination, creativity, curiosity", pt: "Imaginação, criatividade, curiosidade", es: "Imaginación, creatividad, curiosidad"} },
     C: { title: { en: "Conscientiousness", pt: "Conscienciosidade", es: "Responsabilidad"}, style: "bg-blue-100 border-blue-500 text-blue-700", icon: "📊", description: { en: "Organization, diligence, reliability", pt: "Organização, diligência, confiabilidade", es: "Organización, diligencia, fiabilidad"} },
     E: { title: { en: "Extraversion", pt: "Extroversão", es: "Extraversión"}, style: "bg-yellow-100 border-yellow-500 text-yellow-700", icon: "🌟", description: { en: "Sociability, assertiveness, energy", pt: "Sociabilidade, assertividade, energia", es: "Sociabilidad, assertividad, energía"} },

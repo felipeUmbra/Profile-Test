@@ -1,8 +1,8 @@
-import { CONFIG, translations, discDescriptions, blendedDescriptions, 
-    mbtiDimensions, big5TraitDescriptions } from './data.js';
-import { t, AccessibilityManager, debounce } from './utils.js';
+import { CONFIG, indexTranslations, discDescriptions, blendedDescriptions, 
+    mbtiDimensions, big5Descriptions } from './data.js';
+import { t, AccessibilityManager } from './utils.js';
 import { fetchQuestions, saveProgress, saveResult } from './api.js';
-import { calculateDISCScore, calculateMBTIType, calculateBig5Score } from './scoring.js';
+import { calculateDISCScore, calculateMBTIType } from './scoring.js';
 
 // --- Global State ---
 const state = {
@@ -367,6 +367,11 @@ function renderDISCResults(container, profileKey, scores) {
     const profileData = blendedDescriptions[profileKey];
     if (!profileData) return;
 
+    // ... (Keep the sorting/highlighting logic from the previous step) ...
+    const factorScores = Object.entries(scores).map(([factor, score]) => ({ factor, score }));
+    factorScores.sort((a, b) => b.score - a.score);
+    const primaryFactors = factorScores.slice(0, 2).map(f => f.factor);
+
     const factors = ['D', 'I', 'S', 'C'];
     const maxScore = 30;
     
@@ -374,14 +379,19 @@ function renderDISCResults(container, profileKey, scores) {
         const score = scores[factor] || 0;
         const percent = Math.min(100, Math.round((score / maxScore) * 100));
         const desc = discDescriptions[factor];
+        const isPrimary = primaryFactors.includes(factor);
         
+        const highlightClasses = isPrimary 
+            ? 'scale-[1.02] ring-4 ring-offset-2 ring-indigo-500' 
+            : 'opacity-90 hover:opacity-100';
+
         return `
-            <div class="p-4 bg-white rounded-lg shadow-sm border border-gray-100">
+            <div class="p-4 bg-white rounded-lg shadow-sm border border-gray-100 transition-all duration-300 ${highlightClasses}">
                 <div class="flex items-center mb-2">
-                    <span class="text-2xl mr-2">${desc.icon}</span>
+                    <span class="text-2xl mr-2" aria-hidden="true">${desc.icon}</span>
                     <span class="font-bold text-gray-700">${desc.title[state.lang]}</span>
                 </div>
-                <div class="w-full bg-gray-200 rounded-full h-2.5">
+                <div class="w-full bg-gray-200 rounded-full h-2.5" role="progressbar" aria-valuenow="${percent}" aria-valuemin="0" aria-valuemax="100">
                     <div class="h-2.5 rounded-full ${desc.style.split(' ')[0].replace('bg-', 'bg-')}" style="width: ${percent}%"></div>
                 </div>
                 <div class="text-right text-xs text-gray-500 mt-1">${score} pts</div>
@@ -389,12 +399,17 @@ function renderDISCResults(container, profileKey, scores) {
         `;
     }).join('');
 
+    // ✅ HERO BANNER RESTORED BELOW
     container.innerHTML = `
-        <div class="text-center mb-8">
-            <h1 class="text-4xl font-bold text-gray-800 mb-2">${t('main_result_title', state.lang)}</h1>
-            <div class="inline-block px-6 py-2 rounded-full ${profileData.style} bg-opacity-20 text-xl font-bold mb-4">
-                ${profileData.name[state.lang]}
-            </div>
+        <div class="text-center mb-10">
+            <h1 class="text-4xl font-extrabold text-gray-800 mb-4">${t('main_result_title', state.lang)}</h1>
+            <p class="text-gray-500">${t('result_subtitle', state.lang)}</p>
+        </div>
+
+        <div class="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl p-8 text-white text-center mb-10 shadow-2xl transform transition hover:scale-[1.01]">
+            <div class="text-6xl font-bold mb-4 tracking-wider">${profileKey}</div>
+            <h2 class="text-3xl font-bold mb-4">${profileData.name[state.lang]}</h2>
+            <p class="text-indigo-100 text-lg max-w-2xl mx-auto">${profileData.description[state.lang]}</p>
         </div>
 
         <div class="bg-white p-6 rounded-xl shadow-lg border-l-4 ${profileData.style.split(' ')[1]} mb-8">
@@ -409,10 +424,10 @@ function renderDISCResults(container, profileKey, scores) {
         </div>
 
         <div class="flex justify-center gap-4">
-             <button onclick="window.location.href='index.html'" class="px-6 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition">
+             <button onclick="window.location.href='index.html'" class="px-6 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition shadow-lg">
                 ${t('back_to_home', state.lang)}
             </button>
-            <button onclick="window.print()" class="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
+            <button onclick="window.exportResultToPDF('DISC')" class="px-6 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition shadow-lg">
                 ${t('export_pdf', state.lang)}
             </button>
         </div>
@@ -423,9 +438,10 @@ function renderMBTIResults(container, type, scores) {
     const typeData = mbtiDimensions[type];
     if (!typeData) return;
 
+    // ... (Keep the dimension calculation logic from the previous step) ...
     const pairs = [['E', 'I'], ['S', 'N'], ['T', 'F'], ['J', 'P']];
     
-    const barsHTML = pairs.map(([a, b]) => {
+    const dimensionsHTML = pairs.map(([a, b]) => {
         const scoreA = scores[a] || 0;
         const scoreB = scores[b] || 0;
         const total = scoreA + scoreB || 1; 
@@ -434,25 +450,40 @@ function renderMBTIResults(container, type, scores) {
         
         const dimA = mbtiDimensions[a];
         const dimB = mbtiDimensions[b];
+        
+        const isA = scoreA >= scoreB;
+        const winnerData = isA ? dimA : dimB;
+        const winnerPercent = isA ? percentA : percentB;
 
         return `
-            <div class="mb-6">
-                <div class="flex justify-between text-sm font-semibold mb-1">
-                    <span class="${percentA > percentB ? 'text-purple-700' : 'text-gray-500'}">${dimA.title[state.lang]} (${percentA}%)</span>
-                    <span class="${percentB > percentA ? 'text-purple-700' : 'text-gray-500'}">${dimB.title[state.lang]} (${percentB}%)</span>
+            <div class="p-6 rounded-xl border-2 ${winnerData.style} shadow-lg transition duration-300 scale-[1.02] ring-4 ring-offset-2 ring-purple-500">
+                <div class="flex items-center mb-4">
+                    <span class="text-3xl mr-3" aria-hidden="true">${winnerData.icon}</span>
+                    <h3 class="text-xl font-bold">${dimA.title[state.lang]} vs ${dimB.title[state.lang]}</h3>
                 </div>
-                <div class="w-full h-4 bg-gray-200 rounded-full flex overflow-hidden">
-                    <div class="h-full bg-purple-600" style="width: ${percentA}%"></div>
-                    <div class="h-full bg-purple-300" style="width: ${percentB}%"></div>
+                <div class="w-full bg-gray-200 rounded-full h-2.5 mb-2" role="progressbar" aria-valuenow="${winnerPercent}" aria-valuemin="0" aria-valuemax="100">
+                    <div class="h-2.5 rounded-full ${isA ? 'bg-purple-600' : 'bg-gray-500'}" style="width: ${percentA}%"></div>
                 </div>
+                <div class="flex justify-between text-sm font-semibold">
+                    <span class="${isA ? 'text-purple-700 font-bold' : 'text-gray-500'}">${dimA.title[state.lang]} ${percentA}%</span>
+                    <span class="${!isA ? 'text-purple-700 font-bold' : 'text-gray-500'}">${dimB.title[state.lang]} ${percentB}%</span>
+                </div>
+                <p class="text-sm mt-2 text-gray-600">${winnerData.description[state.lang]}</p>
             </div>
         `;
     }).join('');
 
+    // ✅ HERO BANNER RESTORED BELOW
     container.innerHTML = `
         <div class="text-center mb-10">
-            <h1 class="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-blue-500 mb-2">${type}</h1>
-            <h2 class="text-2xl text-gray-700 font-semibold">${typeData.name[state.lang]}</h2>
+            <h1 class="text-4xl font-extrabold text-gray-800 mb-4">${t('mbti_title', state.lang)}</h1>
+            <p class="text-gray-500">${t('mbti_result_subtitle', state.lang)}</p>
+        </div>
+
+        <div class="bg-gradient-to-r from-purple-500 to-indigo-600 rounded-2xl p-8 text-white text-center mb-10 shadow-2xl transform transition hover:scale-[1.01]">
+            <div class="text-6xl font-bold mb-4 tracking-wider">${type}</div>
+            <h2 class="text-3xl font-bold mb-4">${typeData.name[state.lang]}</h2>
+            <p class="text-purple-100 text-lg">${state.lang === 'en' ? 'Your Personality Type' : (state.lang === 'pt' ? 'Seu Tipo de Personalidade' : 'Tu Tipo de Personalidad')}</p>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -465,15 +496,18 @@ function renderMBTIResults(container, type, scores) {
                 </div>
             </div>
             
-            <div class="bg-gray-50 p-6 rounded-2xl">
+            <div class="bg-gray-50 p-6 rounded-2xl space-y-6">
                 <h3 class="text-lg font-bold mb-4 text-gray-700">Dimensions</h3>
-                ${barsHTML}
+                ${dimensionsHTML}
             </div>
         </div>
         
         <div class="flex justify-center mt-8 gap-4">
-             <button onclick="window.location.href='index.html'" class="px-6 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition">
+             <button onclick="window.location.href='index.html'" class="px-6 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition shadow-lg">
                 ${t('back_to_home', state.lang)}
+            </button>
+            <button onclick="window.exportResultToPDF('MBTI')" class="px-6 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition shadow-lg">
+                ${t('export_pdf', state.lang)}
             </button>
         </div>
     `;
@@ -486,7 +520,9 @@ function renderBig5Results(container, scores) {
     const cardsHTML = factors.map(factor => {
         const score = scores[factor] || 0;
         const percent = Math.round((score / maxScore) * 100);
-        const desc = big5TraitDescriptions[factor];
+        // Use big5Descriptions for style info, big5Descriptions for text
+        const descStyle = big5Descriptions[factor];
+        const descText = big5Descriptions[factor];
         
         let levelText = percent > 66 ? 'High' : (percent > 33 ? 'Moderate' : 'Low'); 
         const levels = {
@@ -496,18 +532,18 @@ function renderBig5Results(container, scores) {
         };
 
         return `
-            <div class="bg-white p-6 rounded-xl shadow-sm border-t-4 ${desc.style.split(' ')[1]}">
+            <div class="p-6 rounded-xl border-2 ${descStyle.style} shadow-lg transition duration-300">
                 <div class="flex justify-between items-start mb-4">
-                    <div>
-                        <div class="text-3xl mb-2">${desc.icon}</div>
-                        <h3 class="font-bold text-lg">${desc.title[state.lang]}</h3>
+                    <div class="flex items-center">
+                        <span class="text-3xl mr-3" aria-hidden="true">${descStyle.icon}</span>
+                        <h3 class="font-bold text-lg">${descStyle.title[state.lang]}</h3>
                     </div>
                     <div class="text-2xl font-bold text-gray-700">${percent}%</div>
                 </div>
                 <div class="w-full bg-gray-200 rounded-full h-2 mb-3">
-                    <div class="h-2 rounded-full ${desc.style.split(' ')[0].replace('bg-', 'bg-')}" style="width: ${percent}%"></div>
+                    <div class="h-2 rounded-full ${descStyle.style.split(' ')[0].replace('bg-', 'bg-')}" style="width: ${percent}%"></div>
                 </div>
-                <p class="text-sm text-gray-600">${desc.description[state.lang]}</p>
+                <p class="text-sm text-gray-600">${descStyle.description[state.lang]}</p>
                 <div class="mt-3 text-sm font-semibold text-gray-500">
                     ${t('level', state.lang) || 'Level'}: ${levels[levelText][state.lang]}
                 </div>
@@ -528,6 +564,9 @@ function renderBig5Results(container, scores) {
         <div class="flex justify-center gap-4">
              <button onclick="window.location.href='index.html'" class="px-6 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition">
                 ${t('back_to_home', state.lang)}
+            </button>
+            <button onclick="window.exportResultToPDF('BIG5')" class="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
+                ${t('export_pdf', state.lang)}
             </button>
         </div>
     `;
@@ -657,11 +696,11 @@ function renderCharts(params) {
         }
 
         labels = [
-            big5TraitDescriptions.O.title[state.lang],
-            big5TraitDescriptions.C.title[state.lang],
-            big5TraitDescriptions.E.title[state.lang],
-            big5TraitDescriptions.A.title[state.lang],
-            big5TraitDescriptions.N.title[state.lang]
+            big5Descriptions.O.title[state.lang],
+            big5Descriptions.C.title[state.lang],
+            big5Descriptions.E.title[state.lang],
+            big5Descriptions.A.title[state.lang],
+            big5Descriptions.N.title[state.lang]
         ];
 
         dataPoints = [scores.O, scores.C, scores.E, scores.A, scores.N];
@@ -727,3 +766,294 @@ function setupLanguageToggles() {
 }
 
 window.addEventListener('DOMContentLoaded', init);
+
+// ==========================================
+// === MISSING LOGIC (Migrated from script.js) ===
+// ==========================================
+
+// --- Index Page Helpers ---
+
+window.updateIndexStaticText = function() {
+    if (!indexTranslations) return;
+    
+    // Helper for index-specific translations
+    const tIndex = (key) => indexTranslations[state.lang]?.[key] || indexTranslations['en']?.[key] || key;
+
+    try {
+        const setTxt = (id, key) => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = tIndex(key);
+        };
+
+        setTxt('main-title', 'mainTitle');
+        setTxt('subtitle', 'subtitle');
+        
+        setTxt('disc-test', 'discTest');
+        setTxt('disc-subtitle', 'discSubtitle');
+        setTxt('mbti-test', 'mbtiTest');
+        setTxt('mbti-subtitle', 'mbtiSubtitle');
+        setTxt('big5-test', 'big5Test');
+        setTxt('big5-subtitle', 'big5Subtitle');
+        
+        setTxt('results-title', 'resultsTitle');
+        setTxt('clear-results-btn', 'clearResults');
+        setTxt('footer-text-1', 'footerText1');
+        setTxt('footer-text-2', 'footerText2');
+    } catch (error) {
+        console.error('Error updating index text:', error);
+    }
+}
+
+window.loadSavedResults = function() {
+    const container = document.getElementById('saved-results');
+    const section = document.getElementById('saved-results-section');
+    
+    if (!container || !section) return;
+
+    let html = '';
+    let count = 0;
+
+    ['DISC', 'MBTI', 'BIG5'].forEach(type => {
+        const key = CONFIG[type].resultKeys?.[type] || `personalityTest_${type.toLowerCase()}_result`;
+        const stored = localStorage.getItem(key);
+        if (stored) {
+            try {
+                const result = JSON.parse(stored);
+                html += createResultCard(type, result);
+                count++;
+            } catch (e) { console.error(e); }
+        }
+    });
+
+    if (count > 0) {
+        container.innerHTML = html;
+        section.classList.remove('hidden');
+    } else {
+        section.classList.add('hidden');
+    }
+}
+
+function createResultCard(testType, result) {
+    const colors = { DISC: 'indigo', MBTI: 'purple', BIG5: 'green' };
+    const color = colors[testType];
+    const date = new Date(result.timestamp || Date.now()).toLocaleDateString();
+    
+    let title = '', subtitle = '', scoreDisplay = '';
+
+    if (testType === 'DISC') {
+        const key = result.profileKey;
+        title = blendedDescriptions[key]?.name[state.lang] || key;
+        subtitle = blendedDescriptions[key]?.description[state.lang]?.substring(0, 100) + '...';
+        scoreDisplay = key;
+    } 
+    else if (testType === 'MBTI') {
+        const key = result.profileKey || result.type;
+        title = mbtiDimensions[key]?.name[state.lang] || key;
+        subtitle = mbtiDimensions[key]?.description[state.lang]?.substring(0, 100) + '...';
+        scoreDisplay = key;
+    }
+    else if (testType === 'BIG5') {
+        title = t('big5_main_result_title', state.lang);
+        subtitle = t('big5_result_subtitle', state.lang);
+        scoreDisplay = 'View';
+    }
+
+    return `
+        <div onclick="window.viewResult('${testType.toLowerCase()}')" 
+             class="cursor-pointer p-4 rounded-xl border-2 border-${color}-200 bg-${color}-50 hover:bg-${color}-100 transition duration-300 relative group">
+            
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-sm font-semibold text-${color}-600">${testType}</span>
+                <button onclick="event.stopPropagation(); window.deleteResult('${testType}')" 
+                        class="text-gray-400 hover:text-red-500 p-1">
+                    🗑️
+                </button>
+            </div>
+            
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="font-bold text-lg text-${color}-700">${title}</h3>
+                    <p class="text-gray-600 text-sm max-w-md">${subtitle}</p>
+                </div>
+                <div class="text-right">
+                    <div class="text-2xl font-bold text-${color}-600">${scoreDisplay}</div>
+                    <div class="text-xs text-gray-500">${date}</div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// --- Actions ---
+
+window.viewResult = function(type) {
+    const result = localStorage.getItem(CONFIG[type.toUpperCase()].resultKeys[type.toUpperCase()]);
+    if (!result) return;
+    
+    const data = JSON.parse(result);
+    // Redirect based on type
+    if (type === 'disc') window.location.href = `disc-result.html?s=${data.sessionId || 'saved'}&type=${data.profileKey}`;
+    if (type === 'mbti') window.location.href = `mbti-result.html?s=${data.sessionId || 'saved'}&type=${data.profileKey || data.type}`;
+    if (type === 'big5') window.location.href = `big5-result.html?s=${data.sessionId || 'saved'}&o=${data.scores.O}&c=${data.scores.C}&e=${data.scores.E}&a=${data.scores.A}&n=${data.scores.N}`;
+}
+
+// --- PDF Export Logic ---
+
+window.exportResultToPDF = function(testType) {
+    // 1. Determine the container to export
+    // Note: main.js uses 'results-content' as the ID for all result pages
+    const element = document.getElementById('results-content');
+    
+    if (!element) {
+        alert('Could not find result content to export.');
+        return;
+    }
+
+    // 2. Show a temporary loading state (using simple alert/text for now)
+    const originalBtnText = event.target.innerText;
+    event.target.innerText = 'Generating...';
+    event.target.disabled = true;
+
+    // 3. Define filename based on test type and language
+    const langKey = state.lang.toUpperCase(); 
+    const filename = `${testType}_Results_${langKey}.pdf`;
+
+    // 4. PDF Options
+    const options = {
+        margin: 10,
+        filename: filename,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { 
+            scale: 2, // Higher scale for better quality
+            logging: false, 
+            useCORS: true,
+            windowWidth: element.scrollWidth
+        }, 
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+
+    // 5. Generate PDF
+    // Check if html2pdf is loaded
+    if (typeof html2pdf === 'undefined') {
+        alert('PDF library not loaded. Please refresh the page.');
+        event.target.innerText = originalBtnText;
+        event.target.disabled = false;
+        return;
+    }
+
+    html2pdf().set(options).from(element).save().then(() => {
+        // Reset button state
+        event.target.innerText = originalBtnText;
+        event.target.disabled = false;
+    }).catch(err => {
+        console.error('PDF Export Error:', err);
+        alert('Failed to generate PDF. Please try again.');
+        event.target.innerText = originalBtnText;
+        event.target.disabled = false;
+    });
+};
+
+window.deleteResult = function(type) {
+    const typeUpper = type.toUpperCase();
+    if (confirm(t('confirmDelete', state.lang) || "Delete this result?")) {
+        localStorage.removeItem(CONFIG[typeUpper].resultKeys[typeUpper]);
+        
+        // Show success message
+        window.showSuccessMessage(
+            state.lang === 'en' ? 'Result deleted successfully!' : 
+            state.lang === 'pt' ? 'Resultado excluído com sucesso!' : 
+            '¡Resultado eliminado con éxito!'
+        );
+        
+        window.loadSavedResults();
+    }
+};
+
+window.clearAllResults = function() {
+    if (confirm(t('confirmClearAll', state.lang) || "Clear all results?")) {
+        ['DISC', 'MBTI', 'BIG5'].forEach(type => {
+             localStorage.removeItem(CONFIG[type].resultKeys[type]);
+        });
+        
+        // Show success message
+        window.showSuccessMessage(
+            state.lang === 'en' ? 'All results cleared successfully!' : 
+            state.lang === 'pt' ? 'Todos os resultados foram limpos com sucesso!' : 
+            '¡Todos los resultados fueron borrados con éxito!'
+        );
+        
+        window.loadSavedResults();
+    }
+};
+
+window.showError = function(message = t('error_general', state.lang), duration = 5000) {
+    let errorContainer = document.getElementById('error-container');
+    if (!errorContainer) {
+        errorContainer = document.createElement('div');
+        errorContainer.id = 'error-container';
+        errorContainer.className = 'fixed top-4 right-4 z-50 max-w-sm';
+        errorContainer.setAttribute('role', 'alert');
+        errorContainer.setAttribute('aria-live', 'assertive');
+        document.body.appendChild(errorContainer);
+    }
+
+    const errorElement = document.createElement('div');
+    errorElement.className = 'bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg shadow-lg mb-2 flex items-center animate-fade-in';
+    errorElement.innerHTML = `
+        <span class="text-red-500 mr-2 text-xl" aria-hidden="true">⚠</span>
+        <span class="flex-grow">${message}</span>
+        <button onclick="this.parentElement.remove()" 
+                class="ml-4 text-red-500 hover:text-red-700 focus:outline-none font-bold"
+                aria-label="Close error message">
+            ×
+        </button>
+    `;
+
+    errorContainer.appendChild(errorElement);
+    
+    if (state.a11y) {
+        state.a11y.announce(`Error: ${message}`, 'assertive');
+    }
+
+    setTimeout(() => {
+        if (errorElement.parentNode) {
+            errorElement.parentNode.removeChild(errorElement);
+        }
+    }, duration);
+};
+
+window.showSuccessMessage = function(message, duration = 3000) {
+    let successContainer = document.getElementById('success-container');
+    if (!successContainer) {
+        successContainer = document.createElement('div');
+        successContainer.id = 'success-container';
+        successContainer.className = 'fixed top-4 right-4 z-50 max-w-sm';
+        successContainer.setAttribute('role', 'alert');
+        successContainer.setAttribute('aria-live', 'polite');
+        document.body.appendChild(successContainer);
+    }
+
+    const successElement = document.createElement('div');
+    successElement.className = 'bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg shadow-lg mb-2 flex items-center animate-fade-in';
+    successElement.innerHTML = `
+        <span class="text-green-500 mr-2 text-xl" aria-hidden="true">✓</span>
+        <span class="flex-grow">${message}</span>
+        <button onclick="this.parentElement.remove()" 
+                class="ml-4 text-green-500 hover:text-green-700 focus:outline-none font-bold"
+                aria-label="Close success message">
+            ×
+        </button>
+    `;
+
+    successContainer.appendChild(successElement);
+    
+    if (state.a11y) {
+        state.a11y.announce(`Success: ${message}`, 'polite');
+    }
+
+    setTimeout(() => {
+        if (successElement.parentNode) {
+            successElement.parentNode.removeChild(successElement);
+        }
+    }, duration);
+};

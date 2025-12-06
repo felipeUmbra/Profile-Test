@@ -1,4 +1,4 @@
-import { CONFIG, big5TraitDescriptions } from './data.js';
+import { CONFIG, big5Descriptions } from './data.js';
 
 // --- DISC Logic ---
 
@@ -69,17 +69,17 @@ export function analyzeBig5(scores, maxScores = 40) {
         
         if (percentage >= 70) {
             level = 'high';
-            description = big5TraitDescriptions[factor].high;
+            description = big5Descriptions[factor].high;
         } else if (percentage >= 40) {
             level = 'moderate';
-            description = big5TraitDescriptions[factor].moderate;
+            description = big5Descriptions[factor].moderate;
         } else {
             level = 'low';
-            description = big5TraitDescriptions[factor].low;
+            description = big5Descriptions[factor].low;
         }
         
         analysis[factor] = {
-            name: big5TraitDescriptions[factor].name,
+            name: big5Descriptions[factor].name,
             score: score,
             maxScore: max,
             percentage: Math.round(percentage),
