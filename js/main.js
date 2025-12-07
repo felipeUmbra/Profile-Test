@@ -1,5 +1,5 @@
 import { CONFIG, indexTranslations, discDescriptions, blendedDescriptions, 
-    mbtiDimensions, big5Descriptions, mbtiTypeDescriptions, big5TraitDescriptions } from './data.js';
+    mbtiDimensions, big5Descriptions, mbtiTypeDescriptions, big5TraitDescriptions, big5Metadata } from './data.js';
 import { t, AccessibilityManager } from './utils.js';
 import { fetchQuestions, saveProgress, saveResult } from './api.js';
 import { calculateDISCScore, calculateMBTIType } from './scoring.js';
@@ -521,32 +521,46 @@ function renderBig5Results(container, scores) {
     const cardsHTML = factors.map(factor => {
         const score = scores[factor] || 0;
         const percent = Math.round((score / maxScore) * 100);
-        // Use big5Descriptions for style info, big5Descriptions for text
-        const descStyle = big5Descriptions[factor];
-        const descText = big5Descriptions[factor];
         
-    let levelKey = percent > 66 ? 'high' : (percent > 33 ? 'moderate' : 'low');
-            // Use the detailed description from big5TraitDescriptions
-            const detailedDesc = big5TraitDescriptions[factor]?.[levelKey]?.[state.lang] || '';
+        // 1. Get Metadata (Style, Icon, Key Mapping)
+        const meta = big5Metadata[factor];
+        if (!meta) return ''; // Safety check
 
-            return `
-                <div class="p-6 rounded-xl border-2 ${descStyle.style} shadow-lg transition duration-300">
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="flex items-center">
-                            <span class="text-3xl mr-3" aria-hidden="true">${descStyle.icon}</span>
-                            <h3 class="font-bold text-lg">${descStyle.title[state.lang]}</h3>
-                        </div>
-                        <div class="text-2xl font-bold text-gray-700">${percent}%</div>
+        // 2. Get Descriptions using the Full Name Key (e.g., "Openness")
+        const fullKey = meta.key;
+        
+        // General definition of the trait
+        const definition = big5TraitDescriptions[fullKey]?.[state.lang] || '';
+
+        // Specific result description (High vs Low)
+        // Note: data.js only has 'High' and 'Low', so we simplify the logic
+        const level = percent >= 50 ? "High" : "Low";
+        const resultDesc = big5Descriptions[fullKey]?.[level]?.[state.lang] || '';
+
+        // 3. Color logic for text
+        const scoreColor = percent >= 50 ? 'text-green-600' : 'text-blue-600';
+
+        return `
+            <div class="p-6 rounded-xl border-2 ${meta.style} shadow-lg transition duration-300">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="flex items-center">
+                        <span class="text-3xl mr-3" aria-hidden="true">${meta.icon}</span>
+                        <h3 class="font-bold text-lg">${meta.title[state.lang]}</h3>
                     </div>
-                    <div class="w-full bg-gray-200 rounded-full h-2 mb-3">
-                        <div class="h-2 rounded-full ${descStyle.style.split(' ')[0].replace('bg-', 'bg-')}" style="width: ${percent}%"></div>
-                    </div>
-                    <p class="text-sm text-gray-600">${descStyle.description[state.lang]}</p>
-                    <div class="mt-3 text-sm font-semibold ${percent > 66 ? 'text-green-600' : percent > 33 ? 'text-yellow-600' : 'text-blue-600'}">
-                        ${detailedDesc}
-                    </div>
+                    <div class="text-2xl font-bold text-gray-700">${percent}%</div>
                 </div>
-            `;
+                
+                <div class="w-full bg-gray-200 rounded-full h-2 mb-3">
+                    <div class="h-2 rounded-full ${meta.style.split(' ')[0].replace('bg-', 'bg-')}" style="width: ${percent}%"></div>
+                </div>
+                
+                <p class="text-sm text-gray-600 italic mb-2">${definition}</p>
+                
+                <div class="mt-3 text-sm font-semibold ${scoreColor}">
+                    ${resultDesc}
+                </div>
+            </div>
+        `;
     }).join('');
 
     container.innerHTML = `
@@ -560,10 +574,10 @@ function renderBig5Results(container, scores) {
         </div>
 
         <div class="flex justify-center gap-4">
-             <button onclick="window.location.href='index.html'" class="px-6 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition">
+             <button onclick="window.location.href='index.html'" class="px-6 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition shadow-lg">
                 ${t('back_to_home', state.lang)}
             </button>
-            <button onclick="window.exportResultToPDF('BIG5')" class="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
+            <button onclick="window.exportResultToPDF('BIG5')" class="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition shadow-lg">
                 ${t('export_pdf', state.lang)}
             </button>
         </div>
@@ -693,12 +707,13 @@ function renderCharts(params) {
             scores = stored.scores || { O:0, C:0, E:0, A:0, N:0 };
         }
 
+        // FIX: Use big5Metadata to get the correct titles
         labels = [
-            big5Descriptions.O.title[state.lang],
-            big5Descriptions.C.title[state.lang],
-            big5Descriptions.E.title[state.lang],
-            big5Descriptions.A.title[state.lang],
-            big5Descriptions.N.title[state.lang]
+            big5Metadata['O'].title[state.lang],
+            big5Metadata['C'].title[state.lang],
+            big5Metadata['E'].title[state.lang],
+            big5Metadata['A'].title[state.lang],
+            big5Metadata['N'].title[state.lang]
         ];
 
         dataPoints = [scores.O, scores.C, scores.E, scores.A, scores.N];
