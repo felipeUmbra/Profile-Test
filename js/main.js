@@ -1,5 +1,5 @@
 import { CONFIG, indexTranslations, discDescriptions, blendedDescriptions, 
-    mbtiDimensions, big5Descriptions } from './data.js';
+    mbtiDimensions, big5Descriptions, mbtiTypeDescriptions, big5TraitDescriptions } from './data.js';
 import { t, AccessibilityManager } from './utils.js';
 import { fetchQuestions, saveProgress, saveResult } from './api.js';
 import { calculateDISCScore, calculateMBTIType } from './scoring.js';
@@ -435,7 +435,8 @@ function renderDISCResults(container, profileKey, scores) {
 }
 
 function renderMBTIResults(container, type, scores) {
-    const typeData = mbtiDimensions[type];
+    // Fix: Use type descriptions for the full profile, not dimensions
+    const typeData = mbtiTypeDescriptions[type];
     if (!typeData) return;
 
     // ... (Keep the dimension calculation logic from the previous step) ...
@@ -524,31 +525,28 @@ function renderBig5Results(container, scores) {
         const descStyle = big5Descriptions[factor];
         const descText = big5Descriptions[factor];
         
-        let levelText = percent > 66 ? 'High' : (percent > 33 ? 'Moderate' : 'Low'); 
-        const levels = {
-            'High': { en: 'High', pt: 'Alto', es: 'Alto' },
-            'Moderate': { en: 'Moderate', pt: 'Moderado', es: 'Moderado' },
-            'Low': { en: 'Low', pt: 'Baixo', es: 'Bajo' }
-        };
+    let levelKey = percent > 66 ? 'high' : (percent > 33 ? 'moderate' : 'low');
+            // Use the detailed description from big5TraitDescriptions
+            const detailedDesc = big5TraitDescriptions[factor]?.[levelKey]?.[state.lang] || '';
 
-        return `
-            <div class="p-6 rounded-xl border-2 ${descStyle.style} shadow-lg transition duration-300">
-                <div class="flex justify-between items-start mb-4">
-                    <div class="flex items-center">
-                        <span class="text-3xl mr-3" aria-hidden="true">${descStyle.icon}</span>
-                        <h3 class="font-bold text-lg">${descStyle.title[state.lang]}</h3>
+            return `
+                <div class="p-6 rounded-xl border-2 ${descStyle.style} shadow-lg transition duration-300">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="flex items-center">
+                            <span class="text-3xl mr-3" aria-hidden="true">${descStyle.icon}</span>
+                            <h3 class="font-bold text-lg">${descStyle.title[state.lang]}</h3>
+                        </div>
+                        <div class="text-2xl font-bold text-gray-700">${percent}%</div>
                     </div>
-                    <div class="text-2xl font-bold text-gray-700">${percent}%</div>
+                    <div class="w-full bg-gray-200 rounded-full h-2 mb-3">
+                        <div class="h-2 rounded-full ${descStyle.style.split(' ')[0].replace('bg-', 'bg-')}" style="width: ${percent}%"></div>
+                    </div>
+                    <p class="text-sm text-gray-600">${descStyle.description[state.lang]}</p>
+                    <div class="mt-3 text-sm font-semibold ${percent > 66 ? 'text-green-600' : percent > 33 ? 'text-yellow-600' : 'text-blue-600'}">
+                        ${detailedDesc}
+                    </div>
                 </div>
-                <div class="w-full bg-gray-200 rounded-full h-2 mb-3">
-                    <div class="h-2 rounded-full ${descStyle.style.split(' ')[0].replace('bg-', 'bg-')}" style="width: ${percent}%"></div>
-                </div>
-                <p class="text-sm text-gray-600">${descStyle.description[state.lang]}</p>
-                <div class="mt-3 text-sm font-semibold text-gray-500">
-                    ${t('level', state.lang) || 'Level'}: ${levels[levelText][state.lang]}
-                </div>
-            </div>
-        `;
+            `;
     }).join('');
 
     container.innerHTML = `
@@ -1056,4 +1054,15 @@ window.showSuccessMessage = function(message, duration = 3000) {
             successElement.parentNode.removeChild(successElement);
         }
     }, duration);
+};
+
+window.setupEnhancedKeyboardNavigation = function() {
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Tab') document.body.classList.add('keyboard-navigation');
+        if (e.key === 'Escape') {
+             const main = document.querySelector('main') || document.body;
+             main.focus();
+        }
+    });
+    document.addEventListener('mousedown', () => document.body.classList.remove('keyboard-navigation'));
 };

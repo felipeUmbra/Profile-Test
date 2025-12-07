@@ -248,7 +248,7 @@ export const indexTranslations = {
     
 };
 
-// Also move discDescriptions, mbtiTypeDescriptions, big5Descriptions here
+// Also move discDescriptions, mbtiTypeDescriptions, big5TraitDescriptions here
 export const discDescriptions = {
     D: { title: { en: "Dominance (D)", pt: "Dominância (D)", es: "Dominancia (D)" }, style: "bg-red-100 border-red-500 text-red-700", icon: "⚡" },
     I: { title: { en: "Influence (I)", pt: "Influência (I)", es: "Influencia (I)" }, style: "bg-yellow-100 border-yellow-500 text-yellow-700", icon: "✨" },
@@ -267,13 +267,228 @@ export const mbtiDimensions = {
     P: { title: { en: "Perceiving", pt: "Percepção", es: "Percepción"}, style: "bg-amber-100 border-amber-500 text-amber-700", icon: "🔄", description: { en: "Prefer flexibility and spontaneity", pt: "Prefere flexibilidade e espontaneidade", es: "Prefer flexibilidad y estigmatismo"} }
 };
 
-export const big5Descriptions = {
-    O: { title: { en: "Openness", pt: "Abertura", es: "Apertura"}, style: "bg-purple-100 border-purple-500 text-purple-700", icon: "🌈", description: { en: "Imagination, creativity, curiosity", pt: "Imaginação, criatividade, curiosidade", es: "Imaginación, creatividad, curiosidad"} },
-    C: { title: { en: "Conscientiousness", pt: "Conscienciosidade", es: "Responsabilidad"}, style: "bg-blue-100 border-blue-500 text-blue-700", icon: "📊", description: { en: "Organization, diligence, reliability", pt: "Organização, diligência, confiabilidade", es: "Organización, diligencia, fiabilidad"} },
-    E: { title: { en: "Extraversion", pt: "Extroversão", es: "Extraversión"}, style: "bg-yellow-100 border-yellow-500 text-yellow-700", icon: "🌟", description: { en: "Sociability, assertiveness, energy", pt: "Sociabilidade, assertividade, energia", es: "Sociabilidad, assertividad, energía"} },
-    A: { title: { en: "Agreeableness", pt: "Amabilidade", es: "Amistabilidad"}, style: "bg-green-100 border-green-500 text-green-700", icon: "🤝", description: { en: "Compassion, cooperation, trust", pt: "Compaixão, cooperação, confiança", es: "Compación, colaboración, confianza"} },
-    N: { title: { en: "Neuroticism", pt: "Neuroticismo", es: "Neuroticismo"}, style: "bg-red-100 border-red-500 text-red-700", icon: "🌊", description: { en: "Anxiety, moodiness, emotional sensitivity", pt: "Ansiedade, instabilidade emocional, sensibilidade", es:"Ansiedad, cambios de humor, sensibilidad emocional" } }
+export const mbtiTypeDescriptions = {
+    "ISTJ": {
+        name: { en: "The Inspector", pt: "O Inspetor", es: "El Inspector" },
+        description: {
+            en: "Practical, fact-minded, and reliable. You value tradition, order, and stability.",
+            pt: "Prático, centrado em fatos e confiável. Você valoriza tradição, ordem e estabilidade.",
+            es: "Práctico, orientado a los hechos y confiable. Valoras la tradición, el orden y la estabilidad."
+        }
+    },
+    "ISFJ": {
+        name: { en: "The Protector", pt: "O Protetor", es: "El Protector" },
+        description: {
+            en: "Warm, caring, and responsible. You are committed to your duties and loyal to your relationships.",
+            pt: "Caloroso, cuidadoso e responsável. Você é comprometido com seus deveres e leal aos seus relacionamentos.",
+            es: "Cálido, cariñoso y responsable. Estás comprometido con tus deberes y leal a tus relaciones."
+        }
+    },
+    "INFJ": {
+        name: { en: "The Advocate", pt: "O Advogado", es: "El Abogado" },
+        description: {
+            en: "Insightful, principled, and organized. You have a strong sense of purpose and work towards your ideals.",
+            pt: "Perspicaz, principista e organizado. Você tem um forte senso de propósito e trabalha em direção aos seus ideais.",
+            es: "Perspicaz, principista y organizado. Tienes un fuerte sentido de propósito y trabajas hacia tus ideales."
+        }
+    },
+    "INTJ": {
+        name: { en: "The Architect", pt: "O Arquiteto", es: "El Arquitecto" },
+        description: {
+            en: "Strategic, independent, and determined. You have a vision for the future and work systematically to achieve it.",
+            pt: "Estratégico, independente e determinado. Você tem uma visão para o futuro e trabalha sistematicamente para alcançá-la.",
+            es: "Estratégico, independiente y determinado. Tienes una visión para el futuro y trabajas sistemáticamente para lograrla."
+        }
+    },
+    "ISTP": {
+        name: { en: "The Craftsman", pt: "O Artesão", es: "El Artesano" },
+        description: {
+            en: "Practical, observant, and flexible. You enjoy understanding how things work and solving practical problems.",
+            pt: "Prático, observador e flexível. Você gosta de entender como as coisas funcionam e resolver problemas práticos.",
+            es: "Práctico, observador y flexible. Te gusta entender cómo funcionan las cosas y resolver problemas prácticos."
+        }
+    },
+    "ISFP": {
+        name: { en: "The Artist", pt: "O Artista", es: "El Artista" },
+        description: {
+            en: "Gentle, sensitive, and artistic. You value harmony and enjoy creating beauty in your surroundings.",
+            pt: "Gentil, sensível e artístico. Você valoriza harmonia e gosta de criar beleza em seu entorno.",
+            es: "Gentil, sensible y artístico. Valoras la armonía y disfrutas creando belleza en tu entorno."
+        }
+    },
+    "INFP": {
+        name: { en: "The Mediator", pt: "O Mediador", es: "El Mediador" },
+        description: {
+            en: "Idealistic, creative, and empathetic. You are guided by your strong values and desire to make the world better.",
+            pt: "Idealista, criativo e empático. Você é guiado por seus fortes valores e desejo de tornar o mundo melhor.",
+            es: "Idealista, creativo y empático. Estás guiado por tus fuertes valores y deseo de hacer del mundo un lugar mejor."
+        }
+    },
+    "INTP": {
+        name: { en: "The Thinker", pt: "O Pensador", es: "El Pensador" },
+        description: {
+            en: "Analytical, innovative, and curious. You enjoy theoretical problems and exploring complex ideas.",
+            pt: "Analítico, inovador e curioso. Você gosta de problemas teóricos e explorar ideias complexas.",
+            es: "Analítico, innovador y curioso. Disfrutas de problemas teóricos y explorar ideas complejas."
+        }
+    },
+    "ESTP": {
+        name: { en: "The Persuader", pt: "O Persuador", es: "El Persuasor" },
+        description: {
+            en: "Energetic, practical, and spontaneous. You enjoy action and are skilled at navigating immediate challenges.",
+            pt: "Energético, prático e espontâneo. Você gosta de ação e é habilidoso em navegar desafios imediatos.",
+            es: "Enérgico, práctico y espontáneo. Disfrutas de la acción y eres hábil para navegar desafíos inmediatos."
+        }
+    },
+    "ESFP": {
+        name: { en: "The Performer", pt: "O Performista", es: "El Intérprete" },
+        description: {
+            en: "Outgoing, friendly, and enthusiastic. You enjoy bringing energy and fun to social situations.",
+            pt: "Extrovertido, amigável e entusiástico. Você gosta de trazer energia e diversão para situações sociais.",
+            es: "Extrovertido, amigable y entusiasta. Disfrutas de aportar energía y diversión a las situaciones sociales."
+        }
+    },
+    "ENFP": {
+        name: { en: "The Champion", pt: "O Campeão", es: "El Campeón" },
+        description: {
+            en: "Enthusiastic, creative, and sociable. You see possibilities everywhere and enjoy inspiring others.",
+            pt: "Entusiástico, criativo e sociável. Você vê possibilidades em todos os lugares e gosta de inspirar os outros.",
+            es: "Entusiasta, creativo y sociable. Ves posibilidades en todas partes y disfrutas inspirando a los demás."
+        }
+    },
+    "ENTP": {
+        name: { en: "The Debater", pt: "O Debatedor", es: "El Debateador" },
+        description: {
+            en: "Innovative, quick-witted, and outspoken. You enjoy intellectual challenges and debating ideas.",
+            pt: "Inovador, perspicaz e franco. Você gosta de desafios intelectuais e debater ideias.",
+            es: "Innovador, ingenioso y franco. Disfrutas de desafíos intelectuales y debatir ideas."
+        }
+    },
+    "ESTJ": {
+        name: { en: "The Supervisor", pt: "O Supervisor", es: "El Supervisor" },
+        description: {
+            en: "Practical, traditional, and organized. You value order and structure in your environment.",
+            pt: "Prático, tradicional e organizado. Você valoriza ordem e estrutura em seu ambiente.",
+            es: "Práctico, tradicional y organizado. Valoras el orden y la estructura en tu entorno."
+        }
+    },
+    "ESFJ": {
+        name: { en: "The Caregiver", pt: "O Cuidador", es: "El Cuidador" },
+        description: {
+            en: "Sociable, caring, and popular. You enjoy helping others and creating harmonious environments.",
+            pt: "Sociável, cuidadoso e popular. Você gosta de ajudar os outros e criar ambientes harmoniosos.",
+            es: "Sociable, cariñoso y popular. Disfrutas ayudando a los demás y creando ambientes armoniosos."
+        }
+    },
+    "ENFJ": {
+        name: { en: "The Teacher", pt: "O Professor", es: "El Maestro" },
+        description: {
+            en: "Empathetic, organized, and inspiring. You are skilled at understanding others and motivating them.",
+            pt: "Empático, organizado e inspirador. Você é habilidoso em entender os outros e motivá-los.",
+            es: "Empático, organizado e inspirador. Eres hábil para entender a los demás y motivarlos."
+        }
+    },
+    "ENTJ": {
+        name: { en: "The Commander", pt: "O Comandante", es: "El Comandante" },
+        description: {
+            en: "Strategic, assertive, and efficient. You are a natural leader who enjoys organizing people and resources.",
+            pt: "Estratégico, assertivo e eficiente. Você é um líder natural que gosta de organizar pessoas e recursos.",
+            es: "Estratégico, asertivo y eficiente. Eres un líder natural que disfruta organizando personas y recursos."
+        }
+    }
 };
+
+export const big5TraitDescriptions = {
+    "Openness": {
+        "en": "Reflects imagination, intellectual curiosity, and willingness to experiment with new things.",
+        "pt": "Reflete a imaginação, curiosidade intelectual e vontade de experimentar novas coisas.",
+        "es": "Refleja la imaginación, la curiosidad intelectual y la voluntad de experimentar cosas nuevas."
+    },
+    "Conscientiousness": {
+        "en": "Reflects self-discipline, organization, and the drive to achieve goals.",
+        "pt": "Reflete a autodisciplina, organização e a motivação para alcançar objetivos.",
+        "es": "Refleja la autodisciplina, la organización y la motivación para alcanzar metas."
+    },
+    "Extraversion": {
+        "en": "Reflects the pursuit of social stimulation, assertiveness, and energy levels.",
+        "pt": "Reflete a busca por estimulação social, assertividade e o nível de energia.",
+        "es": "Refleja la búsqueda de estimulación social, asertividad y niveles de energía."
+    },
+    "Agreeableness": {
+        "en": "Reflects the tendency to be compassionate, cooperative, and trusting of others.",
+        "pt": "Reflete a tendência a ser compassivo, cooperativo e confiável em relação aos outros.",
+        "es": "Refleja la tendencia a ser compasivo, cooperativo y confiado con los demás."
+    },
+    "Neuroticism": {
+        "en": "Reflects the tendency to experience negative emotions such as anxiety, anger, or depression.",
+        "pt": "Reflete a tendência a experienciar emoções negativas, como ansiedade, raiva ou depressão.",
+        "es": "Refleja la tendencia a experimentar emociones negativas como ansiedad, ira o depresión."
+    }
+};
+
+export const big5Descriptions = {
+    "Openness": {
+        "High": {
+            "en": "You tend to be creative, curious, and open to new experiences. You enjoy abstract concepts and intellectual challenges.",
+            "pt": "Você tende a ser criativo, curioso e aberto a novas experiências. Gosta de conceitos abstratos e desafios intelectuais.",
+            "es": "Tiendes a ser creativo, curioso y abierto a nuevas experiencias. Disfrutas de conceptos abstractos y desafíos intelectuales."
+        },
+        "Low": {
+            "en": "You tend to be practical, conventional, and prefer familiar routines. You focus on the concrete and the known.",
+            "pt": "Você tende a ser prático, convencional e prefere rotinas familiares. Foca no concreto e no que já é conhecido.",
+            "es": "Tiendes a ser práctico, convencional y prefieres rutinas familiares. Te enfocas en lo concreto y lo conocido."
+        }
+    },
+    "Conscientiousness": {
+        "High": {
+            "en": "You are organized, reliable, and disciplined. You tend to plan ahead and focus on long-term achievements.",
+            "pt": "Você é organizado, confiável e disciplinado. Tende a planejar com antecedência e foca em conquistas de longo prazo.",
+            "es": "Eres organizado, confiable y disciplinado. Tiendes a planificar con anticipación y te enfocas en logros a largo plazo."
+        },
+        "Low": {
+            "en": "You may be more spontaneous and flexible, but might struggle with organization and strict deadlines.",
+            "pt": "Você pode ser mais espontâneo e flexível, mas pode ter dificuldade com organização e cumprimento de prazos rigorosos.",
+            "es": "Puedes ser más espontáneo y flexible, pero podrías tener dificultades con la organización y los plazos estrictos."
+        }
+    },
+    "Extraversion": {
+        "High": {
+            "en": "You get energized by being around others. You are sociable, talkative, and generally assertive in groups.",
+            "pt": "Você se energiza ao estar com outras pessoas. É sociável, falante e geralmente assertivo em grupos.",
+            "es": "Te llenas de energía al estar con otras personas. Eres sociable, hablador y generalmente asertivo en grupos."
+        },
+        "Low": {
+            "en": "You are more reserved and prefer solitude or small groups. Excessive social interaction can be draining for you.",
+            "pt": "Você é mais reservado e prefere a solidão ou grupos pequenos. Interações sociais excessivas podem ser cansativas para você.",
+            "es": "Eres más reservado y prefieres la soledad o grupos pequeños. La interacción social excesiva puede ser agotadora para ti."
+        }
+    },
+    "Agreeableness": {
+        "High": {
+            "en": "You are empathetic, helpful, and cooperative. You value social harmony and tend to trust people.",
+            "pt": "Você é empático, prestativo e cooperativo. Valoriza a harmonia social e tende a confiar nas pessoas.",
+            "es": "Eres empático, servicial y cooperativo. Valoras la armonía social y tiendes a confiar en las personas."
+        },
+        "Low": {
+            "en": "You may be more competitive or skeptical of others' intentions. You prioritize logic or self-interest over harmony.",
+            "pt": "Você pode ser mais competitivo ou cético em relação às intenções dos outros. Prioriza a lógica ou o interesse próprio sobre a harmonia.",
+            "es": "Puedes ser más competitivo o escéptico sobre las intenciones de los demás. Priorizas la lógica o el interés propio sobre la armonía."
+        }
+    },
+    "Neuroticism": {
+        "High": {
+            "en": "You tend to feel stress and negative emotions more easily. You may frequently worry about what could go wrong.",
+            "pt": "Você tende a sentir estresse e emoções negativas com mais facilidade. Pode se preocupar frequentemente com o que pode dar errado.",
+            "es": "Tiendes a sentir estrés y emociones negativas con más facilidad. Puedes preocuparte frecuentemente por lo que podría salir mal."
+        },
+        "Low": {
+            "en": "You are emotionally stable, calm, and resilient. You are rarely shaken by stressful situations.",
+            "pt": "Você é emocionalmente estável, calmo e resiliente. Dificilmente se abala com situações estressantes.",
+            "es": "Eres emocionalmente estable, tranquilo y resiliente. Rara vez te afectan las situaciones estresantes."
+        }
+    }
+};
+
 export const blendedDescriptions = {
     "D": {
         name: { en: "Dominant", pt: "Dominante", es: "Dominante" },

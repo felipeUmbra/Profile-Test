@@ -1,9 +1,8 @@
-import { CONFIG, big5Descriptions } from './data.js';
+// ✅ 1. Update Import to include big5TraitDescriptions
+import { CONFIG, big5TraitDescriptions } from './data.js';
 
 // --- DISC Logic ---
-
 export function calculateDISCScore(scores) {
-    // Convert object {D:10, I:5...} to sorted array [{factor:'D', score:10}, ...]
     const factorScores = Object.entries(scores)
         .map(([factor, score]) => ({ factor, score }))
         .sort((a, b) => b.score - a.score);
@@ -29,10 +28,8 @@ function getProfileKey(factorScores) {
 }
 
 // --- MBTI Logic ---
-
 export function calculateMBTIType(scores) {
     try {
-        // Use the passed 'scores' object, not global mbtiScores
         const eiType = scores.E >= scores.I ? 'E' : 'I';
         const snType = scores.S >= scores.N ? 'S' : 'N';
         const tfType = scores.T >= scores.F ? 'T' : 'F';
@@ -46,10 +43,7 @@ export function calculateMBTIType(scores) {
 }
 
 // --- Big5 Logic ---
-
 export function calculateBig5Score(scores) {
-    // Big5 doesn't produce a single "type" string like MBTI.
-    // We return 'completed' to satisfy the profileKey requirement in main.js
     return 'completed';
 }
 
@@ -57,7 +51,6 @@ export function analyzeBig5(scores, maxScores = 40) {
     const analysis = {};
     const factors = ['O', 'C', 'E', 'A', 'N'];
     
-    // Safety check for maxScores being an object or number
     const getMax = (f) => (typeof maxScores === 'object' ? maxScores[f] : maxScores);
 
     factors.forEach(factor => {
@@ -67,19 +60,22 @@ export function analyzeBig5(scores, maxScores = 40) {
         
         let level, description;
         
+        // ✅ 2. Use big5TraitDescriptions for text analysis
         if (percentage >= 70) {
             level = 'high';
-            description = big5Descriptions[factor].high;
+            description = big5TraitDescriptions[factor].high;
         } else if (percentage >= 40) {
             level = 'moderate';
-            description = big5Descriptions[factor].moderate;
+            description = big5TraitDescriptions[factor].moderate;
         } else {
             level = 'low';
-            description = big5Descriptions[factor].low;
+            description = big5TraitDescriptions[factor].low;
         }
         
+        // Note: We still use big5Descriptions for the Name/Title if needed, 
+        // or we can use big5TraitDescriptions for consistency.
         analysis[factor] = {
-            name: big5Descriptions[factor].name,
+            name: big5TraitDescriptions[factor].name,
             score: score,
             maxScore: max,
             percentage: Math.round(percentage),
