@@ -13,7 +13,7 @@ if (!mongoUri) {
 // Load questions from JSON file
 function loadQuestions() {
     try {
-        const filePath = path.join(__dirname, 'fallback-questions.json');
+        const filePath = path.join(__dirname, '/JSON/fallback-questions.json');
         const data = fs.readFileSync(filePath, 'utf8');
         return JSON.parse(data);
     } catch (error) {

@@ -785,7 +785,7 @@ async function loadFallbackQuestions() {
     }
     
     try {
-        const response = await fetch('./fallback-questions.json');
+        const response = await fetch('/JSON/fallback-questions.json');
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
