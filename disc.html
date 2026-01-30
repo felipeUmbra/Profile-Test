@@ -22,13 +22,13 @@
                 ← Back to Home
             </a>
             <div class="flex space-x-2">
-                <button onclick="setLanguage('en')" class="lang-button p-1 rounded hover:bg-gray-100">
+                <button class="lang-button p-1 rounded hover:bg-gray-100">
                     <img src="https://placehold.co/24x16/000000/FFFFFF?text=EN" alt="English" title="English" class="rounded shadow">
                 </button>
-                <button onclick="setLanguage('pt')" class="lang-button p-1 rounded hover:bg-gray-100">
+                <button class="lang-button p-1 rounded hover:bg-gray-100">
                     <img src="https://placehold.co/24x16/000000/FFFFFF?text=BR" alt="Português" title="Português (Brasil)" class="rounded shadow">
                 </button>
-                <button onclick="setLanguage('es')" class="lang-button p-1 rounded hover:bg-gray-100">
+                <button class="lang-button p-1 rounded hover:bg-gray-100">
                     <img src="https://placehold.co/24x16/000000/FFFFFF?text=ES" alt="Español" title="Español" class="rounded shadow">
                 </button>
             </div>
@@ -60,16 +60,16 @@
             <!-- Rating Buttons -->
             <div id="rating-buttons" class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
                 
-                <button id="rating-1" onclick="handleRating(1, this)" class="rating-button p-4 text-lg font-semibold rounded-xl bg-gray-100 border border-gray-300 text-gray-600 hover:bg-red-50 hover:border-red-400">
+                <button id="rating-1" class="rating-button p-4 text-lg font-semibold rounded-xl bg-gray-100 border border-gray-300 text-gray-600 hover:bg-red-50 hover:border-red-400">
                     1 - Least Like Me
                 </button>
-                <button id="rating-2" onclick="handleRating(2, this)" class="rating-button p-4 text-lg font-semibold rounded-xl bg-gray-100 border border-gray-300 text-gray-600 hover:bg-yellow-50 hover:border-yellow-400">
+                <button id="rating-2" class="rating-button p-4 text-lg font-semibold rounded-xl bg-gray-100 border border-gray-300 text-gray-600 hover:bg-yellow-50 hover:border-yellow-400">
                     2 - Less Like Me
                 </button>
-                <button id="rating-3" onclick="handleRating(3, this)" class="rating-button p-4 text-lg font-semibold rounded-xl bg-gray-100 border border-gray-300 text-gray-600 hover:bg-green-50 hover:border-green-400">
+                <button id="rating-3" class="rating-button p-4 text-lg font-semibold rounded-xl bg-gray-100 border border-gray-300 text-gray-600 hover:bg-green-50 hover:border-green-400">
                     3 - More Like Me
                 </button>
-                <button id="rating-4" onclick="handleRating(4, this)" class="rating-button p-4 text-lg font-semibold rounded-xl bg-gray-100 border border-gray-300 text-gray-600 hover:bg-indigo-50 hover:border-indigo-300">
+                <button id="rating-4" class="rating-button p-4 text-lg font-semibold rounded-xl bg-gray-100 border border-gray-300 text-gray-600 hover:bg-indigo-50 hover:border-indigo-300">
                     4 - Most Like Me
                 </button>
 
@@ -102,10 +102,10 @@
             </div>
             
             <div class="mt-8 text-center space-x-4">
-                <button id="restart-btn" onclick="restartTest()" class="px-8 py-3 bg-indigo-500 text-white font-bold rounded-xl hover:bg-indigo-600 transition duration-300 shadow-lg shadow-indigo-500/50">
+                <button id="restart-btn" class="px-8 py-3 bg-indigo-500 text-white font-bold rounded-xl hover:bg-indigo-600 transition duration-300 shadow-lg shadow-indigo-500/50">
                     Restart Test
                 </button>
-                <button id="export-btn" onclick="exportToPDF()" class="px-8 py-3 bg-green-500 text-white font-bold rounded-xl hover:bg-green-600 transition duration-300 shadow-lg shadow-green-500/50">
+                <button id="export-btn" class="px-8 py-3 bg-green-500 text-white font-bold rounded-xl hover:bg-green-600 transition duration-300 shadow-lg shadow-green-500/50">
                     Export to PDF 📄
                 </button>
             </div>

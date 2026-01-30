@@ -18,13 +18,13 @@
                 ← Back to Home
             </a>
             <div class="flex space-x-2">
-                <button onclick="setLanguage('en')" class="lang-button p-1 rounded hover:bg-gray-100">
+                <button class="lang-button p-1 rounded hover:bg-gray-100">
                     <img src="https://placehold.co/24x16/000000/FFFFFF?text=EN" alt="English" title="English" class="rounded shadow">
                 </button>
-                <button onclick="setLanguage('pt')" class="lang-button p-1 rounded hover:bg-gray-100">
+                <button class="lang-button p-1 rounded hover:bg-gray-100">
                     <img src="https://placehold.co/24x16/000000/FFFFFF?text=BR" alt="Português" title="Português (Brasil)" class="rounded shadow">
                 </button>
-                <button onclick="setLanguage('es')" class="lang-button p-1 rounded hover:bg-gray-100">
+                <button class="lang-button p-1 rounded hover:bg-gray-100">
                     <img src="https://placehold.co/24x16/000000/FFFFFF?text=ES" alt="Español" title="Español" class="rounded shadow">
                 </button>
             </div>
@@ -51,10 +51,10 @@
             </div>
 
             <div id="rating-buttons" class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
-                <button id="option-a" onclick="handleMBTIRating('A', this)" class="rating-button p-4 text-lg font-semibold rounded-xl bg-gray-100 border border-gray-300 text-gray-600 hover:bg-blue-50 hover:border-blue-400 transition duration-200">
+                <button id="option-a" class="rating-button p-4 text-lg font-semibold rounded-xl bg-gray-100 border border-gray-300 text-gray-600 hover:bg-blue-50 hover:border-blue-400 transition duration-200">
                     <span id="option-a-text">Option A</span>
                 </button>
-                <button id="option-b" onclick="handleMBTIRating('B', this)" class="rating-button p-4 text-lg font-semibold rounded-xl bg-gray-100 border border-gray-300 text-gray-600 hover:bg-purple-50 hover:border-purple-400 transition duration-200">
+                <button id="option-b" class="rating-button p-4 text-lg font-semibold rounded-xl bg-gray-100 border border-gray-300 text-gray-600 hover:bg-purple-50 hover:border-purple-400 transition duration-200">
                     <span id="option-b-text">Option B</span>
                 </button>
             </div>
@@ -83,10 +83,10 @@
                 </div>
             
             <div class="mt-8 text-center space-x-4">
-                <button id="restart-btn" onclick="restartTest()" class="px-8 py-3 bg-indigo-500 text-white font-bold rounded-xl hover:bg-indigo-600 transition duration-300 shadow-lg shadow-indigo-500/50">
+                <button id="restart-btn" class="px-8 py-3 bg-indigo-500 text-white font-bold rounded-xl hover:bg-indigo-600 transition duration-300 shadow-lg shadow-indigo-500/50">
                     Restart Test
                 </button>
-                <button id="export-btn" onclick="exportToPDF()" class="px-8 py-3 bg-green-500 text-white font-bold rounded-xl hover:bg-green-600 transition duration-300 shadow-lg shadow-green-500/50">
+                <button id="export-btn" class="px-8 py-3 bg-green-500 text-white font-bold rounded-xl hover:bg-green-600 transition duration-300 shadow-lg shadow-green-500/50">
                     Export to PDF 📄
                 </button>
             </div>

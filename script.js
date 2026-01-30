@@ -440,7 +440,7 @@ const isIndexPage = currentPage === 'index.html' || currentPage === '';
 const isResultPage = currentPage.includes('-result.html');
 
 // Language State and Translations
-let currentLang = 'en';
+export let currentLang = 'en';
 
 const translations = {
     'en': {
@@ -1215,7 +1215,7 @@ function showError(message = t('error_general'), duration = 5000) {
     }, duration);
 }
 
-function showLoading(message = t('loading')) {
+export function showLoading(message = t('loading')) {
     const loadingElement = document.createElement('div');
     loadingElement.id = 'loading-overlay';
     loadingElement.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
@@ -3328,4 +3328,91 @@ if (typeof module !== 'undefined' && module.exports) {
         saveTestResult,
         fetchQuestions
     };
+}
+
+// ==========================================
+// NEW: Event Listener Initialization
+// ==========================================
+
+document.addEventListener('DOMContentLoaded', () => {
+    setupLanguageListeners();
+    setupActionListeners();
+    setupTestListeners();
+});
+
+function setupLanguageListeners() {
+    const langBtns = document.querySelectorAll('.lang-button');
+    langBtns.forEach(btn => {
+        const img = btn.querySelector('img');
+        if (!img) return;
+        
+        // Identify language by alt text or order
+        if (img.alt === 'English') {
+            btn.addEventListener('click', () => setLanguage('en'));
+        } else if (img.alt.includes('Português')) {
+            btn.addEventListener('click', () => setLanguage('pt'));
+        } else if (img.alt === 'Español') {
+            btn.addEventListener('click', () => setLanguage('es'));
+        }
+    });
+}
+
+function setupActionListeners() {
+    // Restart Button
+    const restartBtn = document.getElementById('restart-btn');
+    if (restartBtn) {
+        restartBtn.addEventListener('click', restartTest);
+    }
+
+    // Export Button
+    const exportBtn = document.getElementById('export-btn');
+    if (exportBtn) {
+        exportBtn.addEventListener('click', exportToPDF);
+    }
+    
+    // Back Button (if it needs JS, though <a href> usually handles it)
+    const backBtn = document.getElementById('back-btn');
+    // valid if you had specific logic, otherwise href works alone
+}
+
+function setupTestListeners() {
+    // Detect which test is running based on the page/config
+    if (isDISCTest) {
+        // DISC has buttons with IDs rating-1 to rating-4
+        [1, 2, 3, 4].forEach(num => {
+            const btn = document.getElementById(`rating-${num}`);
+            if (btn) {
+                btn.addEventListener('click', function() {
+                    handleRating(num, this);
+                });
+            }
+        });
+    } 
+    else if (isMBTITest) {
+        // MBTI has buttons option-a and option-b
+        const btnA = document.getElementById('option-a');
+        const btnB = document.getElementById('option-b');
+        
+        if (btnA) {
+            btnA.addEventListener('click', function() { 
+                handleMBTIRating('A', this); 
+            });
+        }
+        if (btnB) {
+            btnB.addEventListener('click', function() { 
+                handleMBTIRating('B', this); 
+            });
+        }
+    } 
+    else if (isBig5Test) {
+        // Big5 has buttons rating-1 to rating-5
+        [1, 2, 3, 4, 5].forEach(num => {
+            const btn = document.getElementById(`rating-${num}`);
+            if (btn) {
+                btn.addEventListener('click', function() {
+                    handleBig5Rating(num, this);
+                });
+            }
+        });
+    }
 }

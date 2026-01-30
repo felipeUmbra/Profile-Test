@@ -1,3 +1,5 @@
+import { currentLang, showLoading  } from '../script.js';
+
 // Enhanced PDF Export with Accessibility
 export function exportToPDF() {
     const loading = showLoading(currentLang === 'en' ? 'Generating PDF...' : 'Gerando PDF...');
