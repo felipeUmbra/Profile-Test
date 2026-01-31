@@ -2891,8 +2891,6 @@ function displayFullResult(testType, resultData) {
     
     container.innerHTML = resultHTML;
     
-    // Re-attach event listeners for PDF export
-    attachResultPageEventListeners(testType);
 }
 
 function generateDISCResultHTML(resultData) {
@@ -3142,20 +3140,6 @@ function generateBig5ResultHTML(resultData) {
     `;
 }
 
-function attachResultPageEventListeners(testType) {
-    // PDF export functionality
-    const exportButtons = document.querySelectorAll('button[onclick*="exportResultToPDF"]');
-    exportButtons.forEach(button => {
-        button.addEventListener('click', () => exportResultToPDF(testType));
-    });
-
-    // Restart test functionality
-    const restartButtons = document.querySelectorAll('button[onclick*="restartTestFromResult"]');
-    restartButtons.forEach(button => {
-        button.addEventListener('click', () => restartTestFromResult(testType));
-    });
-}
-
 function restartTestFromResult(testType) {
     const testPages = {
         DISC: 'disc.html',
@@ -3338,6 +3322,12 @@ document.addEventListener('DOMContentLoaded', () => {
     setupLanguageListeners();
     setupActionListeners();
     setupTestListeners();
+
+    if (typeof isResultPage !== 'undefined' && isResultPage) {
+        if (window.location.href.includes('disc')) loadStoredResult('DISC');
+        else if (window.location.href.includes('mbti')) loadStoredResult('MBTI');
+        else if (window.location.href.includes('big5')) loadStoredResult('BIG5');
+    }
 });
 
 function setupLanguageListeners() {
@@ -3358,21 +3348,47 @@ function setupLanguageListeners() {
 }
 
 function setupActionListeners() {
-    // Restart Button
+    // 1. Restart Button Listener
     const restartBtn = document.getElementById('restart-btn');
     if (restartBtn) {
         restartBtn.addEventListener('click', restartTest);
     }
 
-    // Export Button
+    // 2. Export Button Listener
     const exportBtn = document.getElementById('export-btn');
     if (exportBtn) {
-        exportBtn.addEventListener('click', exportToPDF);
+        exportBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            
+            // Determine the correct filename based on the active test
+            let filenameKey = 'filename'; // Default for DISC
+            if (typeof isMBTITest !== 'undefined' && isMBTITest) {
+                filenameKey = 'mbti_filename';
+            } else if (typeof isBig5Test !== 'undefined' && isBig5Test) {
+                filenameKey = 'big5_filename';
+            }
+
+            // Get the translated filename
+            const filename = (typeof t === 'function' ? t(filenameKey) : 'Results') + '.pdf';
+            
+            // Show Loading Indicator
+            const loadingText = typeof t === 'function' ? t('loading') : 'Generating PDF...';
+            if (typeof showLoading === 'function') showLoading(loadingText);
+
+            try {
+                // Call the pure function from utils.js
+                await exportResultToPDF('results-container', filename);
+            } catch (error) {
+                console.error('PDF Export Error:', error);
+                if (typeof showError === 'function') {
+                    showError(typeof t === 'function' ? t('error_pdf') : 'Failed to generate PDF');
+                }
+            } finally {
+                // Hide Loading Indicator
+                if (typeof hideLoading === 'function') hideLoading();
+            }
+        });
     }
-    
-    // Back Button (if it needs JS, though <a href> usually handles it)
-    const backBtn = document.getElementById('back-btn');
-    // valid if you had specific logic, otherwise href works alone
 }
 
 function setupTestListeners() {

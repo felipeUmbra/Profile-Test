@@ -4,3 +4,17 @@
 
 /* Se você tiver CSS customizado do seu arquivo style.css atual, 
    você pode copiá-lo e colá-lo aqui abaixo */
+
+/* PDF Export Helpers */
+@media print {
+    .no-break {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+    }
+}
+
+/* Ensure background colors render in PDF */
+.pdf-background {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}

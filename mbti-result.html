@@ -10,20 +10,20 @@
     <script type="module" src="script.js"></script>
 </head>
 <body class="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-blue-50 to-indigo-100">
-    <div class="max-w-4xl w-full bg-white p-8 rounded-2xl shadow-2xl">
+    <div id="results-container" class="max-w-4xl w-full bg-white p-8 rounded-2xl shadow-2xl">
         <!-- Back Button and Language Selector -->
         <div class="flex justify-between items-center mb-8">
             <a href="index.html" id="back-btn" class="px-4 py-2 bg-gray-500 text-white font-bold rounded-lg hover:bg-gray-600 transition duration-300">
                 ← Back to Home
             </a>
             <div class="flex space-x-2">
-                <button onclick="setLanguage('en')" class="lang-button p-1 rounded hover:bg-gray-100">
+                <button class="lang-button p-1 rounded hover:bg-gray-100">
                     <img src="https://placehold.co/24x16/000000/FFFFFF?text=EN" alt="English" title="English" class="rounded shadow">
                 </button>
-                <button onclick="setLanguage('pt')" class="lang-button p-1 rounded hover:bg-gray-100">
+                <button class="lang-button p-1 rounded hover:bg-gray-100">
                     <img src="https://placehold.co/24x16/000000/FFFFFF?text=BR" alt="Português" title="Português (Brasil)" class="rounded shadow">
                 </button>
-                <button onclick="setLanguage('es')" class="lang-button p-1 rounded hover:bg-gray-100">
+                <button class="lang-button p-1 rounded hover:bg-gray-100">
                     <img src="https://placehold.co/24x16/000000/FFFFFF?text=ES" alt="Español" title="Español" class="rounded shadow">
                 </button>
             </div>
@@ -37,12 +37,5 @@
             </div>
         </div>
     </div>
-
-    <script>
-        // Load and display the MBTI result when page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            loadStoredResult('MBTI');
-        });
-    </script>
 </body>
 </html>
