@@ -1,4 +1,4 @@
-import { exportToPDF, exportResultToPDF } from '/JS/utils.js';
+import { exportResultToPDF } from '/JS/utils.js';
 
 // --- Configuration Object ---
 const CONFIG = {
