@@ -2958,10 +2958,10 @@ function generateDISCResultHTML(resultData) {
 
         <!-- Action Buttons -->
         <div class="text-center space-x-4">
-            <button onclick="restartTestFromResult('DISC')" class="px-8 py-3 bg-indigo-500 text-white font-bold rounded-xl hover:bg-indigo-600 transition duration-300 shadow-lg">
+            <button id="restart-btn" class="px-8 py-3 bg-indigo-500 text-white font-bold rounded-xl hover:bg-indigo-600 transition duration-300 shadow-lg">
                 ${t('restart')}
             </button>
-            <button onclick="exportResultToPDF('DISC')" class="px-8 py-3 bg-green-500 text-white font-bold rounded-xl hover:bg-green-600 transition duration-300 shadow-lg">
+            <button id="export-btn" class="px-8 py-3 bg-green-500 text-white font-bold rounded-xl hover:bg-green-600 transition duration-300 shadow-lg">
                 ${t('export_pdf')}
             </button>
         </div>
@@ -3043,10 +3043,10 @@ function generateMBTIResultHTML(resultData) {
 
         <!-- Action Buttons -->
         <div class="text-center space-x-4">
-            <button onclick="restartTestFromResult('MBTI')" class="px-8 py-3 bg-indigo-500 text-white font-bold rounded-xl hover:bg-indigo-600 transition duration-300 shadow-lg">
+            <button id="restart-btn" class="px-8 py-3 bg-indigo-500 text-white font-bold rounded-xl hover:bg-indigo-600 transition duration-300 shadow-lg">
                 ${t('restart')}
             </button>
-            <button onclick="exportResultToPDF('MBTI')" class="px-8 py-3 bg-green-500 text-white font-bold rounded-xl hover:bg-green-600 transition duration-300 shadow-lg">
+            <button id="export-btn" class="px-8 py-3 bg-green-500 text-white font-bold rounded-xl hover:bg-green-600 transition duration-300 shadow-lg">
                 ${t('export_pdf')}
             </button>
         </div>
@@ -3130,10 +3130,10 @@ function generateBig5ResultHTML(resultData) {
 
         <!-- Action Buttons -->
         <div class="text-center space-x-4">
-            <button onclick="restartTestFromResult('BIG5')" class="px-8 py-3 bg-indigo-500 text-white font-bold rounded-xl hover:bg-indigo-600 transition duration-300 shadow-lg">
+            <button id="restart-btn" class="px-8 py-3 bg-indigo-500 text-white font-bold rounded-xl hover:bg-indigo-600 transition duration-300 shadow-lg">
                 ${t('restart')}
             </button>
-            <button onclick="exportResultToPDF('BIG5')" class="px-8 py-3 bg-green-500 text-white font-bold rounded-xl hover:bg-green-600 transition duration-300 shadow-lg">
+            <button id="export-btn" class="px-8 py-3 bg-green-500 text-white font-bold rounded-xl hover:bg-green-600 transition duration-300 shadow-lg">
                 ${t('export_pdf')}
             </button>
         </div>
@@ -3348,47 +3348,45 @@ function setupLanguageListeners() {
 }
 
 function setupActionListeners() {
-    // 1. Restart Button Listener
-    const restartBtn = document.getElementById('restart-btn');
-    if (restartBtn) {
-        restartBtn.addEventListener('click', restartTest);
-    }
-
-    // 2. Export Button Listener
-    const exportBtn = document.getElementById('export-btn');
-    if (exportBtn) {
-        exportBtn.addEventListener('click', async (e) => {
+    // Event Delegation: Listen on 'document.body' to catch clicks 
+    // on buttons even after they are dynamically created.
+    document.body.addEventListener('click', async (e) => {
+        
+        // 1. Handle EXPORT Button Click
+        const exportBtn = e.target.closest('#export-btn');
+        if (exportBtn) {
             e.preventDefault();
             
-            // Determine the correct filename based on the active test
-            let filenameKey = 'filename'; // Default for DISC
-            if (typeof isMBTITest !== 'undefined' && isMBTITest) {
-                filenameKey = 'mbti_filename';
-            } else if (typeof isBig5Test !== 'undefined' && isBig5Test) {
-                filenameKey = 'big5_filename';
-            }
+            // Determine filename based on test type
+            let filenameKey = 'filename';
+            if (typeof isMBTITest !== 'undefined' && isMBTITest) filenameKey = 'mbti_filename';
+            else if (typeof isBig5Test !== 'undefined' && isBig5Test) filenameKey = 'big5_filename';
 
-            // Get the translated filename
             const filename = (typeof t === 'function' ? t(filenameKey) : 'Results') + '.pdf';
-            
-            // Show Loading Indicator
             const loadingText = typeof t === 'function' ? t('loading') : 'Generating PDF...';
+            
             if (typeof showLoading === 'function') showLoading(loadingText);
 
             try {
-                // Call the pure function from utils.js
+                // Call the utility function
                 await exportResultToPDF('results-container', filename);
             } catch (error) {
                 console.error('PDF Export Error:', error);
-                if (typeof showError === 'function') {
-                    showError(typeof t === 'function' ? t('error_pdf') : 'Failed to generate PDF');
-                }
+                if (typeof showError === 'function') showError('Failed to generate PDF');
             } finally {
-                // Hide Loading Indicator
                 if (typeof hideLoading === 'function') hideLoading();
             }
-        });
-    }
+        }
+
+        // 2. Handle RESTART Button Click
+        const restartBtn = e.target.closest('#restart-btn');
+        if (restartBtn) {
+            e.preventDefault();
+            if (typeof restartTest === 'function') {
+                restartTest();
+            }
+        }
+    });
 }
 
 function setupTestListeners() {

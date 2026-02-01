@@ -16,14 +16,17 @@ if (!mongoUri) {
     process.exit(1);
 }
 
-const client = new MongoClient(mongoUri);
+// Add connection options for better stability
+const client = new MongoClient(mongoUri, {
+    family: 4 // Force IPv4 to avoid DNS issues
+});
 let db;
 
 // Database connection function
 async function connectToDatabase() {
     try {
         await client.connect();
-        db = client.db(); // If you did not specify a database in the URI, you can do it here: client.db("yourDbName")
+        db = client.db(); // Uses the database name from the URI (e.g., /profile_test)
         console.log('✅ Connected to MongoDB successfully');
         return true;
     } catch (error) {
