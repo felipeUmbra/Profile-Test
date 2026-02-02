@@ -1,5 +1,7 @@
-import { exportResultToPDF } from '/JS/utils.js';
+import { exportResultToPDF, VirtualScroller, AccessibilityManager, TestRunner, showError, setupEnhancedKeyboardNavigation,
+     setupVirtualScrollingForResults, cleanupVirtualScrolling } from '/JS/utils.js';
 import {big5TraitDescriptions, mbtiDimensions, mbtiTypeDescriptions, discDescriptions, big5Descriptions, blendedDescriptions} from '/JS/trait-description.js';
+// import { generateDISCResultHTML } from '/JS/scoring.js';
 // --- Configuration Object ---
 const CONFIG = {
     DISC: {
@@ -37,400 +39,6 @@ const CONFIG = {
     apiBaseUrl: 'http://localhost:3000/api' // Update this to your backend URL
 };
 
-// --- Virtual Scrolling Implementation ---
-class VirtualScroller {
-    constructor(container, items, itemHeight, renderItem) {
-        this.container = container;
-        this.items = items;
-        this.itemHeight = itemHeight;
-        this.renderItem = renderItem;
-        this.visibleItems = [];
-        this.scrollTop = 0;
-        this.visibleCount = 0;
-        
-        this.init();
-    }
-
-    init() {
-        // Set container height for proper scrolling
-        this.container.style.height = `${this.items.length * this.itemHeight}px`;
-        this.container.style.position = 'relative';
-        this.container.style.overflow = 'auto';
-        
-        // Create viewport element
-        this.viewport = document.createElement('div');
-        this.viewport.style.position = 'relative';
-        this.viewport.style.height = '100%';
-        this.container.appendChild(this.viewport);
-        
-        // Calculate visible count
-        this.visibleCount = Math.ceil(this.container.clientHeight / this.itemHeight) + 2;
-        
-        // Add scroll listener with debouncing
-        this.container.addEventListener('scroll', this.debounce(this.handleScroll.bind(this), 10));
-        
-        // Initial render
-        this.render();
-        
-        // Add ARIA attributes
-        this.container.setAttribute('role', 'region');
-        this.container.setAttribute('aria-label', 'Scrollable content');
-        this.container.setAttribute('aria-busy', 'false');
-    }
-
-    debounce(func, wait) {
-        let timeout;
-        return function executedFunction(...args) {
-            const later = () => {
-                clearTimeout(timeout);
-                func(...args);
-            };
-            clearTimeout(timeout);
-            timeout = setTimeout(later, wait);
-        };
-    }
-
-    handleScroll() {
-        this.scrollTop = this.container.scrollTop;
-        this.render();
-    }
-
-    render() {
-        const startIndex = Math.floor(this.scrollTop / this.itemHeight);
-        const endIndex = Math.min(startIndex + this.visibleCount, this.items.length);
-        
-        // Clear existing items
-        while (this.viewport.firstChild) {
-            this.viewport.removeChild(this.viewport.firstChild);
-        }
-        
-        // Render visible items
-        for (let i = startIndex; i < endIndex; i++) {
-            const item = this.items[i];
-            const element = this.renderItem(item, i);
-            element.style.position = 'absolute';
-            element.style.top = `${i * this.itemHeight}px`;
-            element.style.width = '100%';
-            element.style.height = `${this.itemHeight}px`;
-            element.setAttribute('data-index', i);
-            this.viewport.appendChild(element);
-        }
-        
-        // Update ARIA attributes for accessibility
-        this.container.setAttribute('aria-setsize', this.items.length);
-        this.container.setAttribute('aria-posinset', startIndex + 1);
-    }
-
-    destroy() {
-        this.container.removeEventListener('scroll', this.handleScroll);
-        this.container.innerHTML = '';
-    }
-}
-
-// --- Enhanced Accessibility Manager ---
-class AccessibilityManager {
-    constructor() {
-        this.liveRegions = new Map();
-        this.currentFocus = null;
-        this.init();
-    }
-
-    init() {
-        // Create live regions for different priority levels
-        this.createLiveRegion('assertive', 'assertive');
-        this.createLiveRegion('polite', 'polite');
-        
-        // Add screen reader styles
-        this.addScreenReaderStyles();
-        
-        // Enhance existing elements
-        this.enhanceExistingElements();
-        
-        // Setup focus tracking
-        this.setupFocusManagement();
-    }
-
-    createLiveRegion(id, politeness) {
-        const region = document.createElement('div');
-        region.id = `live-region-${id}`;
-        region.setAttribute('aria-live', politeness);
-        region.setAttribute('aria-atomic', 'true');
-        region.className = 'sr-only';
-        document.body.appendChild(region);
-        this.liveRegions.set(id, region);
-    }
-
-    announce(message, politeness = 'polite') {
-        const region = this.liveRegions.get(politeness);
-        if (region) {
-            // Clear previous message
-            region.textContent = '';
-            // Use setTimeout to ensure the DOM updates
-            setTimeout(() => {
-                region.textContent = message;
-                console.log(`Screen Reader: ${message}`); // For debugging
-            }, 100);
-        }
-    }
-
-    addScreenReaderStyles() {
-        if (!document.getElementById('sr-styles')) {
-            const style = document.createElement('style');
-            style.id = 'sr-styles';
-            style.textContent = `
-                .sr-only {
-                    position: absolute;
-                    width: 1px;
-                    height: 1px;
-                    padding: 0;
-                    margin: -1px;
-                    overflow: hidden;
-                    clip: rect(0, 0, 0, 0);
-                    white-space: nowrap;
-                    border: 0;
-                }
-                
-                .focus-visible {
-                    outline: 3px solid #4f46e5;
-                    outline-offset: 2px;
-                    border-radius: 8px;
-                }
-                
-                .keyboard-navigation *:focus {
-                    outline: 3px solid #4f46e5;
-                    outline-offset: 2px;
-                }
-                
-                @media (prefers-reduced-motion: reduce) {
-                    * {
-                        animation-duration: 0.01ms !important;
-                        animation-iteration-count: 1 !important;
-                        transition-duration: 0.01ms !important;
-                    }
-                }
-            `;
-            document.head.appendChild(style);
-        }
-    }
-
-    enhanceExistingElements() {
-        // Enhance progress bars
-        this.enhanceProgressBars();
-        
-        // Enhance rating buttons
-        this.enhanceRatingButtons();
-        
-        // Enhance navigation
-        this.enhanceNavigation();
-    }
-
-    enhanceProgressBars() {
-        const progressBars = document.querySelectorAll('[id*="progress"]');
-        progressBars.forEach(bar => {
-            if (!bar.getAttribute('role')) {
-                bar.setAttribute('role', 'progressbar');
-                bar.setAttribute('aria-valuemin', '0');
-                bar.setAttribute('aria-valuemax', '100');
-                bar.setAttribute('aria-valuenow', '0');
-            }
-        });
-    }
-
-    enhanceRatingButtons() {
-        const ratingButtons = document.querySelectorAll('.rating-button');
-        ratingButtons.forEach((button, index) => {
-            if (!button.getAttribute('aria-label')) {
-                const label = button.textContent.trim();
-                button.setAttribute('aria-label', label);
-            }
-            button.setAttribute('tabindex', '0');
-            button.setAttribute('role', 'button');
-            
-            // Add focus management
-            button.addEventListener('focus', () => {
-                this.currentFocus = button;
-                button.classList.add('focus-visible');
-            });
-            
-            button.addEventListener('blur', () => {
-                button.classList.remove('focus-visible');
-            });
-        });
-    }
-
-    enhanceNavigation() {
-        const backButton = document.querySelector('a[href="index.html"]');
-        if (backButton) {
-            backButton.setAttribute('aria-label', 'Back to home page');
-            backButton.setAttribute('tabindex', '0');
-        }
-
-        const languageButtons = document.querySelectorAll('.lang-button');
-        languageButtons.forEach((button, index) => {
-            button.setAttribute('aria-label', button.querySelector('img').alt);
-            button.setAttribute('tabindex', '0');
-        });
-    }
-
-    setupFocusManagement() {
-        // Track keyboard vs mouse navigation
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Tab') {
-                document.body.classList.add('keyboard-navigation');
-            }
-        });
-
-        document.addEventListener('mousedown', () => {
-            document.body.classList.remove('keyboard-navigation');
-        });
-
-        // Skip to main content functionality
-        this.addSkipToContentLink();
-    }
-
-    addSkipToContentLink() {
-        const skipLink = document.createElement('a');
-        skipLink.href = '#main-content';
-        skipLink.className = 'sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:bg-white focus:p-4 focus:z-50';
-        skipLink.textContent = 'Skip to main content';
-        document.body.insertBefore(skipLink, document.body.firstChild);
-
-        // Add main content ID to the main container
-        const mainContainer = document.querySelector('.max-w-\\[80vw\\]') || document.querySelector('.container');
-        if (mainContainer) {
-            mainContainer.id = 'main-content';
-            mainContainer.setAttribute('role', 'main');
-            mainContainer.setAttribute('tabindex', '-1');
-        }
-    }
-
-    updateProgressBar(percentage) {
-        const progressBar = document.getElementById('progress-bar-inner');
-        if (progressBar) {
-            progressBar.style.width = `${percentage}%`;
-            progressBar.setAttribute('aria-valuenow', percentage);
-            
-            const progressText = document.getElementById('progress-text');
-            if (progressText) {
-                const text = progressText.textContent;
-                this.announce(`Progress: ${percentage}%. ${text}`);
-            }
-        }
-    }
-
-    enhanceDynamicContent(container) {
-        if (!container) return;
-
-        // Enhance result cards
-        const resultCards = container.querySelectorAll('[id*="result"], .score-card, .p-6.rounded-xl');
-        resultCards.forEach((card, index) => {
-            if (!card.getAttribute('role')) {
-                card.setAttribute('role', 'article');
-                card.setAttribute('aria-label', `Result ${index + 1}`);
-                card.setAttribute('tabindex', '0');
-            }
-        });
-
-        // Enhance headings
-        const headings = container.querySelectorAll('h1, h2, h3, h4, h5, h6');
-        headings.forEach((heading, index) => {
-            if (!heading.getAttribute('tabindex')) {
-                heading.setAttribute('tabindex', '-1');
-            }
-        });
-
-        // Enhance buttons in dynamic content
-        const buttons = container.querySelectorAll('button');
-        buttons.forEach(button => {
-            if (!button.getAttribute('aria-label') && button.textContent.trim()) {
-                button.setAttribute('aria-label', button.textContent.trim());
-            }
-            button.setAttribute('tabindex', '0');
-        });
-    }
-
-    moveFocusToElement(element) {
-        if (element) {
-            element.focus();
-            element.classList.add('focus-visible');
-            
-            // Announce focus change for screen readers
-            const label = element.getAttribute('aria-label') || element.textContent || 'Element';
-            this.announce(`Focused on ${label}`, 'polite');
-        }
-    }
-}
-
-// --- Test Runner for Unit Testing ---
-class TestRunner {
-    static runScoringTests() {
-        const tests = {
-            passed: 0,
-            failed: 0,
-            results: []
-        };
-
-        // Test DISC scoring
-        try {
-            const discScores = { D: 28, I: 10, S: 8, C: 12 };
-            const discFactorScores = [
-                { factor: 'D', score: 28 },
-                { factor: 'I', score: 10 },
-                { factor: 'C', score: 12 },
-                { factor: 'S', score: 8 }
-            ].sort((a, b) => b.score - a.score);
-            
-            const discProfile = getProfileKey(discFactorScores);
-            if (discProfile === 'D') {
-                tests.passed++;
-                tests.results.push({ test: 'DISC Pure D Profile', status: 'PASS' });
-            } else {
-                tests.failed++;
-                tests.results.push({ test: 'DISC Pure D Profile', status: 'FAIL', expected: 'D', got: discProfile });
-            }
-        } catch (error) {
-            tests.failed++;
-            tests.results.push({ test: 'DISC Pure D Profile', status: 'ERROR', error: error.message });
-        }
-
-        // Test MBTI scoring
-        try {
-            const mbtiScores = { E: 6, I: 1, S: 2, N: 5, T: 7, F: 0, J: 6, P: 1 };
-            const mbtiType = calculateMBTIType(mbtiScores);
-            if (mbtiType === 'ENTJ') {
-                tests.passed++;
-                tests.results.push({ test: 'MBTI ENTJ Type', status: 'PASS' });
-            } else {
-                tests.failed++;
-                tests.results.push({ test: 'MBTI ENTJ Type', status: 'FAIL', expected: 'ENTJ', got: mbtiType });
-            }
-        } catch (error) {
-            tests.failed++;
-            tests.results.push({ test: 'MBTI ENTJ Type', status: 'ERROR', error: error.message });
-        }
-
-        // Test Big Five reverse scoring
-        try {
-            const question = { factor: 'O', reverse: true };
-            const rating = 5;
-            const finalScore = question.reverse ? (6 - rating) : rating;
-            if (finalScore === 1) {
-                tests.passed++;
-                tests.results.push({ test: 'Big Five Reverse Scoring', status: 'PASS' });
-            } else {
-                tests.failed++;
-                tests.results.push({ test: 'Big Five Reverse Scoring', status: 'FAIL', expected: 1, got: finalScore });
-            }
-        } catch (error) {
-            tests.failed++;
-            tests.results.push({ test: 'Big Five Reverse Scoring', status: 'ERROR', error: error.message });
-        }
-
-        console.log('🧪 Scoring Tests Completed:', tests);
-        return tests;
-    }
-}
-
 // Test Type Detection
 const currentPage = window.location.pathname.split('/').pop();
 const isMBTITest = currentPage === 'mbti.html';
@@ -441,6 +49,9 @@ const isResultPage = currentPage.includes('-result.html');
 
 // Language State and Translations
 export let currentLang = 'en';
+
+// Global Accessibility Manager
+let accessibilityManager;
 
 const translations = {
     'en': {
@@ -846,7 +457,7 @@ async function saveProgressToDatabase() {
     } catch (error) {
         console.warn('Could not save progress to database:', error);
         // Continue with local storage as fallback
-        saveProgressToLocalStorage();
+        saveProgressToLocalStorage(currentLang);
     }
 }
 
@@ -915,7 +526,7 @@ function getStorageKey() {
     return CONFIG.DISC.progressKey;
 }
 
-function saveProgressToLocalStorage() {
+function saveProgressToLocalStorage(clang) {
     try {
         const progress = {
             currentQuestionIndex,
@@ -923,7 +534,7 @@ function saveProgressToLocalStorage() {
             mbtiScores: isMBTITest ? mbtiScores : undefined,
             big5Scores: isBig5Test ? big5Scores : undefined,
             userRatings,
-            currentLang,
+            clang,
             timestamp: Date.now()
         };
         localStorage.setItem(getStorageKey(), JSON.stringify(progress));
@@ -963,7 +574,7 @@ function clearProgressFromLocalStorage() {
 function saveProgress() {
     // Try database first, then localStorage as fallback
     saveProgressToDatabase().catch(() => {
-        saveProgressToLocalStorage();
+        saveProgressToLocalStorage(currentLang);
     });
 }
 
@@ -984,18 +595,18 @@ function saveTestResult(resultData) {
     saveResultToDatabase(resultData).then(success => {
         if (success) {
             // Also save to localStorage for display on index page
-            saveTestResultToLocalStorage(resultData);
+            saveTestResultToLocalStorage(resultData, currentLang);
         } else {
             // Fallback to localStorage only
-            saveTestResultToLocalStorage(resultData);
+            saveTestResultToLocalStorage(resultData, currentLang);
         }
     }).catch(() => {
         // Fallback to localStorage only
-        saveTestResultToLocalStorage(resultData);
+        saveTestResultToLocalStorage(resultData, currentLang);
     });
 }
 
-function saveTestResultToLocalStorage(resultData) {
+function saveTestResultToLocalStorage(resultData, clang) {
     try {
         let storageKey;
         let resultObject = {
@@ -1015,10 +626,10 @@ function saveTestResultToLocalStorage(resultData) {
         console.log(`Test result saved to ${storageKey}`);
         
         // Show success message
-        showSuccessMessage(currentLang === 'en' ? 'Result saved successfully!' : 'Resultado salvo com sucesso!');
+        showSuccessMessage(clang === 'en' ? 'Result saved successfully!' : 'Resultado salvo com sucesso!');
     } catch (error) {
         console.warn('Could not save test result to localStorage:', error);
-        showError(currentLang === 'en' ? 'Failed to save result.' : 'Falha ao salvar resultado.');
+        showError(clang === 'en' ? 'Failed to save result.' : 'Falha ao salvar resultado.');
     }
 }
 
@@ -1083,44 +694,6 @@ function validateTestData() {
     }
 }
 
-// Error Handling Utilities
-function showError(message = t('error_general'), duration = 5000) {
-    let errorContainer = document.getElementById('error-container');
-    if (!errorContainer) {
-        errorContainer = document.createElement('div');
-        errorContainer.id = 'error-container';
-        errorContainer.className = 'fixed top-4 right-4 z-50 max-w-sm';
-        errorContainer.setAttribute('role', 'alert');
-        errorContainer.setAttribute('aria-live', 'assertive');
-        document.body.appendChild(errorContainer);
-    }
-
-    const errorElement = document.createElement('div');
-    errorElement.className = 'bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg shadow-lg mb-2';
-    errorElement.innerHTML = `
-        <div class="flex items-center">
-            <span class="text-red-500 mr-2" aria-hidden="true">⚠</span>
-            <span>${message}</span>
-            <button onclick="this.parentElement.parentElement.remove()" 
-                    class="ml-4 text-red-500 hover:text-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
-                    aria-label="Close error message">
-                ×
-            </button>
-        </div>
-    `;
-
-    errorContainer.appendChild(errorElement);
-    if (accessibilityManager) {
-        accessibilityManager.announce(`Error: ${message}`, 'assertive');
-    }
-
-    setTimeout(() => {
-        if (errorElement.parentNode) {
-            errorElement.parentNode.removeChild(errorElement);
-        }
-    }, duration);
-}
-
 export function showLoading(message = t('loading')) {
     const loadingElement = document.createElement('div');
     loadingElement.id = 'loading-overlay';
@@ -1145,194 +718,6 @@ function hideLoading() {
     }
 }
 
-// Enhanced Keyboard Navigation
-function setupEnhancedKeyboardNavigation() {
-    document.addEventListener('keydown', handleEnhancedKeyboardNavigation);
-    
-    // Add focus visible class for better keyboard navigation feedback
-    document.addEventListener('keydown', (event) => {
-        if (event.key === 'Tab') {
-            document.body.classList.add('keyboard-navigation');
-        }
-    });
-
-    document.addEventListener('mousedown', () => {
-        document.body.classList.remove('keyboard-navigation');
-    });
-}
-
-function handleEnhancedKeyboardNavigation(event) {
-    const { key, target, ctrlKey, altKey } = event;
-    
-    // Skip if user is typing in an input field
-    if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
-        return;
-    }
-
-    switch (key) {
-        case 'ArrowLeft':
-        case 'ArrowRight':
-        case 'ArrowUp':
-        case 'ArrowDown':
-            handleArrowNavigation(event, key);
-            break;
-        case ' ':
-        case 'Enter':
-            handleActionKey(event, target);
-            break;
-        case 'Escape':
-            handleEscapeKey(event);
-            break;
-        case 'h':
-        case 'H':
-            if (ctrlKey) showKeyboardShortcuts();
-            break;
-        case '1':
-        case '2':
-        case '3':
-        case '4':
-        case '5':
-            if (isDISCTest || isBig5Test) handleNumberKey(event, key);
-            break;
-        case 'a':
-        case 'A':
-        case 'b':
-        case 'B':
-            if (isMBTITest) handleMBTIKey(event, key);
-            break;
-    }
-}
-
-function handleArrowNavigation(event, direction) {
-    const focusableElements = getFocusableElements();
-    const currentIndex = focusableElements.indexOf(document.activeElement);
-    
-    if (currentIndex !== -1) {
-        event.preventDefault();
-        let newIndex;
-        
-        if (direction === 'ArrowRight' || direction === 'ArrowDown') {
-            newIndex = (currentIndex + 1) % focusableElements.length;
-        } else {
-            newIndex = (currentIndex - 1 + focusableElements.length) % focusableElements.length;
-        }
-        
-        const newElement = focusableElements[newIndex];
-        newElement.focus();
-        newElement.classList.add('focus-visible');
-        
-        // Announce focus change for screen readers
-        if (accessibilityManager) {
-            const label = newElement.getAttribute('aria-label') || newElement.textContent || 'Element';
-            accessibilityManager.announce(label, 'polite');
-        }
-    }
-}
-
-function handleActionKey(event, target) {
-    if (target.classList.contains('rating-button') || target.hasAttribute('data-rating') || 
-        target.id.startsWith('option-') || target.id === 'restart-btn' || target.id === 'export-btn') {
-        event.preventDefault();
-        target.click();
-        if (accessibilityManager) {
-            accessibilityManager.announce(`Selected: ${target.textContent.trim()}`, 'assertive');
-        }
-    }
-}
-
-function handleEscapeKey(event) {
-    const mainContent = document.querySelector('main') || document.querySelector('#main-content');
-    if (mainContent) {
-        mainContent.focus();
-        if (accessibilityManager) {
-            accessibilityManager.announce('Returned to main content', 'polite');
-        }
-    }
-}
-
-function handleNumberKey(event, key) {
-    const rating = parseInt(key);
-    const maxRating = isBig5Test ? 5 : 4;
-    
-    if (rating >= 1 && rating <= maxRating) {
-        const buttons = document.querySelectorAll(`button[data-rating="${rating}"]`);
-        if (buttons.length > 0) {
-            event.preventDefault();
-            buttons[0].click();
-        }
-    }
-}
-
-function handleMBTIKey(event, key) {
-    const option = key.toLowerCase();
-    const button = document.getElementById(`option-${option}`);
-    if (button) {
-        event.preventDefault();
-        button.click();
-    }
-}
-
-function getFocusableElements() {
-    return Array.from(document.querySelectorAll(
-        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-    )).filter(el => !el.disabled && el.offsetParent !== null);
-}
-
-function showKeyboardShortcuts() {
-    const shortcuts = [
-        'Arrow Keys: Navigate between options',
-        'Enter/Space: Select current option',
-        'Escape: Return to main content',
-        'Number Keys 1-5: Select rating (DISC/Big5)',
-        'A/B Keys: Select MBTI options',
-        'Ctrl+H: Show this help'
-    ].join('. ');
-    
-    if (accessibilityManager) {
-        accessibilityManager.announce(`Keyboard shortcuts: ${shortcuts}`);
-    }
-    showError(`Keyboard Shortcuts: ${shortcuts}`, 8000);
-}
-
-// Virtual Scrolling Setup for Results
-function setupVirtualScrollingForResults() {
-    const interpretationContainers = document.querySelectorAll('.scroll-container');
-    interpretationContainers.forEach(container => {
-        // Only enable virtual scrolling for containers with many items
-        const items = Array.from(container.children);
-        if (items.length > 10) { // Lower threshold for better performance
-            // Backup original content
-            const originalHTML = container.innerHTML;
-            
-            const scroller = new VirtualScroller(
-                container,
-                items,
-                120, // estimated item height
-                (item, index) => {
-                    const div = document.createElement('div');
-                    div.className = item.className + ' virtual-item';
-                    div.innerHTML = item.innerHTML;
-                    div.setAttribute('role', 'article');
-                    div.setAttribute('aria-label', `Result item ${index + 1}`);
-                    return div;
-                }
-            );
-            virtualScrollers.set(container.id, { scroller, originalHTML });
-        }
-    });
-}
-
-function cleanupVirtualScrolling() {
-    virtualScrollers.forEach(({ scroller, originalHTML }, containerId) => {
-        const container = document.getElementById(containerId);
-        if (container) {
-            scroller.destroy();
-            container.innerHTML = originalHTML;
-        }
-    });
-    virtualScrollers.clear();
-}
-
 // --- QUESTION DATA (Now loaded from database) ---
 let currentTestQuestions = [];
 
@@ -1351,11 +736,7 @@ let progressTextElement;
 let ratingButtonsContainer;
 let progressBarElement;
 
-// Global Accessibility Manager
-let accessibilityManager;
 
-// Virtual Scrollers Map
-let virtualScrollers = new Map();
 
 // Debounced Handlers
 const debouncedHandleRating = debounce(handleRating, 300);
@@ -2512,7 +1893,7 @@ function displayFullResult(testType, resultData) {
     
     switch (testType) {
         case 'DISC':
-            resultHTML = generateDISCResultHTML(resultData);
+            resultHTML = generateDISCResultHTML(resultData, currentLang);
             break;
         case 'MBTI':
             resultHTML = generateMBTIResultHTML(resultData);
@@ -2526,11 +1907,98 @@ function displayFullResult(testType, resultData) {
     
 }
 
-function generateDISCResultHTML(resultData) {
+export function generateBig5ResultHTML(resultData) {
+    const scores = resultData.scores || {};
+    const maxScores = resultData.maxScores || { O: 40, C: 40, E: 40, A: 40, N: 40 };
+    
+    let scoresHTML = '';
+    const factors = ['O', 'C', 'E', 'A', 'N'];
+
+    factors.forEach(factor => {
+        const desc = big5Descriptions[factor];
+        const score = scores[factor] || 0;
+        const maxScore = maxScores[factor] || 40;
+        const percentage = Math.round((score / maxScore) * 100);
+
+        let interpretation = "";
+        if (percentage >= 70) {
+            interpretation = factor === 'N' ? 
+                (currentLang === 'en' ? "High - May experience frequent emotional distress" : "Alto - Pode experimentar angústia emocional frequente") :
+                (currentLang === 'en' ? "High - Strong tendency in this trait" : "Alto - Forte tendência neste traço");
+        } else if (percentage >= 30) {
+            interpretation = currentLang === 'en' ? "Moderate - Balanced level of this trait" : "Moderado - Nível equilibrado deste traço";
+        } else {
+            interpretation = factor === 'N' ?
+                (currentLang === 'en' ? "Low - Emotionally stable and resilient" : "Baixo - Estável emocionalmente e resiliente") :
+                (currentLang === 'en' ? "Low - Limited tendency in this trait" : "Baixo - Tendência limitada neste traço");
+        }
+
+        scoresHTML += `
+            <div class="p-6 rounded-xl border-2 ${desc.style} shadow-lg">
+                <div class="flex items-center mb-4">
+                    <span class="text-3xl mr-3">${desc.icon}</span>
+                    <h3 class="text-xl font-bold">${desc.title[currentLang]}</h3>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2.5 mb-2">
+                    <div class="h-2.5 rounded-full bg-indigo-600" style="width: ${percentage}%"></div>
+                </div>
+                <p class="text-sm font-semibold mt-2">${score}/${maxScore} ${t('points')} (${percentage}%)</p>
+                <p class="text-sm mt-2 text-gray-600">${desc.description[currentLang]}</p>
+                <p class="text-sm mt-2 font-semibold ${percentage >= 70 ? 'text-green-600' : percentage >= 30 ? 'text-yellow-600' : 'text-blue-600'}">
+                    ${interpretation}
+                </p>
+            </div>
+        `;
+    });
+
+    return `
+        <div class="text-center mb-10">
+            <h1 class="text-4xl font-extrabold text-gray-800 mb-4">${t('big5_title')}</h1>
+            <p class="text-gray-500">${currentLang === 'en' ? 'Your complete Big Five personality traits results' : 'Seus resultados completos dos traços de personalidade Big Five'}</p>
+        </div>
+
+        <!-- Score Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+            ${scoresHTML}
+        </div>
+
+        <!-- Trait Interpretations -->
+        <div class="mb-10">
+            <h3 class="text-2xl font-bold text-gray-800 mb-6 border-b pb-2">${t('big5_interpretation_title')}</h3>
+            <div class="bg-white p-6 rounded-xl border-l-4 border-indigo-500 shadow-md">
+                <h4 class="text-xl font-bold text-gray-800 mb-4">${currentLang === 'en' ? 'Understanding Your Big Five Results' : 'Entendendo Seus Resultados Big Five'}</h4>
+                <p class="text-gray-600 mb-4">
+                    ${currentLang === 'en' ? 
+                    "The Big Five personality traits represent five broad domains of human personality. Your scores indicate your relative standing on each dimension compared to the general population. Remember that all traits have both strengths and challenges, and no single score is 'better' than another." :
+                    "Os cinco grandes traços de personalidade representam cinco domínios amplos da personalidade humana. Suas pontuações indicam sua posição relativa em cada dimensão em comparação com a população em geral. Lembre-se de que todos os traços têm pontos fortes e desafios, e nenhuma pontuação única é 'melhor' que outra."}
+                </p>
+                <ul class="list-disc list-inside text-gray-600 space-y-2">
+                    <li><strong>${t('big5_openness')}:</strong> ${currentLang === 'en' ? "Imagination, creativity, curiosity, and appreciation for new experiences" : "Imaginação, criatividade, curiosidade e apreço por novas experiências"}</li>
+                    <li><strong>${t('big5_conscientiousness')}:</strong> ${currentLang === 'en' ? "Organization, diligence, reliability, and goal-directed behavior" : "Organização, diligência, confiabilidade e comportamento orientado a objetivos"}</li>
+                    <li><strong>${t('big5_extraversion')}:</strong> ${currentLang === 'en' ? "Sociability, assertiveness, energy, and positive emotions" : "Sociabilidade, assertividade, energia e emoções positivas"}</li>
+                    <li><strong>${t('big5_agreeableness')}:</strong> ${currentLang === 'en' ? "Compassion, cooperation, trust, and concern for social harmony" : "Compaixão, cooperação, confiança e preocupação com a harmonia social"}</li>
+                    <li><strong>${t('big5_neuroticism')}:</strong> ${currentLang === 'en' ? "Anxiety, moodiness, emotional sensitivity, and vulnerability to stress" : "Ansiedade, instabilidade emocional, sensibilidade emocional e vulnerabilidade ao estresse"}</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="text-center space-x-4">
+            <button id="restart-btn" class="px-8 py-3 bg-indigo-500 text-white font-bold rounded-xl hover:bg-indigo-600 transition duration-300 shadow-lg">
+                ${t('restart')}
+            </button>
+            <button id="export-btn" class="px-8 py-3 bg-green-500 text-white font-bold rounded-xl hover:bg-green-600 transition duration-300 shadow-lg">
+                ${t('export_pdf')}
+            </button>
+        </div>
+    `;
+}
+
+function generateDISCResultHTML(resultData, clang) {
     const profileKey = resultData.profileKey;
     const profileData = blendedDescriptions[profileKey];
-    const profileName = profileData ? profileData.name[currentLang] : 'Unknown Profile';
-    const description = profileData ? profileData.description[currentLang] : '';
+    const profileName = profileData ? profileData.name[clang] : 'Unknown Profile';
+    const description = profileData ? profileData.description[clang] : '';
     
     const factorScores = resultData.factors || [];
     const scores = resultData.scores || {};
@@ -2671,93 +2139,6 @@ function generateMBTIResultHTML(resultData) {
                     ${mbtiType} - ${typeName}
                 </h4>
                 <p class="text-gray-600 leading-relaxed text-lg">${description}</p>
-            </div>
-        </div>
-
-        <!-- Action Buttons -->
-        <div class="text-center space-x-4">
-            <button id="restart-btn" class="px-8 py-3 bg-indigo-500 text-white font-bold rounded-xl hover:bg-indigo-600 transition duration-300 shadow-lg">
-                ${t('restart')}
-            </button>
-            <button id="export-btn" class="px-8 py-3 bg-green-500 text-white font-bold rounded-xl hover:bg-green-600 transition duration-300 shadow-lg">
-                ${t('export_pdf')}
-            </button>
-        </div>
-    `;
-}
-
-function generateBig5ResultHTML(resultData) {
-    const scores = resultData.scores || {};
-    const maxScores = resultData.maxScores || { O: 40, C: 40, E: 40, A: 40, N: 40 };
-    
-    let scoresHTML = '';
-    const factors = ['O', 'C', 'E', 'A', 'N'];
-
-    factors.forEach(factor => {
-        const desc = big5Descriptions[factor];
-        const score = scores[factor] || 0;
-        const maxScore = maxScores[factor] || 40;
-        const percentage = Math.round((score / maxScore) * 100);
-
-        let interpretation = "";
-        if (percentage >= 70) {
-            interpretation = factor === 'N' ? 
-                (currentLang === 'en' ? "High - May experience frequent emotional distress" : "Alto - Pode experimentar angústia emocional frequente") :
-                (currentLang === 'en' ? "High - Strong tendency in this trait" : "Alto - Forte tendência neste traço");
-        } else if (percentage >= 30) {
-            interpretation = currentLang === 'en' ? "Moderate - Balanced level of this trait" : "Moderado - Nível equilibrado deste traço";
-        } else {
-            interpretation = factor === 'N' ?
-                (currentLang === 'en' ? "Low - Emotionally stable and resilient" : "Baixo - Estável emocionalmente e resiliente") :
-                (currentLang === 'en' ? "Low - Limited tendency in this trait" : "Baixo - Tendência limitada neste traço");
-        }
-
-        scoresHTML += `
-            <div class="p-6 rounded-xl border-2 ${desc.style} shadow-lg">
-                <div class="flex items-center mb-4">
-                    <span class="text-3xl mr-3">${desc.icon}</span>
-                    <h3 class="text-xl font-bold">${desc.title[currentLang]}</h3>
-                </div>
-                <div class="w-full bg-gray-200 rounded-full h-2.5 mb-2">
-                    <div class="h-2.5 rounded-full bg-indigo-600" style="width: ${percentage}%"></div>
-                </div>
-                <p class="text-sm font-semibold mt-2">${score}/${maxScore} ${t('points')} (${percentage}%)</p>
-                <p class="text-sm mt-2 text-gray-600">${desc.description[currentLang]}</p>
-                <p class="text-sm mt-2 font-semibold ${percentage >= 70 ? 'text-green-600' : percentage >= 30 ? 'text-yellow-600' : 'text-blue-600'}">
-                    ${interpretation}
-                </p>
-            </div>
-        `;
-    });
-
-    return `
-        <div class="text-center mb-10">
-            <h1 class="text-4xl font-extrabold text-gray-800 mb-4">${t('big5_title')}</h1>
-            <p class="text-gray-500">${currentLang === 'en' ? 'Your complete Big Five personality traits results' : 'Seus resultados completos dos traços de personalidade Big Five'}</p>
-        </div>
-
-        <!-- Score Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
-            ${scoresHTML}
-        </div>
-
-        <!-- Trait Interpretations -->
-        <div class="mb-10">
-            <h3 class="text-2xl font-bold text-gray-800 mb-6 border-b pb-2">${t('big5_interpretation_title')}</h3>
-            <div class="bg-white p-6 rounded-xl border-l-4 border-indigo-500 shadow-md">
-                <h4 class="text-xl font-bold text-gray-800 mb-4">${currentLang === 'en' ? 'Understanding Your Big Five Results' : 'Entendendo Seus Resultados Big Five'}</h4>
-                <p class="text-gray-600 mb-4">
-                    ${currentLang === 'en' ? 
-                    "The Big Five personality traits represent five broad domains of human personality. Your scores indicate your relative standing on each dimension compared to the general population. Remember that all traits have both strengths and challenges, and no single score is 'better' than another." :
-                    "Os cinco grandes traços de personalidade representam cinco domínios amplos da personalidade humana. Suas pontuações indicam sua posição relativa em cada dimensão em comparação com a população em geral. Lembre-se de que todos os traços têm pontos fortes e desafios, e nenhuma pontuação única é 'melhor' que outra."}
-                </p>
-                <ul class="list-disc list-inside text-gray-600 space-y-2">
-                    <li><strong>${t('big5_openness')}:</strong> ${currentLang === 'en' ? "Imagination, creativity, curiosity, and appreciation for new experiences" : "Imaginação, criatividade, curiosidade e apreço por novas experiências"}</li>
-                    <li><strong>${t('big5_conscientiousness')}:</strong> ${currentLang === 'en' ? "Organization, diligence, reliability, and goal-directed behavior" : "Organização, diligência, confiabilidade e comportamento orientado a objetivos"}</li>
-                    <li><strong>${t('big5_extraversion')}:</strong> ${currentLang === 'en' ? "Sociability, assertiveness, energy, and positive emotions" : "Sociabilidade, assertividade, energia e emoções positivas"}</li>
-                    <li><strong>${t('big5_agreeableness')}:</strong> ${currentLang === 'en' ? "Compassion, cooperation, trust, and concern for social harmony" : "Compaixão, cooperação, confiança e preocupação com a harmonia social"}</li>
-                    <li><strong>${t('big5_neuroticism')}:</strong> ${currentLang === 'en' ? "Anxiety, moodiness, emotional sensitivity, and vulnerability to stress" : "Ansiedade, instabilidade emocional, sensibilidade emocional e vulnerabilidade ao estresse"}</li>
-                </ul>
             </div>
         </div>
 
