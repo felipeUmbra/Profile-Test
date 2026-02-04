@@ -1472,53 +1472,69 @@ function showDISCResults(resultScores, resultInterpretation) {
 // Enhanced Restart Function with Accessibility
 function restartTest() {
     try {
-        // Cleanup virtual scrolling
-        cleanupVirtualScrolling();
+        // 1. Check if we are on a Result Page
+        // If yes, we simply redirect to the test page instead of trying to manipulate the DOM
+        if (typeof isResultPage !== 'undefined' && isResultPage) {
+            if (window.location.href.includes('disc')) {
+                window.location.href = 'disc.html';
+            } else if (window.location.href.includes('mbti')) {
+                window.location.href = 'mbti.html';
+            } else if (window.location.href.includes('big5')) {
+                window.location.href = 'big5.html';
+            }
+            return; // Stop execution here
+        }
+
+        // 2. Normal Restart Logic (Only runs if we are on the Test Page)
         
+        // Cleanup virtual scrolling if it exists
+        if (typeof cleanupVirtualScrolling === 'function') {
+            cleanupVirtualScrolling();
+        }
+        
+        // Reset Progress Variables
         currentQuestionIndex = 0;
         
-        if (isMBTITest) {
+        if (typeof isMBTITest !== 'undefined' && isMBTITest) {
             mbtiScores = { E: 0, I: 0, S: 0, N: 0, T: 0, F: 0, J: 0, P: 0 };
-        } else if (isBig5Test) {
+        } else if (typeof isBig5Test !== 'undefined' && isBig5Test) {
             big5Scores = { O: 0, C: 0, E: 0, A: 0, N: 0 };
         } else {
             scores = { D: 0, I: 0, S: 0, C: 0 };
         }
+
+        // Reset UI Elements (These only exist on the test page)
+        const resultsContainer = document.getElementById('results-container');
+        const quizContainer = document.getElementById('quiz-container');
+        const introCard = document.getElementById('intro-card');
+
+        // Safe check for elements before accessing classList
+        if (resultsContainer) resultsContainer.classList.add('hidden');
         
-        userRatings = [];
-        
-        clearProgress();
-        
-        resultsContainer.classList.add('hidden');
-        testContainer.classList.remove('hidden');
-        
-        document.getElementById('result-scores').innerHTML = '';
-        document.getElementById('result-interpretation').innerHTML = '';
-        
-        if (isMBTITest) {
-            const mbtiTypeDisplay = document.getElementById('mbti-type-display');
-            if (mbtiTypeDisplay) mbtiTypeDisplay.innerHTML = '';
+        // If we have an intro card, show it; otherwise start the quiz directly
+        if (introCard) {
+            introCard.classList.remove('hidden');
+            if (quizContainer) quizContainer.classList.add('hidden');
+        } else if (quizContainer) {
+            quizContainer.classList.remove('hidden');
+            // Re-render the first question
+            if (typeof isMBTITest !== 'undefined' && isMBTITest) renderMBTIQuestion();
+            else if (typeof isBig5Test !== 'undefined' && isBig5Test) renderBig5Question();
+            else renderQuestion();
         }
 
-        // Move focus back to test container
-        testContainer.setAttribute('tabindex', '-1');
-        testContainer.focus();
-        
-        // Announce restart
-        if (accessibilityManager) {
-            accessibilityManager.announce('Test restarted. Beginning from question one.', 'assertive');
+        // Scroll to top
+        window.scrollTo(0, 0);
+
+        // Announce restart to screen readers
+        if (typeof accessibilityManager !== 'undefined' && accessibilityManager) {
+            accessibilityManager.announce('Test restarted. You are back at the beginning.', 'assertive');
         }
 
-        if (isMBTITest) {
-            renderMBTIQuestion(currentLang);
-        } else if (isBig5Test) {
-            renderBig5Question();
-        } else {
-            renderQuestion(currentLang);
-        }
     } catch (error) {
         console.error('Error restarting test:', error);
-        showError(t('error_general'));
+        // Fallback: reload the page
+        window.location.reload();
     }
 }
 
@@ -1984,10 +2000,10 @@ export function generateBig5ResultHTML(resultData) {
 
         <!-- Action Buttons -->
         <div class="text-center space-x-4">
-            <button id="restart-btn" class="px-8 py-3 bg-indigo-500 text-white font-bold rounded-xl hover:bg-indigo-600 transition duration-300 shadow-lg">
+            <button id="restart-btn" data-html2canvas-ignore="true" class="px-8 py-3 bg-indigo-500 text-white font-bold rounded-xl hover:bg-indigo-600 transition duration-300 shadow-lg">
                 ${t('restart')}
             </button>
-            <button id="export-btn" class="px-8 py-3 bg-green-500 text-white font-bold rounded-xl hover:bg-green-600 transition duration-300 shadow-lg">
+            <button id="export-btn" data-html2canvas-ignore="true" class="px-8 py-3 bg-green-500 text-white font-bold rounded-xl hover:bg-green-600 transition duration-300 shadow-lg">
                 ${t('export_pdf')}
             </button>
         </div>
@@ -2059,10 +2075,10 @@ function generateDISCResultHTML(resultData, clang) {
 
         <!-- Action Buttons -->
         <div class="text-center space-x-4">
-            <button id="restart-btn" class="px-8 py-3 bg-indigo-500 text-white font-bold rounded-xl hover:bg-indigo-600 transition duration-300 shadow-lg">
+            <button id="restart-btn" data-html2canvas-ignore="true" class="px-8 py-3 bg-indigo-500 text-white font-bold rounded-xl hover:bg-indigo-600 transition duration-300 shadow-lg">
                 ${t('restart')}
             </button>
-            <button id="export-btn" class="px-8 py-3 bg-green-500 text-white font-bold rounded-xl hover:bg-green-600 transition duration-300 shadow-lg">
+            <button id="export-btn" data-html2canvas-ignore="true" class="px-8 py-3 bg-green-500 text-white font-bold rounded-xl hover:bg-green-600 transition duration-300 shadow-lg">
                 ${t('export_pdf')}
             </button>
         </div>
@@ -2144,10 +2160,10 @@ function generateMBTIResultHTML(resultData) {
 
         <!-- Action Buttons -->
         <div class="text-center space-x-4">
-            <button id="restart-btn" class="px-8 py-3 bg-indigo-500 text-white font-bold rounded-xl hover:bg-indigo-600 transition duration-300 shadow-lg">
+            <button id="restart-btn" data-html2canvas-ignore="true" class="px-8 py-3 bg-indigo-500 text-white font-bold rounded-xl hover:bg-indigo-600 transition duration-300 shadow-lg">
                 ${t('restart')}
             </button>
-            <button id="export-btn" class="px-8 py-3 bg-green-500 text-white font-bold rounded-xl hover:bg-green-600 transition duration-300 shadow-lg">
+            <button id="export-btn" data-html2canvas-ignore="true" class="px-8 py-3 bg-green-500 text-white font-bold rounded-xl hover:bg-green-600 transition duration-300 shadow-lg">
                 ${t('export_pdf')}
             </button>
         </div>
@@ -2362,16 +2378,15 @@ function setupLanguageListeners() {
 }
 
 function setupActionListeners() {
-    // Event Delegation: Listen on 'document.body' to catch clicks 
-    // on buttons even after they are dynamically created.
+    // Event Delegation for buttons (handles dynamic content)
     document.body.addEventListener('click', async (e) => {
         
-        // 1. Handle EXPORT Button Click
+        // Handle EXPORT Button
         const exportBtn = e.target.closest('#export-btn');
         if (exportBtn) {
             e.preventDefault();
             
-            // Determine filename based on test type
+            // 1. Determine Filename
             let filenameKey = 'filename';
             if (typeof isMBTITest !== 'undefined' && isMBTITest) filenameKey = 'mbti_filename';
             else if (typeof isBig5Test !== 'undefined' && isBig5Test) filenameKey = 'big5_filename';
@@ -2382,7 +2397,7 @@ function setupActionListeners() {
             if (typeof showLoading === 'function') showLoading(loadingText);
 
             try {
-                // Call the utility function
+                // 2. CRITICAL: Pass 'results-container' (not testType)
                 await exportResultToPDF('results-container', filename);
             } catch (error) {
                 console.error('PDF Export Error:', error);
@@ -2391,14 +2406,12 @@ function setupActionListeners() {
                 if (typeof hideLoading === 'function') hideLoading();
             }
         }
-
-        // 2. Handle RESTART Button Click
+        
+        // Handle RESTART Button
         const restartBtn = e.target.closest('#restart-btn');
         if (restartBtn) {
             e.preventDefault();
-            if (typeof restartTest === 'function') {
-                restartTest();
-            }
+            if (typeof restartTest === 'function') restartTest();
         }
     });
 }
