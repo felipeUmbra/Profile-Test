@@ -1,4 +1,4 @@
-import { exportResultToPDF, VirtualScroller, AccessibilityManager, TestRunner, showError, setupEnhancedKeyboardNavigation,
+import { exportResultToPDF, AccessibilityManager, TestRunner, showError, setupEnhancedKeyboardNavigation,
      setupVirtualScrollingForResults, cleanupVirtualScrolling } from '/JS/utils.js';
 import {big5TraitDescriptions, mbtiDimensions, mbtiTypeDescriptions, discDescriptions, big5Descriptions, blendedDescriptions} from '/JS/trait-description.js';
 // import { generateDISCResultHTML } from '/JS/scoring.js';
@@ -40,18 +40,18 @@ const CONFIG = {
 };
 
 // Test Type Detection
-const currentPage = window.location.pathname.split('/').pop();
-const isMBTITest = currentPage === 'mbti.html';
-const isDISCTest = currentPage === 'disc.html';
-const isBig5Test = currentPage === 'big5.html';
-const isIndexPage = currentPage === 'index.html' || currentPage === '';
-const isResultPage = currentPage.includes('-result.html');
+export const currentPage = window.location.pathname.split('/').pop();
+export const isMBTITest = currentPage === 'mbti.html';
+export const isDISCTest = currentPage === 'disc.html';
+export const isBig5Test = currentPage === 'big5.html';
+export const isIndexPage = currentPage === 'index.html' || currentPage === '';
+export const isResultPage = currentPage.includes('-result.html');
 
 // Language State and Translations
 export let currentLang = 'en';
 
 // Global Accessibility Manager
-let accessibilityManager;
+export let accessibilityManager;
 
 const translations = {
     'en': {
@@ -759,11 +759,11 @@ function setLanguage(lang) {
                 // Re-render current question with new language
                 if (currentTestQuestions.length > 0) {
                     if (isMBTITest) {
-                        renderMBTIQuestion();
+                        renderMBTIQuestion(currentLang);
                     } else if (isBig5Test) {
                         renderBig5Question();
                     } else {
-                        renderQuestion();
+                        renderQuestion(currentLang);
                     }
                 }
             } else if (resultsContainer) {
@@ -889,7 +889,7 @@ function updateIndexStaticText() {
 }
 
 // Enhanced Question Rendering with Accessibility
-function renderQuestion() {
+function renderQuestion(clang) {
     try {
         if (currentQuestionIndex >= currentTestQuestions.length) {
             showResults();
@@ -899,7 +899,7 @@ function renderQuestion() {
         const currentQ = currentTestQuestions[currentQuestionIndex];
         const totalQuestions = currentTestQuestions.length;
 
-        questionTextElement.textContent = currentQ.text[currentLang];
+        questionTextElement.textContent = currentQ.text[clang];
         questionTextElement.setAttribute('aria-live', 'polite');
         
         const progress = (currentQuestionIndex / totalQuestions) * 100;
@@ -922,7 +922,7 @@ function renderQuestion() {
     }
 }
 
-function renderMBTIQuestion() {
+function renderMBTIQuestion(clang) {
     try {
         if (currentQuestionIndex >= currentTestQuestions.length) {
             showResults();
@@ -932,12 +932,12 @@ function renderMBTIQuestion() {
         const currentQ = currentTestQuestions[currentQuestionIndex];
         const totalQuestions = currentTestQuestions.length;
 
-        document.getElementById('option-a-text').textContent = currentQ.optionA[currentLang];
-        document.getElementById('option-b-text').textContent = currentQ.optionB[currentLang];
+        document.getElementById('option-a-text').textContent = currentQ.optionA[clang];
+        document.getElementById('option-b-text').textContent = currentQ.optionB[clang];
         
         // Update ARIA labels
-        document.getElementById('option-a').setAttribute('aria-label', `Option A: ${currentQ.optionA[currentLang]}`);
-        document.getElementById('option-b').setAttribute('aria-label', `Option B: ${currentQ.optionB[currentLang]}`);
+        document.getElementById('option-a').setAttribute('aria-label', `Option A: ${currentQ.optionA[clang]}`);
+        document.getElementById('option-b').setAttribute('aria-label', `Option B: ${currentQ.optionB[clang]}`);
         
         const progress = (currentQuestionIndex / totalQuestions) * 100;
         progressTextElement.textContent = t('progress_q_of_total', { q: currentQuestionIndex + 1, total: totalQuestions });
@@ -1022,7 +1022,7 @@ function handleRating(rating, buttonElement) {
 
         setTimeout(() => {
             currentQuestionIndex++;
-            renderQuestion();
+            renderQuestion(currentLang);
         }, 300);
     } catch (error) {
         console.error('Error handling rating:', error);
@@ -1064,7 +1064,7 @@ function handleMBTIRating(option, buttonElement) {
 
         setTimeout(() => {
             currentQuestionIndex++;
-            renderMBTIQuestion();
+            renderMBTIQuestion(currentLang);
         }, 500);
     } catch (error) {
         console.error('Error handling MBTI rating:', error);
@@ -1510,11 +1510,11 @@ function restartTest() {
         }
 
         if (isMBTITest) {
-            renderMBTIQuestion();
+            renderMBTIQuestion(currentLang);
         } else if (isBig5Test) {
             renderBig5Question();
         } else {
-            renderQuestion();
+            renderQuestion(currentLang);
         }
     } catch (error) {
         console.error('Error restarting test:', error);
@@ -2184,7 +2184,7 @@ async function init() {
 
         if (isIndexPage) {
             initIndexPage();
-        } else if (!isResultPage) { // ALTERE ESTA LINHA (adicione o !isResultPage)
+        } else if (!isResultPage) {
             await initTestPage();
         }
         
@@ -2251,7 +2251,7 @@ async function initTestPage() {
         // Render initial question based on test type
         if (isMBTITest) {
             if (currentQuestionIndex < currentTestQuestions.length) {
-                renderMBTIQuestion();
+                renderMBTIQuestion(currentLang);
             } else {
                 showResults();
             }
@@ -2263,7 +2263,7 @@ async function initTestPage() {
             }
         } else {
             if (currentQuestionIndex < currentTestQuestions.length) {
-                renderQuestion();
+                renderQuestion(currentLang);
             } else {
                 showResults();
             }

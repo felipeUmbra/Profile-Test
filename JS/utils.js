@@ -1,4 +1,4 @@
-import { currentLang, showLoading  } from '../script.js';
+import { accessibilityManager, isBig5Test, isDISCTest, isMBTITest  } from '../script.js';
 
 // Virtual Scrollers Map
 let virtualScrollers = new Map();
