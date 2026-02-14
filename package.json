@@ -2,6 +2,7 @@
   "name": "question-migration",
   "version": "1.0.0",
   "description": "Migrate questions to SQL Server",
+  "type": "module",
   "main": "migrate-questions.js",
   "scripts": {
     "migrate": "node migrate-questions.js",
@@ -13,7 +14,8 @@
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
-    "mongodb": "^7.0.0",
+    "json": "^11.0.0",
+    "mongodb": "^7.1.0",
     "mongoose": "^9.1.5",
     "mssql": "^12.0.0"
   },

@@ -318,7 +318,19 @@ async function loadFallbackQuestions() {
     }
 }
 
-// Get fallback questions for specific test type
+/**
+ * Retrieves fallback questions for a specific test type.
+ * This function is used as a safety mechanism when the primary database connection fails,
+ * loading questions from a local JSON source instead.
+ * * @async
+ * @param {string} testType - The unique identifier of the test (e.g., 'mbti', 'disc', 'big5').
+ * @param {string} lang - The language code for logging purposes (e.g., 'en', 'pt', 'es').
+ * @returns {Promise<Array<Object>>} A promise that resolves to an array of question objects. 
+ * Returns an empty array [] if an error occurs or the test type is not found.
+ * * @example
+ * // Returns an array of MBTI questions
+ * const questions = await getFallbackQuestions('mbti', 'en');
+ */
 async function getFallbackQuestions(testType, lang) {
     try {
         const fallbackData = await loadFallbackQuestions();
@@ -329,20 +341,31 @@ async function getFallbackQuestions(testType, lang) {
         return [];
     }
 }
+
 // --- Database Integration Functions ---
 
-// Fetch questions from the database
-// Fetch questions from the database with fallback
+/**
+ * Fetches questions for a specific test type from the backend API.
+ * Includes a timeout mechanism and automatically reverts to local fallback data
+ * if the API is unreachable or returns an error.
+ * * @async
+ * @param {string} testType - The identifier of the test to fetch (e.g., 'disc', 'mbti', 'big5').
+ * @param {string} [lang='en'] - The language code for the questions (e.g., 'en', 'pt', 'es'). Defaults to 'en'.
+ * @returns {Promise<Array<Object>>} A promise that resolves to an array of transformed question objects ready for the frontend.
+ * * @example
+ * // Fetch DISC questions in Portuguese
+ * const questions = await fetchQuestions('disc', 'pt');
+ */
 async function fetchQuestions(testType, lang = 'en') {
     try {
         console.log(`Attempting to fetch ${testType} questions from backend...`);
         
+        // Fetch with a 5-second timeout to prevent hanging
         const response = await fetch(`${CONFIG.apiBaseUrl}/questions/${testType}?lang=${lang}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
             },
-            // Add timeout for better error handling
             signal: AbortSignal.timeout(5000)
         });
         
@@ -353,11 +376,13 @@ async function fetchQuestions(testType, lang = 'en') {
         const questions = await response.json();
         console.log(`Successfully fetched ${questions.length} ${testType} questions from backend`);
         
-        // Transform the questions to match the expected frontend format
+        // Transform the raw API data into the format expected by the UI
         return transformQuestions(questions, testType, lang);
         
     } catch (error) {
         console.warn(`Failed to fetch questions from API: ${error.message}. Using fallback questions.`);
+        
+        // Fail gracefully by loading local JSON data
         return getFallbackQuestions(testType, lang);
     }
 }
@@ -428,12 +453,27 @@ function transformQuestions(backendQuestions, testType, lang) {
     }
 }
 
-// Save progress to database
+/**
+ * Asynchronously saves the user's current test progress to the backend database.
+ * * This function gathers the current session ID, test ID, and the user's answers so far,
+ * formatting them into a standard payload. It then attempts to send this data to the 
+ * API's `/save-progress` endpoint.
+ * * **Fallback Mechanism:**
+ * If the network request fails or the server returns an error, this function catches the 
+ * exception, logs a warning, and automatically falls back to `saveProgressToLocalStorage`. 
+ * This ensures that the user's progress is preserved even if the backend is offline.
+ * * @async
+ * @returns {Promise<void>} A promise that resolves when the save operation is complete (either via database or local storage fallback).
+ * * @example
+ * // Call this function after a user selects an answer
+ * await saveProgressToDatabase();
+ */
 async function saveProgressToDatabase() {
     try {
         const sessionId = getOrCreateSessionId();
         const testId = getCurrentTestId();
         
+        // Map current ratings to the schema expected by the backend
         const answers = userRatings.map((rating, index) => ({
             questionId: currentTestQuestions[index]?.id || index + 1,
             rating: rating.rating || rating.finalScore || 1,
@@ -743,9 +783,25 @@ const debouncedHandleRating = debounce(handleRating, 300);
 const debouncedHandleMBTIRating = debounce(handleMBTIRating, 300);
 const debouncedHandleBig5Rating = debounce(handleBig5Rating, 300);
 
-// Enhanced Language Function
+/**
+ * Updates the application's current language and triggers a UI refresh.
+ *
+ * This function performs a comprehensive state update:
+ * 1. Updates the global `currentLang` variable.
+ * 2. Refreshes all static text elements (headers, labels, buttons) via `updateStaticText`.
+ * 3. Handle page-specific updates:
+ * - **Index Page:** Reloads saved results to translate the summary cards.
+ * - **Test Page (Active Question):** Re-renders the current question (handling DISC, MBTI, or Big5 formats).
+ * - **Test Page (Results View):** Re-calculates and displays the results in the new language.
+ * 4. Persists the user's preference to `localStorage`.
+ * 5. Makes an accessibility announcement for screen readers.
+ *
+ * @param {string} lang - The target language code (e.g., 'en', 'pt', 'es').
+ * @returns {void}
+ */
 function setLanguage(lang) {
     try {
+        // Prevent unnecessary re-renders if clicking the active language
         if (lang === currentLang) return;
         currentLang = lang;
         
@@ -755,6 +811,7 @@ function setLanguage(lang) {
         } else {
             updateStaticText();
             
+            // Determine if we are viewing a question or the results
             if (resultsContainer && resultsContainer.classList.contains('hidden')) {
                 // Re-render current question with new language
                 if (currentTestQuestions.length > 0) {
@@ -767,16 +824,19 @@ function setLanguage(lang) {
                     }
                 }
             } else if (resultsContainer) {
+                // We are on the results screen, refresh the analysis text
                 showResults(true);
             }
         }
         
+        // Persist preference
         try {
             localStorage.setItem('personalityTest_language', lang);
         } catch (e) {
             console.warn('Could not save language preference');
         }
         
+        // Accessibility feedback
         if (accessibilityManager) {
             accessibilityManager.announce(`Language changed to ${lang === 'en' ? 'English' : 'Portuguese'}`);
         }
@@ -2168,18 +2228,6 @@ function generateMBTIResultHTML(resultData) {
             </button>
         </div>
     `;
-}
-
-function restartTestFromResult(testType) {
-    const testPages = {
-        DISC: 'disc.html',
-        MBTI: 'mbti.html',
-        BIG5: 'big5.html'
-    };
-    
-    if (testPages[testType]) {
-        window.location.href = testPages[testType];
-    }
 }
 
 // Enhanced Initialization
