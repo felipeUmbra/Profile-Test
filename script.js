@@ -51,7 +51,7 @@ export const isIndexPage = currentPage === 'index.html' || currentPage === '';
 export const isResultPage = currentPage.includes('-result.html');
 
 // Language State and Translations
-export let currentLang = 'en';
+export let currentLang = localStorage.getItem('personalityTest_language') || 'en';
 
 // Global Accessibility Manager
 export let accessibilityManager;
@@ -998,6 +998,8 @@ function showResults(forceRerender = false) {
         if (accessibilityManager) {
             accessibilityManager.announce('Test completed. Displaying results.', 'assertive');
         }
+        //Add this line to have sure to apply translations to static elements in results pages
+        updateStaticText();
 
         if (isMBTITest) {
             showMBTIResults(resultScores, resultInterpretation);
