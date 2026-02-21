@@ -39,7 +39,7 @@ const CONFIG = {
         MBTI: 'personalityTest_mbti_result', 
         BIG5: 'personalityTest_big5_result'
     },
-    apiBaseUrl: 'http://localhost:27017/api' // Update this to your backend URL
+    apiBaseUrl: 'http://localhost:3000/api' // Update this to your backend URL
 };
 
 // Test Type Detection
