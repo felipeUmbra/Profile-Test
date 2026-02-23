@@ -71,47 +71,47 @@ function t(key, replacements = {}) {
 }
 
 // Cache for fallback questions
-let fallbackQuestionsCache = null;
-
-// Load fallback questions from JSON file
-async function loadFallbackQuestions() {
-    if (fallbackQuestionsCache) {
-        return fallbackQuestionsCache;
-    }
-    
-    try {
-        const response = await fetch('/JSON/fallback-questions.json');
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        fallbackQuestionsCache = await response.json();
-        console.log('Fallback questions loaded from JSON file');
-        return fallbackQuestionsCache;
-    } catch (error) {
-        console.error('Failed to load fallback questions from JSON file:', error);
-        // Return empty structure as last resort
-        return { disc: [], mbti: [], big5: [] };
-    }
-}
+export let fallbackQuestionsCache = null;
 
 /**
  * Retrieves fallback questions for a specific test type.
  * This function is used as a safety mechanism when the primary database connection fails,
  * loading questions from a local JSON source instead.
- * * @async
+ *
+ * @async
  * @param {string} testType - The unique identifier of the test (e.g., 'mbti', 'disc', 'big5').
  * @param {string} lang - The language code for logging purposes (e.g., 'en', 'pt', 'es').
  * @returns {Promise<Array<Object>>} A promise that resolves to an array of question objects. 
  * Returns an empty array [] if an error occurs or the test type is not found.
- * * @example
- * // Returns an array of MBTI questions
- * const questions = await getFallbackQuestions('mbti', 'en');
  */
 async function getFallbackQuestions(testType, lang) {
     try {
-        const fallbackData = await loadFallbackQuestions();
+        let fallbackData;
+
+        // 1. Check if we already have the fallback questions cached
+        if (fallbackQuestionsCache) {
+            fallbackData = fallbackQuestionsCache;
+        } else {
+            // 2. If not cached, attempt to fetch them from the JSON file
+            try {
+                const response = await fetch('/JSON/fallback-questions.json');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                fallbackQuestionsCache = await response.json();
+                console.log('Fallback questions loaded from JSON file');
+                fallbackData = fallbackQuestionsCache;
+            } catch (error) {
+                console.error('Failed to load fallback questions from JSON file:', error);
+                // Create an empty structure as a last resort if the file fails to load
+                fallbackData = { disc: [], mbti: [], big5: [] };
+            }
+        }
+
+        // 3. Return the specific test questions
         console.log(`Using fallback questions for ${testType} in ${lang}`);
         return fallbackData[testType] || [];
+        
     } catch (error) {
         console.error('Error getting fallback questions:', error);
         return [];

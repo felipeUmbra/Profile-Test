@@ -33,7 +33,9 @@ let db;
 async function connectToDatabase() {
     try {
         await client.connect();
-        db = client.db('profile_test'); // Ensure this matches your DB name
+        // Leave it empty to use the default database (which is 'test'), 
+        // exactly matching how mongodb-migrate.js works
+        db = client.db(); 
         console.log('✅ Connected to MongoDB successfully');
         return true;
     } catch (error) {
@@ -46,25 +48,23 @@ async function connectToDatabase() {
 // 🚀 API ROUTES (These were missing!)
 // ==========================================
 
-// 1. GET Questions Endpoint
+// 1. GET Questions Endpoint (Updated for new structure)
 app.get('/api/questions/:type', async (req, res) => {
     try {
         if (!db) return res.status(503).json({ error: 'Database not connected' });
 
         const testType = req.params.type.toUpperCase(); // DISC, MBTI, BIG5
         
-        // Find the test definition (e.g., BIG5) to get its ID
-        const testDef = await db.collection('tests').findOne({ name: testType });
-        
-        if (!testDef) {
-            return res.status(404).json({ error: `Test type '${testType}' not found in database` });
-        }
-
-        // Fetch questions matching this test ID
+        // Fetch questions directly using the newly added testType field
         const questions = await db.collection('questions')
-            .find({ testId: testDef._id })
+            .find({ testType: testType })
             .sort({ questionOrder: 1 })
             .toArray();
+
+        // If no questions are found, the test type might be invalid or DB is empty
+        if (questions.length === 0) {
+             return res.status(404).json({ error: `No questions found for test type '${testType}'. Did you run the migration?` });
+        }
 
         // Map MongoDB data (camelCase) to the format script.js expects (snake_case)
         const mappedQuestions = questions.map(q => {

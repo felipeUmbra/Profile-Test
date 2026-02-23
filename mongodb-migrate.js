@@ -1,7 +1,20 @@
-require('dotenv').config();
-const { MongoClient } = require('mongodb');
-const fs = require('fs');
-const path = require('path');
+import 'dotenv/config';
+import { MongoClient } from 'mongodb';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+import dns from 'dns';
+
+// ===== DNS FIX: Configure resolver to use specific DNS servers =====
+// Helps prevent connection timeouts and SRV resolution errors
+dns.setServers(['8.8.8.8', '8.8.4.4', '1.1.1.1']);
+console.log('✅ DNS configured with custom servers:', dns.getServers());
+// ===== END DNS FIX =====
+
+// ES Module workaround for __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 // MongoDB Configuration
 const mongoUri = process.env.MONGODB_URI;
@@ -62,6 +75,7 @@ async function migrate() {
         // 3. Migrate DISC questions
         const discQuestions = allQuestions.disc.map((q, index) => ({
             testId: testIds['DISC'],
+            testType: 'DISC',
             factor: q.factor,
             questionText: q.text,
             questionOrder: index + 1
@@ -75,6 +89,7 @@ async function migrate() {
         // 4. Migrate MBTI questions
         const mbtiQuestions = allQuestions.mbti.map((q, index) => ({
             testId: testIds['MBTI'],
+            testType: 'MBTI',
             factor: q.dimension,
             questionText: {
                 optionA: q.optionA,
@@ -93,6 +108,7 @@ async function migrate() {
         // 5. Migrate Big5 questions
         const big5Questions = allQuestions.big5.map((q, index) => ({
             testId: testIds['BIG5'],
+            testType: 'BIG5',
             factor: q.factor,
             questionText: q.text,
             reverseScoring: q.reverse,
