@@ -124,13 +124,6 @@ async function getFallbackQuestions(testType, lang) {
  * Fetches questions for a specific test type from the backend API.
  * Includes a timeout mechanism and automatically reverts to local fallback data
  * if the API is unreachable or returns an error.
- * * @async
- * @param {string} testType - The identifier of the test to fetch (e.g., 'disc', 'mbti', 'big5').
- * @param {string} [lang='en'] - The language code for the questions (e.g., 'en', 'pt', 'es'). Defaults to 'en'.
- * @returns {Promise<Array<Object>>} A promise that resolves to an array of transformed question objects ready for the frontend.
- * * @example
- * // Fetch DISC questions in Portuguese
- * const questions = await fetchQuestions('disc', 'pt');
  */
 async function fetchQuestions(testType, lang = 'en') {
     try {
@@ -166,60 +159,73 @@ async function fetchQuestions(testType, lang = 'en') {
 // Transform backend questions to frontend format
 function transformQuestions(backendQuestions, testType, lang) {
     try {
-        if (testType === 'disc') {
-            return backendQuestions.map(q => ({
-                id: q.id,
-                text: { 
-                    en: q.question_text_en || q.question_text, 
-                    pt: q.question_text_pt || q.question_text 
-                },
-                factor: q.factor
-            }));
+        // Handle DISC and Big5
+        if (testType === 'disc' || testType === 'big5') {
+            return backendQuestions.map(q => {
+                let textObj = { en: '', pt: '', es: '' };
+                
+                // If question_text is a properly formatted multilingual object
+                if (typeof q.question_text === 'object' && q.question_text !== null) {
+                    textObj = {
+                        en: q.question_text.en || q.question_text_en || '',
+                        pt: q.question_text.pt || q.question_text_pt || '',
+                        es: q.question_text.es || q.question_text_es || ''
+                    };
+                } else {
+                    // Fallback if it's just a string
+                    const textStr = q.question_text || q.question_text_en || '';
+                    textObj = { en: textStr, pt: textStr, es: textStr };
+                }
+
+                const result = {
+                    id: q.id,
+                    text: textObj,
+                    factor: q.factor
+                };
+
+                if (testType === 'big5') {
+                    result.reverse = q.reverse_scoring || false;
+                }
+                return result;
+            });
+            
+        // Handle MBTI
         } else if (testType === 'mbti') {
             return backendQuestions.map(q => {
-                let optionA, optionB;
+                let optA = { en: '', pt: '', es: '' };
+                let optB = { en: '', pt: '', es: '' };
                 
-                // Handle both stringified JSON and direct object formats
-                if (typeof q.question_text === 'string') {
-                    try {
-                        const parsed = JSON.parse(q.question_text);
-                        optionA = parsed.optionA || { en: '', pt: '' };
-                        optionB = parsed.optionB || { en: '', pt: '' };
-                    } catch (e) {
-                        // If parsing fails, use the text directly
-                        optionA = { en: q.question_text, pt: q.question_text };
-                        optionB = { en: q.question_text, pt: q.question_text };
+                if (q.question_text && typeof q.question_text === 'object') {
+                    // Check if optionA/B are properly nested multilingual objects
+                    if (q.question_text.optionA && typeof q.question_text.optionA === 'object') {
+                        optA = {
+                            en: q.question_text.optionA.en || '',
+                            pt: q.question_text.optionA.pt || '',
+                            es: q.question_text.optionA.es || ''
+                        };
+                        optB = {
+                            en: q.question_text.optionB.en || '',
+                            pt: q.question_text.optionB.pt || '',
+                            es: q.question_text.optionB.es || ''
+                        };
+                    } else {
+                        // Fallback for flat strings
+                        const textA = q.question_text.optionA || q.question_text_en || '';
+                        const textB = q.question_text.optionB || q.question_text_pt || '';
+                        optA = { en: textA, pt: textA, es: textA };
+                        optB = { en: textB, pt: textB, es: textB };
                     }
-                } else {
-                    optionA = q.question_text?.optionA || { en: '', pt: '' };
-                    optionB = q.question_text?.optionB || { en: '', pt: '' };
-                }
-                
+                } 
+
                 return {
                     id: q.id,
-                    optionA: {
-                        en: optionA.en || q.question_text_en,
-                        pt: optionA.pt || q.question_text_pt
-                    },
-                    optionB: {
-                        en: optionB.en || q.question_text_en,
-                        pt: optionB.pt || q.question_text_pt
-                    },
+                    optionA: optA,
+                    optionB: optB,
                     dimension: q.factor,
-                    aValue: q.factor ? q.factor[0] : 'E', // Default fallbacks
-                    bValue: q.factor ? q.factor[1] : 'I'
+                    aValue: q.aValue || (q.factor ? q.factor[0] : 'E'), 
+                    bValue: q.bValue || (q.factor ? q.factor[1] : 'I')
                 };
             });
-        } else if (testType === 'big5') {
-            return backendQuestions.map(q => ({
-                id: q.id,
-                text: { 
-                    en: q.question_text_en || q.question_text, 
-                    pt: q.question_text_pt || q.question_text 
-                },
-                factor: q.factor,
-                reverse: q.reverse_scoring || false
-            }));
         }
         
         return backendQuestions;
@@ -227,7 +233,7 @@ function transformQuestions(backendQuestions, testType, lang) {
         console.error('Error transforming questions:', error);
         throw error;
     }
-}
+} 
 
 /**
  * Asynchronously saves the user's current test progress to the backend database.

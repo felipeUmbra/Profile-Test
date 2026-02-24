@@ -48,38 +48,38 @@ async function connectToDatabase() {
 // 🚀 API ROUTES (These were missing!)
 // ==========================================
 
-// 1. GET Questions Endpoint (Updated for new structure)
+// 1. GET Questions Endpoint
 app.get('/api/questions/:type', async (req, res) => {
     try {
         if (!db) return res.status(503).json({ error: 'Database not connected' });
 
         const testType = req.params.type.toUpperCase(); // DISC, MBTI, BIG5
         
-        // Fetch questions directly using the newly added testType field
+        // Fetch questions directly using the testType field
         const questions = await db.collection('questions')
             .find({ testType: testType })
             .sort({ questionOrder: 1 })
             .toArray();
 
-        // If no questions are found, the test type might be invalid or DB is empty
+        // If no questions are found
         if (questions.length === 0) {
              return res.status(404).json({ error: `No questions found for test type '${testType}'. Did you run the migration?` });
         }
 
-        // Map MongoDB data (camelCase) to the format script.js expects (snake_case)
+        // Map MongoDB data to the format script.js expects
         const mappedQuestions = questions.map(q => {
-            // Handle questionText whether it's a string or a multilingual object
-            const textObj = typeof q.questionText === 'object' ? q.questionText : { en: q.questionText, pt: q.questionText };
+            const textObj = typeof q.questionText === 'object' ? q.questionText : { en: q.questionText, pt: q.questionText, es: q.questionText };
             
             return {
                 id: q._id,
-                // script.js looks for these specific snake_case keys:
-                question_text: q.questionText, 
+                question_text: q.questionText, // Contains the full {en, pt, es} object
                 question_text_en: textObj.en || q.questionText,
                 question_text_pt: textObj.pt || q.questionText,
-                factor: q.factor,
-                reverse_scoring: q.reverseScoring, // Critical for Big5
-                question_order: q.questionOrder
+                question_text_es: textObj.es || q.questionText, // Added Spanish support
+                reverse_scoring: q.reverseScoring, 
+                question_order: q.questionOrder,
+                aValue: q.aValue, // Needed for MBTI
+                bValue: q.bValue  // Needed for MBTI
             };
         });
 
@@ -152,5 +152,7 @@ connectToDatabase().then(() => {
     app.listen(PORT, () => {
         console.log(`\n🚀 Server running on http://localhost:${PORT}`);
         console.log(`📡 Ready to handle requests at http://localhost:${PORT}/api/questions/big5`);
+        console.log(`📡 Ready to handle requests at http://localhost:${PORT}/api/questions/mbti`);
+        console.log(`📡 Ready to handle requests at http://localhost:${PORT}/api/questions/disc`);
     });
 });
