@@ -640,6 +640,7 @@ function updateStaticText() {
                 if (headerTitle) headerTitle.textContent = t('mbti_title');
                 if (headerSubtitle) headerSubtitle.textContent = t('mbti_subtitle');
                 if (ratingGuide) ratingGuide.textContent = t('mbti_rating_guide');
+                if (questionTextElement) questionTextElement.textContent = t('mbti_question_text');
             } else if (isBig5Test) {
                 if (headerTitle) headerTitle.textContent = t('big5_title');
                 if (headerSubtitle) headerSubtitle.textContent = t('big5_subtitle');

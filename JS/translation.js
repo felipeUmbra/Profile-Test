@@ -27,6 +27,7 @@ export const interfaceTranslations = {
         mbti_result_subtitle: "Your MBTI personality type and detailed interpretation",
         mbti_interpretation_title: "Detailed Type Interpretation",
         mbti_filename: "MBTI_Personality_Results_EN",
+        mbti_question_text: "Select the option that best fits you",
         
         big5_title: "Big Five Personality Test",
         big5_subtitle: "Rate how much each statement describes you (1 = Strongly Disagree, 5 = Strongly Agree)",
@@ -74,6 +75,7 @@ export const interfaceTranslations = {
         mbti_result_subtitle: "Seu tipo de personalidade MBTI e interpretação detalhada",
         mbti_interpretation_title: "Interpretação Detalhada do Tipo",
         mbti_filename: "MBTI_Personality_Results_PT",
+        mbti_question_text: "Selecione a opção que melhor se adapta a você",
         
         big5_title: "Teste de Personalidade Big Five",
         big5_subtitle: "Avalie o quanto cada afirmação o descreve (1 = Discordo Totalmente, 5 = Concordo Totalmente)",
@@ -121,6 +123,7 @@ export const interfaceTranslations = {
         mbti_result_subtitle: "Tu tipo de personalidad MBTI e interpretación detallada",
         mbti_interpretation_title: "Interpretación Detallada del Tipo",
         mbti_filename: "Resultados_Personalidad_MBTI_ES",
+        mbti_question_text: "Selecciona la opción que mejor se adapte a ti",
 
         big5_title: "Test de Personalidad Big Five",
         big5_subtitle: "Evalúa cuánto te describe cada afirmación (1 = Totalmente en desacuerdo, 5 = Totalmente de acuerdo)",
