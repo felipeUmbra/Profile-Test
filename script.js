@@ -1,7 +1,7 @@
 import { exportResultToPDF, AccessibilityManager, TestRunner, showError, setupEnhancedKeyboardNavigation,
     setupVirtualScrollingForResults, cleanupVirtualScrolling } from '/JS/utils.js';
 import {big5TraitDescriptions, mbtiDimensions, mbtiTypeDescriptions, discDescriptions, big5Descriptions, 
-    blendedDescriptions} from '/JS/trait-description.js';
+    blendedDescriptions, unifiedProfiles} from '/JS/trait-description.js';
 import { interfaceTranslations, indexInterfaceTranslations, translateUtilIndex } from '/JS/translation.js';
 
 
@@ -836,6 +836,85 @@ function renderBig5Question() {
     } catch (error) {
         console.error('Error rendering Big5 question:', error);
         showError(t('error_general'));
+    }
+}
+
+// Unified Profile Evaluation Logic
+function checkAndDisplayUnifiedProfile() {
+    try {
+        const discData = JSON.parse(localStorage.getItem(CONFIG.resultKeys.DISC));
+        const mbtiData = JSON.parse(localStorage.getItem(CONFIG.resultKeys.MBTI));
+        const big5Data = JSON.parse(localStorage.getItem(CONFIG.resultKeys.BIG5));
+
+        // Ensure user has completed all 3 tests
+        if (!discData || !mbtiData || !big5Data) return;
+
+        const discType = discData.profileKey || discData.type || "";
+        const mbtiType = mbtiData.type || "";
+        const big5Scores = big5Data.scores || {};
+
+        let matchedProfile = null;
+
+        // Structured Identification: Check for The Collaborative Guardian
+        // Criteria: Has 'S' in DISC, is INFJ in MBTI, and has high Agreeableness (A) and Extraversion (E) (> 24 out of 40)
+        const isCollaborativeGuardian = 
+            discType.includes('S') && 
+            mbtiType === 'INFJ' && 
+            big5Scores.A >= 24 && 
+            big5Scores.E >= 24;
+
+        if (isCollaborativeGuardian) {
+            matchedProfile = unifiedProfiles["collaborative_guardian"];
+        }
+
+        // Display logic
+        if (matchedProfile) {
+            const section = document.getElementById('unified-profile-section');
+            if (!section) return;
+
+            section.classList.remove('hidden');
+
+            // Populate text based on current language
+            document.getElementById('unified-profile-name').textContent = matchedProfile.name[currentLang];
+            document.getElementById('unified-profile-desc').textContent = matchedProfile.description[currentLang];
+            
+            document.getElementById('unified-strengths-title').textContent = matchedProfile.strengths.title[currentLang];
+            const strengthsList = document.getElementById('unified-strengths-list');
+            strengthsList.innerHTML = matchedProfile.strengths.items[currentLang].map(s => `<li>${s}</li>`).join('');
+            
+            document.getElementById('unified-weaknesses-title').textContent = matchedProfile.weaknesses.title[currentLang];
+            const weaknessesList = document.getElementById('unified-weaknesses-list');
+            weaknessesList.innerHTML = matchedProfile.weaknesses.items[currentLang].map(w => `<li>${w}</li>`).join('');
+            
+            document.getElementById('unified-challenges-title').textContent = matchedProfile.challenges.title[currentLang];
+            document.getElementById('unified-challenges-text').textContent = matchedProfile.challenges.text[currentLang];
+        }
+    } catch (error) {
+        console.error("Error evaluating unified profile:", error);
+    }
+}
+
+// Function to check if a specific test has been completed
+function checkTestStatus(testType) {
+    try {
+        const storageKey = CONFIG.resultKeys[testType];
+        const resultData = localStorage.getItem(storageKey);
+        
+        // Optional: If you have status text or buttons in your index.html cards 
+        // with IDs like 'disc-status' or 'mbti-btn', you can update them here.
+        /*
+        const statusElement = document.getElementById(`${testType.toLowerCase()}-status`);
+        if (resultData && statusElement) {
+            statusElement.textContent = currentLang === 'pt' ? 'Concluído' : (currentLang === 'es' ? 'Completado' : 'Completed');
+            statusElement.classList.remove('text-gray-500');
+            statusElement.classList.add('text-green-600', 'font-bold');
+        }
+        */
+        
+        return resultData !== null;
+    } catch (error) {
+        console.error(`Error checking status for ${testType}:`, error);
+        return false;
     }
 }
 
@@ -2190,6 +2269,32 @@ document.addEventListener('DOMContentLoaded', () => {
         if (window.location.href.includes('disc')) loadStoredResult('DISC');
         else if (window.location.href.includes('mbti')) loadStoredResult('MBTI');
         else if (window.location.href.includes('big5')) loadStoredResult('BIG5');
+    }
+
+    if (isIndexPage) {
+        // 1. Update translations for the index page
+        if (typeof updateIndexStaticText === 'function') {
+            updateIndexStaticText();
+        }
+
+        // 2. Check the status of each individual test
+        checkTestStatus('DISC');
+        checkTestStatus('MBTI');
+        checkTestStatus('BIG5');
+
+        // 3. Check and display the Unified Profile if all 3 are completed
+        checkAndDisplayUnifiedProfile(); 
+        
+        // 4. (If you have a function that loads previously saved results into the UI, call it here)
+        if (typeof loadSavedResults === 'function') {
+            loadSavedResults();
+        }
+    } 
+    else if (isResultPage) {
+        // ... existing result page logic ...
+    }
+    else {
+        // ... existing test page logic ...
     }
 });
 

@@ -364,3 +364,43 @@ export const blendedDescriptions = {
         }
     }
 };
+
+// Unified Summarized Profiles
+export const unifiedProfiles = {
+    "collaborative_guardian": {
+        name: { 
+            en: "The Collaborative Guardian", 
+            pt: "O Guardião Colaborativo", 
+            es: "El Guardián Colaborativo" 
+        },
+        description: {
+            en: "A natural ability to understand others' perspectives and mediate discussions smoothly. You are consistently dependable, providing a stable foundation in team environments.",
+            pt: "Uma habilidade natural para entender as perspectivas dos outros e mediar discussões suavemente. Você é consistentemente confiável, fornecendo uma base estável em ambientes de equipe.",
+            es: "Una habilidad natural para entender las perspectivas de los demás y mediar discusiones sin problemas. Eres consistentemente confiable, proporcionando una base estable en entornos de equipo."
+        },
+        strengths: {
+            title: { en: "Strengths", pt: "Pontos Fortes", es: "Fortalezas" },
+            items: {
+                en: ["Active Empathy & Diplomacy", "Reliability", "Active Listening", "Collaboration"],
+                pt: ["Empatia Ativa e Diplomacia", "Confiabilidade", "Escuta Ativa", "Colaboração"],
+                es: ["Empatía Activa y Diplomacia", "Fiabilidad", "Escucha Activa", "Colaboración"]
+            }
+        },
+        weaknesses: {
+            title: { en: "Weaknesses / Cautions", pt: "Fraquezas / Precauções", es: "Debilidades / Precauciones" },
+            items: {
+                en: ["Aversion to Conflict", "Difficulty Saying 'No'", "Perfectionism", "Emotional Absorption", "Resistance to Sudden Changes"],
+                pt: ["Aversão a Conflitos", "Dificuldade em dizer 'Não'", "Perfeccionismo", "Absorção Emocional", "Resistência a Mudanças Repentinas"],
+                es: ["Aversión al Conflicto", "Dificultad para Decir 'No'", "Perfeccionismo", "Absorción Emocional", "Resistencia a Cambios Repentinos"]
+            }
+        },
+        challenges: {
+            title: { en: "Navigating Through Challenges", pt: "Navegando por Desafios", es: "Navegando por Desafíos" },
+            text: {
+                en: "Balancing a natural drive for harmony with the need to establish firm boundaries is the key to managing difficult situations. Reframe disagreements not as personal friction, but as an exercise in diplomacy and collaboration. Lean on your core reliability to set clear, objective thresholds. Use active listening to understand changing requirements to adapt at a manageable pace.",
+                pt: "Equilibrar um impulso natural por harmonia com a necessidade de estabelecer limites firmes é a chave para gerenciar situações difíceis. Reenquadre as discordâncias não como atrito pessoal, mas como um exercício de diplomacia e colaboração. Confie em sua confiabilidade central para definir limites claros e objetivos. Use a escuta ativa para entender os requisitos em mudança para se adaptar em um ritmo gerenciável.",
+                es: "Equilibrar un impulso natural por la armonía con la necesidad de establecer límites firmes es la clave para manejar situaciones difíciles. Reformula los desacuerdos no como fricción personal, sino como un ejercicio de diplomacia y colaboración. Apóyate en tu fiabilidad central para establecer umbrales claros y objetivos. Usa la escucha activa para entender los requisitos cambiantes para adaptarte a un ritmo manejable."
+            }
+        }
+    }
+};

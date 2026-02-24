@@ -44,6 +44,43 @@
             </a>
         </div>
 
+        <div id="unified-profile-section" class="hidden mb-10 bg-white rounded-2xl shadow-xl overflow-hidden border-2 border-indigo-400">
+            <div class="bg-indigo-600 px-6 py-4">
+                <h2 class="text-2xl font-bold text-white flex items-center">
+                    <span class="text-3xl mr-3">🌟</span>
+                    <span id="unified-header-title">Unified Profile Snapshot</span>
+                </h2>
+            </div>
+            <div class="p-6">
+                <div class="text-center mb-6">
+                    <h3 id="unified-profile-name" class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 mb-3"></h3>
+                    <p id="unified-profile-desc" class="text-gray-600 text-lg max-w-2xl mx-auto"></p>
+                </div>
+                
+                <div class="grid md:grid-cols-2 gap-6 mb-6">
+                    <div class="bg-green-50 rounded-xl p-5 border border-green-100">
+                        <h4 class="font-bold text-green-800 text-lg mb-3 flex items-center">
+                            <span class="mr-2">💪</span> <span id="unified-strengths-title"></span>
+                        </h4>
+                        <ul id="unified-strengths-list" class="space-y-2 text-green-700 list-disc list-inside"></ul>
+                    </div>
+                    <div class="bg-red-50 rounded-xl p-5 border border-red-100">
+                        <h4 class="font-bold text-red-800 text-lg mb-3 flex items-center">
+                            <span class="mr-2">⚠️</span> <span id="unified-weaknesses-title"></span>
+                        </h4>
+                        <ul id="unified-weaknesses-list" class="space-y-2 text-red-700 list-disc list-inside"></ul>
+                    </div>
+                </div>
+                
+                <div class="bg-blue-50 rounded-xl p-5 border border-blue-100">
+                    <h4 class="font-bold text-blue-800 text-lg mb-3 flex items-center">
+                        <span class="mr-2">🧭</span> <span id="unified-challenges-title"></span>
+                    </h4>
+                    <p id="unified-challenges-text" class="text-blue-700 leading-relaxed"></p>
+                </div>
+            </div>
+        </div>
+        
         <!-- Saved Results Section -->
         <div id="saved-results-section" class="bg-white rounded-2xl shadow-xl p-6 mb-8 hidden">
             <div class="flex justify-between items-center mb-6">
