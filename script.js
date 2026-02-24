@@ -1,7 +1,7 @@
 import { exportResultToPDF, AccessibilityManager, TestRunner, showError, setupEnhancedKeyboardNavigation,
     setupVirtualScrollingForResults, cleanupVirtualScrolling } from '/JS/utils.js';
 import {big5TraitDescriptions, mbtiDimensions, mbtiTypeDescriptions, discDescriptions, big5Descriptions, 
-    blendedDescriptions} from '/JS/trait-description.js';
+    blendedDescriptions, unifiedProfiles} from '/JS/trait-description.js';
 import { interfaceTranslations, indexInterfaceTranslations, translateUtilIndex } from '/JS/translation.js';
 
 
@@ -39,7 +39,7 @@ const CONFIG = {
         MBTI: 'personalityTest_mbti_result', 
         BIG5: 'personalityTest_big5_result'
     },
-    apiBaseUrl: 'http://localhost:27017/api' // Update this to your backend URL
+    apiBaseUrl: 'http://localhost:3000/api' // Update this to your backend URL
 };
 
 // Test Type Detection
@@ -71,47 +71,47 @@ function t(key, replacements = {}) {
 }
 
 // Cache for fallback questions
-let fallbackQuestionsCache = null;
-
-// Load fallback questions from JSON file
-async function loadFallbackQuestions() {
-    if (fallbackQuestionsCache) {
-        return fallbackQuestionsCache;
-    }
-    
-    try {
-        const response = await fetch('/JSON/fallback-questions.json');
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        fallbackQuestionsCache = await response.json();
-        console.log('Fallback questions loaded from JSON file');
-        return fallbackQuestionsCache;
-    } catch (error) {
-        console.error('Failed to load fallback questions from JSON file:', error);
-        // Return empty structure as last resort
-        return { disc: [], mbti: [], big5: [] };
-    }
-}
+export let fallbackQuestionsCache = null;
 
 /**
  * Retrieves fallback questions for a specific test type.
  * This function is used as a safety mechanism when the primary database connection fails,
  * loading questions from a local JSON source instead.
- * * @async
+ *
+ * @async
  * @param {string} testType - The unique identifier of the test (e.g., 'mbti', 'disc', 'big5').
  * @param {string} lang - The language code for logging purposes (e.g., 'en', 'pt', 'es').
  * @returns {Promise<Array<Object>>} A promise that resolves to an array of question objects. 
  * Returns an empty array [] if an error occurs or the test type is not found.
- * * @example
- * // Returns an array of MBTI questions
- * const questions = await getFallbackQuestions('mbti', 'en');
  */
 async function getFallbackQuestions(testType, lang) {
     try {
-        const fallbackData = await loadFallbackQuestions();
+        let fallbackData;
+
+        // 1. Check if we already have the fallback questions cached
+        if (fallbackQuestionsCache) {
+            fallbackData = fallbackQuestionsCache;
+        } else {
+            // 2. If not cached, attempt to fetch them from the JSON file
+            try {
+                const response = await fetch('/JSON/fallback-questions.json');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                fallbackQuestionsCache = await response.json();
+                console.log('Fallback questions loaded from JSON file');
+                fallbackData = fallbackQuestionsCache;
+            } catch (error) {
+                console.error('Failed to load fallback questions from JSON file:', error);
+                // Create an empty structure as a last resort if the file fails to load
+                fallbackData = { disc: [], mbti: [], big5: [] };
+            }
+        }
+
+        // 3. Return the specific test questions
         console.log(`Using fallback questions for ${testType} in ${lang}`);
         return fallbackData[testType] || [];
+        
     } catch (error) {
         console.error('Error getting fallback questions:', error);
         return [];
@@ -124,13 +124,6 @@ async function getFallbackQuestions(testType, lang) {
  * Fetches questions for a specific test type from the backend API.
  * Includes a timeout mechanism and automatically reverts to local fallback data
  * if the API is unreachable or returns an error.
- * * @async
- * @param {string} testType - The identifier of the test to fetch (e.g., 'disc', 'mbti', 'big5').
- * @param {string} [lang='en'] - The language code for the questions (e.g., 'en', 'pt', 'es'). Defaults to 'en'.
- * @returns {Promise<Array<Object>>} A promise that resolves to an array of transformed question objects ready for the frontend.
- * * @example
- * // Fetch DISC questions in Portuguese
- * const questions = await fetchQuestions('disc', 'pt');
  */
 async function fetchQuestions(testType, lang = 'en') {
     try {
@@ -166,60 +159,73 @@ async function fetchQuestions(testType, lang = 'en') {
 // Transform backend questions to frontend format
 function transformQuestions(backendQuestions, testType, lang) {
     try {
-        if (testType === 'disc') {
-            return backendQuestions.map(q => ({
-                id: q.id,
-                text: { 
-                    en: q.question_text_en || q.question_text, 
-                    pt: q.question_text_pt || q.question_text 
-                },
-                factor: q.factor
-            }));
+        // Handle DISC and Big5
+        if (testType === 'disc' || testType === 'big5') {
+            return backendQuestions.map(q => {
+                let textObj = { en: '', pt: '', es: '' };
+                
+                // If question_text is a properly formatted multilingual object
+                if (typeof q.question_text === 'object' && q.question_text !== null) {
+                    textObj = {
+                        en: q.question_text.en || q.question_text_en || '',
+                        pt: q.question_text.pt || q.question_text_pt || '',
+                        es: q.question_text.es || q.question_text_es || ''
+                    };
+                } else {
+                    // Fallback if it's just a string
+                    const textStr = q.question_text || q.question_text_en || '';
+                    textObj = { en: textStr, pt: textStr, es: textStr };
+                }
+
+                const result = {
+                    id: q.id,
+                    text: textObj,
+                    factor: q.factor
+                };
+
+                if (testType === 'big5') {
+                    result.reverse = q.reverse_scoring || false;
+                }
+                return result;
+            });
+            
+        // Handle MBTI
         } else if (testType === 'mbti') {
             return backendQuestions.map(q => {
-                let optionA, optionB;
+                let optA = { en: '', pt: '', es: '' };
+                let optB = { en: '', pt: '', es: '' };
                 
-                // Handle both stringified JSON and direct object formats
-                if (typeof q.question_text === 'string') {
-                    try {
-                        const parsed = JSON.parse(q.question_text);
-                        optionA = parsed.optionA || { en: '', pt: '' };
-                        optionB = parsed.optionB || { en: '', pt: '' };
-                    } catch (e) {
-                        // If parsing fails, use the text directly
-                        optionA = { en: q.question_text, pt: q.question_text };
-                        optionB = { en: q.question_text, pt: q.question_text };
+                if (q.question_text && typeof q.question_text === 'object') {
+                    // Check if optionA/B are properly nested multilingual objects
+                    if (q.question_text.optionA && typeof q.question_text.optionA === 'object') {
+                        optA = {
+                            en: q.question_text.optionA.en || '',
+                            pt: q.question_text.optionA.pt || '',
+                            es: q.question_text.optionA.es || ''
+                        };
+                        optB = {
+                            en: q.question_text.optionB.en || '',
+                            pt: q.question_text.optionB.pt || '',
+                            es: q.question_text.optionB.es || ''
+                        };
+                    } else {
+                        // Fallback for flat strings
+                        const textA = q.question_text.optionA || q.question_text_en || '';
+                        const textB = q.question_text.optionB || q.question_text_pt || '';
+                        optA = { en: textA, pt: textA, es: textA };
+                        optB = { en: textB, pt: textB, es: textB };
                     }
-                } else {
-                    optionA = q.question_text?.optionA || { en: '', pt: '' };
-                    optionB = q.question_text?.optionB || { en: '', pt: '' };
-                }
-                
+                } 
+
                 return {
                     id: q.id,
-                    optionA: {
-                        en: optionA.en || q.question_text_en,
-                        pt: optionA.pt || q.question_text_pt
-                    },
-                    optionB: {
-                        en: optionB.en || q.question_text_en,
-                        pt: optionB.pt || q.question_text_pt
-                    },
+                    optionA: optA,
+                    optionB: optB,
                     dimension: q.factor,
-                    aValue: q.factor ? q.factor[0] : 'E', // Default fallbacks
-                    bValue: q.factor ? q.factor[1] : 'I'
+                    aValue: q.aValue || (q.factor ? q.factor[0] : 'E'), 
+                    bValue: q.bValue || (q.factor ? q.factor[1] : 'I')
                 };
             });
-        } else if (testType === 'big5') {
-            return backendQuestions.map(q => ({
-                id: q.id,
-                text: { 
-                    en: q.question_text_en || q.question_text, 
-                    pt: q.question_text_pt || q.question_text 
-                },
-                factor: q.factor,
-                reverse: q.reverse_scoring || false
-            }));
         }
         
         return backendQuestions;
@@ -227,7 +233,7 @@ function transformQuestions(backendQuestions, testType, lang) {
         console.error('Error transforming questions:', error);
         throw error;
     }
-}
+} 
 
 /**
  * Asynchronously saves the user's current test progress to the backend database.
@@ -584,6 +590,7 @@ function setLanguage(lang) {
         if (isIndexPage) {
             updateIndexStaticText();
             loadSavedResults();  // Reload results to apply new language
+            checkAndDisplayUnifiedProfile();
         } else {
             updateStaticText();
             
@@ -634,6 +641,7 @@ function updateStaticText() {
                 if (headerTitle) headerTitle.textContent = t('mbti_title');
                 if (headerSubtitle) headerSubtitle.textContent = t('mbti_subtitle');
                 if (ratingGuide) ratingGuide.textContent = t('mbti_rating_guide');
+                if (questionTextElement) questionTextElement.textContent = t('mbti_question_text');
             } else if (isBig5Test) {
                 if (headerTitle) headerTitle.textContent = t('big5_title');
                 if (headerSubtitle) headerSubtitle.textContent = t('big5_subtitle');
@@ -829,6 +837,110 @@ function renderBig5Question() {
     } catch (error) {
         console.error('Error rendering Big5 question:', error);
         showError(t('error_general'));
+    }
+}
+
+// Unified Profile Evaluation Logic
+function checkAndDisplayUnifiedProfile() {
+    try {
+        const discData = JSON.parse(localStorage.getItem(CONFIG.resultKeys.DISC));
+        const mbtiData = JSON.parse(localStorage.getItem(CONFIG.resultKeys.MBTI));
+        const big5Data = JSON.parse(localStorage.getItem(CONFIG.resultKeys.BIG5));
+
+        if (!discData || !mbtiData || !big5Data) {
+            console.log("Unified Profile: User hasn't completed all 3 tests yet.");
+            return;
+        }
+
+        const discType = discData.profileKey || discData.type || "";
+        const mbtiType = mbtiData.type || "";
+        const big5Scores = big5Data.scores || {};
+
+        console.log("Current Test Results:", { discType, mbtiType, big5Scores });
+
+        // Temporary bypass: Uncomment the line below to FORCE the profile to show for testing purposes
+        // let isCollaborativeGuardian = true; 
+
+        let matchedProfile = null;
+
+        // Profile 1: The Collaborative Guardian
+        // (S + INFJ + High Agreeableness/Extraversion)
+        const isCollaborativeGuardian = 
+            discType.includes('S') && 
+            mbtiType === 'INFJ' && 
+            big5Scores.A >= 24 && 
+            big5Scores.E >= 24;
+
+        // Profile 2: The Insightful Anchor
+        // (S + INFJ + Lower/Moderate Agreeableness/Extraversion + Solid Conscientiousness)
+        const isInsightfulAnchor = 
+            discType.includes('S') && 
+            mbtiType === 'INFJ' && 
+            big5Scores.A <= 23 && 
+            big5Scores.E <= 23;
+
+        // Determine which profile to display
+        if (isCollaborativeGuardian) {
+            console.log("Match found: The Collaborative Guardian");
+            matchedProfile = unifiedProfiles["collaborative_guardian"];
+        } else if (isInsightfulAnchor) {
+            console.log("Match found: The Insightful Anchor");
+            matchedProfile = unifiedProfiles["insightful_anchor"];
+        }
+
+        if (matchedProfile) {
+            console.log("Match found:", matchedProfile.name[currentLang]);
+            
+            const section = document.getElementById('unified-profile-section');
+            if (!section) {
+                console.error("Unified Profile: Could not find #unified-profile-section in HTML.");
+                return;
+            }
+
+            section.classList.remove('hidden');
+
+            document.getElementById('unified-profile-name').textContent = matchedProfile.name[currentLang];
+            document.getElementById('unified-profile-desc').textContent = matchedProfile.description[currentLang];
+            
+            document.getElementById('unified-strengths-title').textContent = matchedProfile.strengths.title[currentLang];
+            const strengthsList = document.getElementById('unified-strengths-list');
+            strengthsList.innerHTML = matchedProfile.strengths.items[currentLang].map(s => `<li>${s}</li>`).join('');
+            
+            document.getElementById('unified-weaknesses-title').textContent = matchedProfile.weaknesses.title[currentLang];
+            const weaknessesList = document.getElementById('unified-weaknesses-list');
+            weaknessesList.innerHTML = matchedProfile.weaknesses.items[currentLang].map(w => `<li>${w}</li>`).join('');
+            
+            document.getElementById('unified-challenges-title').textContent = matchedProfile.challenges.title[currentLang];
+            document.getElementById('unified-challenges-text').textContent = matchedProfile.challenges.text[currentLang];
+        } else {
+            console.log("Unified Profile: All tests completed, but results do not match 'The Collaborative Guardian'.");
+        }
+    } catch (error) {
+        console.error("Error evaluating unified profile:", error);
+    }
+}
+
+// Function to check if a specific test has been completed
+function checkTestStatus(testType) {
+    try {
+        const storageKey = CONFIG.resultKeys[testType];
+        const resultData = localStorage.getItem(storageKey);
+        
+        // Optional: If you have status text or buttons in your index.html cards 
+        // with IDs like 'disc-status' or 'mbti-btn', you can update them here.
+        /*
+        const statusElement = document.getElementById(`${testType.toLowerCase()}-status`);
+        if (resultData && statusElement) {
+            statusElement.textContent = currentLang === 'pt' ? 'Concluído' : (currentLang === 'es' ? 'Completado' : 'Completed');
+            statusElement.classList.remove('text-gray-500');
+            statusElement.classList.add('text-green-600', 'font-bold');
+        }
+        */
+        
+        return resultData !== null;
+    } catch (error) {
+        console.error(`Error checking status for ${testType}:`, error);
+        return false;
     }
 }
 
@@ -2184,6 +2296,32 @@ document.addEventListener('DOMContentLoaded', () => {
         else if (window.location.href.includes('mbti')) loadStoredResult('MBTI');
         else if (window.location.href.includes('big5')) loadStoredResult('BIG5');
     }
+
+    if (isIndexPage) {
+        // 1. Update translations for the index page
+        if (typeof updateIndexStaticText === 'function') {
+            updateIndexStaticText();
+        }
+
+        // 2. Check the status of each individual test
+        checkTestStatus('DISC');
+        checkTestStatus('MBTI');
+        checkTestStatus('BIG5');
+
+        // 3. Check and display the Unified Profile if all 3 are completed
+        checkAndDisplayUnifiedProfile(); 
+        
+        // 4. (If you have a function that loads previously saved results into the UI, call it here)
+        if (typeof loadSavedResults === 'function') {
+            loadSavedResults();
+        }
+        } 
+        else if (isResultPage) {
+            // ... existing result page logic ...
+        }
+        else {
+            // ... existing test page logic ...
+        }
 });
 
 function setupLanguageListeners() {
