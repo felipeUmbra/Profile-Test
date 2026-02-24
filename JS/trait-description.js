@@ -402,5 +402,41 @@ export const unifiedProfiles = {
                 es: "Equilibrar un impulso natural por la armonía con la necesidad de establecer límites firmes es la clave para manejar situaciones difíciles. Reformula los desacuerdos no como fricción personal, sino como un ejercicio de diplomacia y colaboración. Apóyate en tu fiabilidad central para establecer umbrales claros y objetivos. Usa la escucha activa para entender los requisitos cambiantes para adaptarte a un ritmo manejable."
             }
         }
+    },
+    "insightful_anchor": {
+        name: { 
+            en: "The Insightful Anchor", 
+            pt: "O Âncora Perspicaz", 
+            es: "El Ancla Perspicaz" 
+        },
+        description: {
+            en: "A dependable and perceptive individual who combines deep analytical intuition with a strong sense of duty. You provide quiet stability and organized insight, thoughtfully guiding teams while maintaining strong personal boundaries.",
+            pt: "Um indivíduo confiável e perceptivo que combina profunda intuição analítica com um forte senso de dever. Você fornece estabilidade silenciosa e percepção organizada, guiando as equipes de forma cuidadosa enquanto mantém fortes limites pessoais.",
+            es: "Un individuo confiable y perceptivo que combina una profunda intuición analítica con un fuerte sentido del deber. Proporcionas una estabilidad silenciosa y una visión organizada, guiando cuidadosamente a los equipos mientras mantienes límites personales fuertes."
+        },
+        strengths: {
+            title: { en: "Strengths", pt: "Pontos Fortes", es: "Fortalezas" },
+            items: {
+                en: ["Deep Insight & Foresight", "Highly Organized & Reliable", "Principled Decision Making", "Calm Under Pressure"],
+                pt: ["Percepção Profunda e Visão de Futuro", "Altamente Organizado e Confiável", "Tomada de Decisão Baseada em Princípios", "Calma Sob Pressão"],
+                es: ["Visión Profunda y Previsión", "Altamente Organizado y Confiable", "Toma de Decisiones Basada en Principios", "Calma Bajo Presión"]
+            }
+        },
+        weaknesses: {
+            title: { en: "Weaknesses / Cautions", pt: "Fraquezas / Precauções", es: "Debilidades / Precauciones" },
+            items: {
+                en: ["Overthinking Scenarios", "Hesitance to share ideas until perfect", "Potential for burnout from internalizing stress", "Can appear detached when deeply focused"],
+                pt: ["Pensar Demais nos Cenários", "Hesitação em compartilhar ideias até que estejam perfeitas", "Potencial de esgotamento ao internalizar o estresse", "Pode parecer distante quando profundamente concentrado"],
+                es: ["Pensar Demasiado en los Escenarios", "Duda en compartir ideas hasta que sean perfectas", "Potencial de agotamiento por internalizar el estrés", "Puede parecer distante cuando está profundamente concentrado"]
+            }
+        },
+        challenges: {
+            title: { en: "Navigating Through Challenges", pt: "Navegando por Desafios", es: "Navegando por Desafíos" },
+            text: {
+                en: "Navigating the balance between your need for structured predictability and the chaotic nature of collaborative environments is your main challenge. Use your natural strategic foresight to anticipate changes and communicate your insights earlier, even if they aren't fully polished. Remember to voice your needs and analytical critiques directly rather than just absorbing the group's pressure.",
+                pt: "Navegar no equilíbrio entre sua necessidade de previsibilidade estruturada e a natureza caótica dos ambientes colaborativos é o seu principal desafio. Use sua visão estratégica natural para antecipar mudanças e comunicar suas percepções mais cedo, mesmo que não estejam totalmente lapidadas. Lembre-se de expressar suas necessidades e críticas analíticas diretamente, em vez de apenas absorver a pressão do grupo.",
+                es: "Navegar por el equilibrio entre tu necesidad de previsibilidad estructurada y la naturaleza caótica de los entornos colaborativos es tu principal desafío. Usa tu previsión estratégica natural para anticipar cambios y comunicar tus ideas antes, incluso si no están completamente pulidas. Recuerda expresar tus necesidades y críticas analíticas directamente en lugar de simplemente absorber la presión del grupo."
+            }
+        }
     }
 };

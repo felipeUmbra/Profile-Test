@@ -590,6 +590,7 @@ function setLanguage(lang) {
         if (isIndexPage) {
             updateIndexStaticText();
             loadSavedResults();  // Reload results to apply new language
+            checkAndDisplayUnifiedProfile();
         } else {
             updateStaticText();
             
@@ -846,35 +847,58 @@ function checkAndDisplayUnifiedProfile() {
         const mbtiData = JSON.parse(localStorage.getItem(CONFIG.resultKeys.MBTI));
         const big5Data = JSON.parse(localStorage.getItem(CONFIG.resultKeys.BIG5));
 
-        // Ensure user has completed all 3 tests
-        if (!discData || !mbtiData || !big5Data) return;
+        if (!discData || !mbtiData || !big5Data) {
+            console.log("Unified Profile: User hasn't completed all 3 tests yet.");
+            return;
+        }
 
         const discType = discData.profileKey || discData.type || "";
         const mbtiType = mbtiData.type || "";
         const big5Scores = big5Data.scores || {};
 
+        console.log("Current Test Results:", { discType, mbtiType, big5Scores });
+
+        // Temporary bypass: Uncomment the line below to FORCE the profile to show for testing purposes
+        // let isCollaborativeGuardian = true; 
+
         let matchedProfile = null;
 
-        // Structured Identification: Check for The Collaborative Guardian
-        // Criteria: Has 'S' in DISC, is INFJ in MBTI, and has high Agreeableness (A) and Extraversion (E) (> 24 out of 40)
+        // Profile 1: The Collaborative Guardian
+        // (S + INFJ + High Agreeableness/Extraversion)
         const isCollaborativeGuardian = 
             discType.includes('S') && 
             mbtiType === 'INFJ' && 
             big5Scores.A >= 24 && 
             big5Scores.E >= 24;
 
+        // Profile 2: The Insightful Anchor
+        // (S + INFJ + Lower/Moderate Agreeableness/Extraversion + Solid Conscientiousness)
+        const isInsightfulAnchor = 
+            discType.includes('S') && 
+            mbtiType === 'INFJ' && 
+            big5Scores.A <= 23 && 
+            big5Scores.E <= 23;
+
+        // Determine which profile to display
         if (isCollaborativeGuardian) {
+            console.log("Match found: The Collaborative Guardian");
             matchedProfile = unifiedProfiles["collaborative_guardian"];
+        } else if (isInsightfulAnchor) {
+            console.log("Match found: The Insightful Anchor");
+            matchedProfile = unifiedProfiles["insightful_anchor"];
         }
 
-        // Display logic
         if (matchedProfile) {
+            console.log("Match found:", matchedProfile.name[currentLang]);
+            
             const section = document.getElementById('unified-profile-section');
-            if (!section) return;
+            if (!section) {
+                console.error("Unified Profile: Could not find #unified-profile-section in HTML.");
+                return;
+            }
 
             section.classList.remove('hidden');
 
-            // Populate text based on current language
             document.getElementById('unified-profile-name').textContent = matchedProfile.name[currentLang];
             document.getElementById('unified-profile-desc').textContent = matchedProfile.description[currentLang];
             
@@ -888,6 +912,8 @@ function checkAndDisplayUnifiedProfile() {
             
             document.getElementById('unified-challenges-title').textContent = matchedProfile.challenges.title[currentLang];
             document.getElementById('unified-challenges-text').textContent = matchedProfile.challenges.text[currentLang];
+        } else {
+            console.log("Unified Profile: All tests completed, but results do not match 'The Collaborative Guardian'.");
         }
     } catch (error) {
         console.error("Error evaluating unified profile:", error);
@@ -2289,13 +2315,13 @@ document.addEventListener('DOMContentLoaded', () => {
         if (typeof loadSavedResults === 'function') {
             loadSavedResults();
         }
-    } 
-    else if (isResultPage) {
-        // ... existing result page logic ...
-    }
-    else {
-        // ... existing test page logic ...
-    }
+        } 
+        else if (isResultPage) {
+            // ... existing result page logic ...
+        }
+        else {
+            // ... existing test page logic ...
+        }
 });
 
 function setupLanguageListeners() {
