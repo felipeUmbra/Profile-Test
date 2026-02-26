@@ -143,7 +143,7 @@ app.get('/api/health/dns', (req, res) => {
 });
 
 // Start server
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 27017;
 
 connectToDatabase().then(connected => {
     if (connected) {
