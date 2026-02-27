@@ -35,6 +35,18 @@ function loadQuestions() {
     }
 }
 
+// Load trait descriptions from JSON file
+function loadDescriptions() {
+    try {
+        const filePath = path.join(__dirname, '/JSON/fallback-trait-description.json');
+        const data = fs.readFileSync(filePath, 'utf8');
+        return JSON.parse(data);
+    } catch (error) {
+        console.error('⚠️ Error loading fallback-trait-description.json. Make sure the file exists in the JSON folder:', error.message);
+        return null; // Return null so the rest of the migration can still run if the file is missing
+    }
+}
+
 async function migrate() {
     const client = new MongoClient(mongoUri);
     console.log('🚀 Starting migration...');
@@ -48,6 +60,7 @@ async function migrate() {
         console.log('🧹 Clearing old data...');
         await db.collection('questions').deleteMany({});
         await db.collection('tests').deleteMany({});
+        await db.collection('trait_descriptions').deleteMany({}); // Clear new descriptions collection
         console.log('✅ Collections cleared.');
 
         // 2. Define and insert tests
@@ -57,7 +70,7 @@ async function migrate() {
             { name: 'MBTI', description: 'Myers-Briggs Type Indicator', totalQuestions: 28 },
             { name: 'BIG5', description: 'Big Five Personality Traits', totalQuestions: 40 }
         ];
-        const testsResult = await db.collection('tests').insertMany(tests);
+        await db.collection('tests').insertMany(tests);
         console.log('✅ Tests inserted.');
 
         // Create a map for easy lookup of test IDs
@@ -120,7 +133,23 @@ async function migrate() {
             totalQuestionsInserted += big5Questions.length;
         }
 
-        console.log(`\n🎉 Migration complete! Inserted ${totalQuestionsInserted} questions in total.`);
+        // 6. Migrate Trait Descriptions
+        console.log('📋 Migrating trait descriptions...');
+        const descriptionsData = loadDescriptions();
+        if (descriptionsData) {
+            // Map each root key in the JSON to a separate document in MongoDB
+            const descriptionDocs = Object.keys(descriptionsData).map(key => ({
+                category: key,
+                content: descriptionsData[key]
+            }));
+
+            if (descriptionDocs.length > 0) {
+                await db.collection('trait_descriptions').insertMany(descriptionDocs);
+                console.log(` -> Trait Descriptions: ${descriptionDocs.length} categories inserted into 'trait_descriptions' collection.`);
+            }
+        }
+
+        console.log(`\n🎉 Migration complete! Inserted ${totalQuestionsInserted} questions and ${descriptionsData ? Object.keys(descriptionsData).length : 0} description categories in total.`);
 
     } catch (error) {
         console.error('❌ Migration failed:', error);

@@ -142,6 +142,34 @@ app.post('/api/save-result', async (req, res) => {
     }
 });
 
+// 4. GET Trait Descriptions Endpoint
+app.get('/api/trait-descriptions', async (req, res) => {
+    try {
+        if (!db) return res.status(503).json({ error: 'Database not connected' });
+
+        // Fetch all documents from the trait_descriptions collection
+        const descriptions = await db.collection('trait_descriptions').find({}).toArray();
+
+        if (descriptions.length === 0) {
+             return res.status(404).json({ error: 'No trait descriptions found. Did you run the migration?' });
+        }
+
+        // Reconstruct the JSON object format that the frontend expects
+        // (Mapping { category: '...', content: {...} } back to { category: {...} })
+        const result = {};
+        descriptions.forEach(doc => {
+            result[doc.category] = doc.content;
+        });
+
+        console.log(`📦 Served trait descriptions (${descriptions.length} categories)`);
+        res.json(result);
+
+    } catch (error) {
+        console.error('Error fetching trait descriptions:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // Health Check
 app.get('/api/health', (req, res) => {
     res.json({ status: 'OK', database: db ? 'connected' : 'disconnected' });

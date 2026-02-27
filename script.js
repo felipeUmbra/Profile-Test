@@ -1,7 +1,7 @@
 import { exportResultToPDF, AccessibilityManager, TestRunner, showError, setupEnhancedKeyboardNavigation,
     setupVirtualScrollingForResults, cleanupVirtualScrolling } from '/JS/utils.js';
 import {big5TraitDescriptions, mbtiDimensions, mbtiTypeDescriptions, discDescriptions, big5Descriptions, 
-    blendedDescriptions, unifiedProfiles} from '/JS/trait-description.js';
+    blendedDescriptions, unifiedProfiles, fetchTraitDescriptions} from '/JS/trait-description.js';
 import { interfaceTranslations, indexInterfaceTranslations, translateUtilIndex } from '/JS/translation.js';
 
 
@@ -2131,6 +2131,13 @@ function generateMBTIResultHTML(resultData) {
 // Enhanced Initialization
 async function init() {
     try {
+        // 1. ADD THIS: Wait for trait descriptions to load FIRST
+        await fetchTraitDescriptions();
+    } catch (error) {
+        console.error("Failed to load trait descriptions:", error);
+    }
+    
+    try {
         // Load language preference
         try {
             const savedLang = localStorage.getItem('personalityTest_language');
@@ -2294,10 +2301,18 @@ if (typeof module !== 'undefined' && module.exports) {
 // NEW: Event Listener Initialization
 // ==========================================
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     setupLanguageListeners();
     setupActionListeners();
     setupTestListeners();
+
+    // --- ADD THIS BLOCK ---
+    // Wait for trait descriptions to load before proceeding
+    const descriptionsReady = await fetchTraitDescriptions();
+    if (!descriptionsReady) {
+        console.error("Critical Error: Trait descriptions failed to load. UI may not render correctly.");
+    }
+    // ----------------------
 
     if (typeof isResultPage !== 'undefined' && isResultPage) {
         if (window.location.href.includes('disc')) loadStoredResult('DISC');
