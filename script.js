@@ -899,6 +899,14 @@ function checkAndDisplayUnifiedProfile() {
 
             section.classList.remove('hidden');
 
+            // --- UPDATE THIS HEADER TRANSLATION BLOCK ---
+            const headerTitle = document.getElementById('unified-header-title');
+            if (headerTitle) {
+                headerTitle.textContent = t('unified_profile_title');
+            }
+            // --------------------------------------------
+
+            // Populate text based on current language
             document.getElementById('unified-profile-name').textContent = matchedProfile.name[currentLang];
             document.getElementById('unified-profile-desc').textContent = matchedProfile.description[currentLang];
             

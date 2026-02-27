@@ -48,7 +48,8 @@ export const interfaceTranslations = {
         loading: "Loading...",
         resuming_test: "Resuming previous test...",
         test_data_invalid: "Test data appears to be invalid. Starting fresh test.",
-        error_fetch_questions: "Failed to load questions from server. Please check your connection."
+        error_fetch_questions: "Failed to load questions from server. Please check your connection.",
+        unified_profile_title: "Unified Profile Snapshot"
     },
     'pt': {
         disc_title: "Teste de Personalidade DISC",
@@ -96,7 +97,8 @@ export const interfaceTranslations = {
         loading: "Carregando...",
         resuming_test: "Continuando teste anterior...",
         test_data_invalid: "Os dados do teste parecem inválidos. Iniciando novo teste.",
-        error_fetch_questions: "Falha ao carregar perguntas do servidor. Por favor, verifique sua conexão."
+        error_fetch_questions: "Falha ao carregar perguntas do servidor. Por favor, verifique sua conexão.",
+        unified_profile_title: "Resumo do Perfil Unificado"
     },
     'es': {
         disc_title: "Test de Personalidad DISC",
@@ -143,7 +145,8 @@ export const interfaceTranslations = {
         loading: "Cargando...",
         resuming_test: "Reanudando test anterior...",
         test_data_invalid: "Datos del test inválidos. Iniciando nuevo test.",
-        error_fetch_questions: "Error al cargar preguntas. Verifica tu conexión."
+        error_fetch_questions: "Error al cargar preguntas. Verifica tu conexión.",
+        unified_profile_title: "Resumen del Perfil Unificado"
     }
 };
 
