@@ -171,7 +171,7 @@ function transformQuestions(backendQuestions, testType, lang) {
                 id: q.id,
                 text: { 
                     en: q.question_text_en || q.question_text, 
-                    pt: q.question_text_pt || q.question_text 
+                    pt: q.question_text_pt || q.question_text, 
                 },
                 factor: q.factor
             }));
@@ -2199,6 +2199,8 @@ function setupLanguageListeners() {
             btn.addEventListener('click', () => setLanguage('pt'));
         } else if (img.alt === 'Español') {
             btn.addEventListener('click', () => setLanguage('es'));
+        } else if (img.alt === 'Deutsch') {
+            btn.addEventListener('click', () => setLanguage('de'));
         }
     });
 }

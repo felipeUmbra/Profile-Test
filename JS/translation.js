@@ -141,6 +141,24 @@ export const interfaceTranslations = {
         resuming_test: "Reanudando test anterior...",
         test_data_invalid: "Datos del test inválidos. Iniciando nuevo test.",
         error_fetch_questions: "Error al cargar preguntas. Verifica tu conexión."
+    }, 
+    'de': {
+        disc_title: "DISC-Persönlichkeitstest",
+        disc_subtitle: "Bewerten Sie, wie sehr jede Aussage auf Sie zutrifft (1 = Minimum, 4 = Maximum)",
+        progress_q_of_total: "Frage {q} von {total}",
+        rating_1: "1 - Trifft nicht auf mich zu",
+        rating_2: "2 - Trifft kaum auf mich zu",
+        rating_3: "3 - Trifft teilweise auf mich zu",
+        rating_4: "4 - Trifft auf mich zu",
+        rating_guide: "Tippen oder klicken Sie auf eine Zahl, um die Aussage zu bewerten (1 = Minimum, 4 = Maximum)",
+        main_result_title: "Ihr Persönlichkeitsprofil:",
+        result_subtitle: "Unten finden Sie Ihre Punktzahlen für die vier DISC-Faktoren, gefolgt von einer detaillierten Interpretation Ihres kombinierten Stils.",
+        interpretation_title: "Detaillierte Profilinterpretation",
+        points: "Punkte",
+        restart: "Test neu starten",
+        export_pdf: "Als PDF exportieren 📄",
+        filename: "DISC_Personality_Results_DE",
+        back_to_home: "← Zurück zur Startseite"
     }
 };
 

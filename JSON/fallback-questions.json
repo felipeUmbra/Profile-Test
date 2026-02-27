@@ -2,274 +2,304 @@
   "disc": [
     {
       "id": 1,
-      "text": {
-        "en": "I prioritize getting measurable results quickly.",
-        "pt": "Eu priorizo a obtenção de resultados mensuráveis rapidamente.",
-        "es": "Priorizo obtener resultados medibles rápidamente."
-      },
-      "factor": "D"
+    "text": {
+      "en": "I prioritize getting measurable results quickly.",
+      "pt": "Eu priorizo a obtenção de resultados mensuráveis rapidamente.",
+      "es": "Priorizo obtener resultados medibles rápidamente.",
+      "de": "Ich lege Wert darauf, schnell messbare Ergebnisse zu erzielen."
     },
-    {
-      "id": 2,
-      "text": {
-        "en": "I am direct and assertive in my communication style.",
-        "pt": "Eu sou direto e assertivo no meu estilo de comunicação.",
-        "es": "Soy directo y asertivo en mi estilo de comunicación."
-      },
-      "factor": "D"
+    "factor": "D"
+  },
+  {
+    "id": 2,
+    "text": {
+      "en": "I am direct and assertive in my communication style.",
+      "pt": "Eu sou direto e assertivo no meu estilo de comunicação.",
+      "es": "Soy directo y asertivo en mi estilo de comunicación.",
+      "de": "Ich bin in meinem Kommunikationsstil direkt und durchsetzungsstark."
     },
-    {
-      "id": 3,
-      "text": {
-        "en": "I enjoy taking charge and leading group activities.",
-        "pt": "Eu gosto de assumir o comando e liderar atividades em grupo.",
-        "es": "Disfruto hacerme cargo y liderar actividades grupales."
-      },
-      "factor": "D"
+    "factor": "D"
+  },
+  {
+    "id": 3,
+    "text": {
+      "en": "I enjoy taking charge and leading group activities.",
+      "pt": "Eu gosto de assumir o comando e liderar atividades em grupo.",
+      "es": "Disfruto hacerme cargo y liderar actividades grupales.",
+      "de": "Ich übernehme gerne die Führung und leite Gruppenaktivitäten."
     },
-    {
-      "id": 4,
-      "text": {
-        "en": "I thrive on challenge and competitive environments.",
-        "pt": "Eu prospero em ambientes desafiadores e competitivos.",
-        "es": "Prospero en desafíos y ambientes competitivos."
-      },
-      "factor": "D"
+    "factor": "D"
+  },
+  {
+    "id": 4,
+    "text": {
+      "en": "I thrive on challenge and competitive environments.",
+      "pt": "Eu prospero em ambientes desafiadores e competitivos.",
+      "es": "Prospero en desafíos y ambientes competitivos.",
+      "de": "Ich blühe in herausfordernden und wettbewerbsorientierten Umgebungen auf."
     },
-    {
-      "id": 5,
-      "text": {
-        "en": "I feel comfortable making decisions without extensive consultation.",
-        "pt": "Sinto-me à vontade para tomar decisões sem consulta extensa.",
-        "es": "Me siento cómodo tomando decisiones sin muchas consultas."
-      },
-      "factor": "D"
+    "factor": "D"
+  },
+  {
+    "id": 5,
+    "text": {
+      "en": "I feel comfortable making decisions without extensive consultation.",
+      "pt": "Sinto-me à vontade para tomar decisões sem consulta extensa.",
+      "es": "Me siento cómodo tomando decisiones sin muchas consultas.",
+      "de": "Ich fühle mich wohl dabei, Entscheidungen ohne umfangreiche Rücksprache zu treffen."
     },
-    {
-      "id": 6,
-      "text": {
-        "en": "I am focused on overcoming obstacles and achieving immediate goals.",
-        "pt": "Estou focado em superar obstáculos e alcançar objetivos imediatos.",
-        "es": "Me enfoco en superar obstáculos y lograr metas inmediatas."
-      },
-      "factor": "D"
+    "factor": "D"
+  },
+  {
+    "id": 6,
+    "text": {
+      "en": "I am focused on overcoming obstacles and achieving immediate goals.",
+      "pt": "Estou focado em superar obstáculos e alcançar objetivos imediatos.",
+      "es": "Me enfoco en superar obstáculos y lograr metas inmediatas.",
+      "de": "Ich konzentriere mich darauf, Hindernisse zu überwinden und unmittelbare Ziele zu erreichen."
     },
-    {
-      "id": 7,
-      "text": {
-        "en": "I appreciate an environment where speed is valued over thoroughness.",
-        "pt": "Eu aprecio um ambiente onde a velocidade é mais valorizada do que a exaustividade.",
-        "es": "Aprecio un entorno donde se valora más la velocidad que la minuciosidad."
-      },
-      "factor": "D"
+    "factor": "D"
+  },
+  {
+    "id": 7,
+    "text": {
+      "en": "I appreciate an environment where speed is valued over thoroughness.",
+      "pt": "Eu aprecio um ambiente onde a velocidade é mais valorizada do que a exaustividade.",
+      "es": "Aprecio un entorno donde se valora más la velocidad que la minuciosidad.",
+      "de": "Ich schätze ein Umfeld, in dem Geschwindigkeit höher bewertet wird als Gründlichkeit."
     },
-    {
-      "id": 8,
-      "text": {
-        "en": "I confront issues and people directly when conflict arises.",
-        "pt": "Eu confronto problemas e pessoas diretamente quando surge um conflito.",
-        "es": "Confronto problemas y personas directamente cuando surge un conflicto."
-      },
-      "factor": "D"
+    "factor": "D"
+  },
+  {
+    "id": 8,
+    "text": {
+      "en": "I confront issues and people directly when conflict arises.",
+      "pt": "Eu confronto problemas e pessoas diretamente quando surge um conflito.",
+      "es": "Confronto problemas y personas directamente cuando surge un conflicto.",
+      "de": "Ich spreche Probleme und Personen direkt an, wenn Konflikte entstehen."
     },
-    {
-      "id": 9,
-      "text": {
-        "en": "I am outgoing and enjoy meeting new people frequently.",
-        "pt": "Eu sou extrovertido e gosto de conhecer novas pessoas frequentemente.",
-        "es": "Soy extrovertido y disfruto conocer gente nueva frecuentemente."
-      },
-      "factor": "I"
+    "factor": "D"
+  },
+  {
+    "id": 9,
+    "text": {
+      "en": "I am outgoing and enjoy meeting new people frequently.",
+      "pt": "Eu sou extrovertido e gosto de conhecer novas pessoas frequentemente.",
+      "es": "Soy extrovertido y disfruto conocer gente nueva frecuentemente.",
+      "de": "Ich bin kontaktfreudig und lerne gerne häufig neue Menschen kennen."
     },
-    {
-      "id": 10,
-      "text": {
-        "en": "I use enthusiasm and positive language to motivate others.",
-        "pt": "Eu uso entusiasmo e linguagem positiva para motivar os outros.",
-        "es": "Uso entusiasmo y lenguaje positivo para motivar a otros."
-      },
-      "factor": "I"
+    "factor": "I"
+  },
+  {
+    "id": 10,
+    "text": {
+      "en": "I use enthusiasm and positive language to motivate others.",
+      "pt": "Eu uso entusiasmo e linguagem positiva para motivar os outros.",
+      "es": "Uso entusiasmo y lenguaje positivo para motivar a otros.",
+      "de": "Ich nutze Begeisterung und positive Sprache, um andere zu motivieren."
     },
-    {
-      "id": 11,
-      "text": {
-        "en": "I am naturally optimistic and look for the best in situations.",
-        "pt": "Eu sou naturalmente otimista e procuro o melhor nas situações.",
-        "es": "Soy naturalmente optimista y busco lo mejor en las situaciones."
-      },
-      "factor": "I"
+    "factor": "I"
+  },
+  {
+    "id": 11,
+    "text": {
+      "en": "I am naturally optimistic and look for the best in situations.",
+      "pt": "Eu sou naturalmente otimista e procuro o melhor nas situações.",
+      "es": "Soy naturalmente optimista y busco lo mejor en las situaciones.",
+      "de": "Ich bin von Natur aus optimistisch und suche in Situationen nach dem Besten."
     },
-    {
-      "id": 12,
-      "text": {
-        "en": "I like to talk and express my ideas freely and openly.",
-        "pt": "Eu gosto de conversar e expressar minhas ideias livre e abertamente.",
-        "es": "Me gusta hablar y expresar mis ideas libre y abiertamente."
-      },
-      "factor": "I"
+    "factor": "I"
+  },
+  {
+    "id": 12,
+    "text": {
+      "en": "I like to talk and express my ideas freely and openly.",
+      "pt": "Eu gosto de conversar e expressar minhas ideias livre e abertamente.",
+      "es": "Me gusta hablar y expresar mis ideas libre y abiertamente.",
+      "de": "Ich spreche gerne und äußere meine Ideen frei und offen."
     },
-    {
-      "id": 13,
-      "text": {
-        "en": "I enjoy being the center of attention in a social setting.",
-        "pt": "Eu gosto de ser o centro das atenções em um ambiente social.",
-        "es": "Disfruto ser el centro de atención en un entorno social."
-      },
-      "factor": "I"
+    "factor": "I"
+  },
+  {
+    "id": 13,
+    "text": {
+      "en": "I enjoy being the center of attention in a social setting.",
+      "pt": "Eu gosto de ser o centro das atenções em um ambiente social.",
+      "es": "Disfruto ser el centro de atención en un entorno social.",
+      "de": "Ich genieße es, im sozialen Umfeld im Mittelpunkt zu stehen."
     },
-    {
-      "id": 14,
-      "text": {
-        "en": "I am skilled at persuading others to adopt my ideas.",
-        "pt": "Sou hábil em persuadir os outros a adotarem minhas ideias.",
-        "es": "Soy hábil persuadiendo a otros para que adopten mis ideas."
-      },
-      "factor": "I"
+    "factor": "I"
+  },
+  {
+    "id": 14,
+    "text": {
+      "en": "I am skilled at persuading others to adopt my ideas.",
+      "pt": "Sou hábil em persuadir os outros a adotarem minhas ideias.",
+      "es": "Soy hábil persuadiendo a otros para que adopten mis ideas.",
+      "de": "Ich bin geschickt darin, andere von meinen Ideen zu überzeugen."
     },
-    {
-      "id": 15,
-      "text": {
-        "en": "I often rely on intuition and feelings rather than facts.",
-        "pt": "Muitas vezes, confio na intuição e nos sentimentos em vez de em fatos.",
-        "es": "A menudo confío en la intuición y los sentimientos más que en los hechos."
-      },
-      "factor": "I"
+    "factor": "I"
+  },
+  {
+    "id": 15,
+    "text": {
+      "en": "I often rely on intuition and feelings rather than facts.",
+      "pt": "Muitas vezes, confio na intuição e nos sentimentos em vez de em fatos.",
+      "es": "A menudo confío en la intuición y los sentimientos más que en los hechos.",
+      "de": "Ich verlasse mich oft eher auf Intuition und Gefühle als auf Fakten."
     },
-    {
-      "id": 16,
-      "text": {
-        "en": "I am patient and prefer a predictable, stable work environment.",
-        "pt": "Eu sou paciente e prefiro um ambiente de trabalho previsível e estável.",
-        "es": "Soy paciente y prefiero un entorno de trabajo predecible y estable."
-      },
-      "factor": "S"
+    "factor": "I"
+  },
+  {
+    "id": 16,
+    "text": {
+      "en": "I am patient and prefer a predictable, stable work environment.",
+      "pt": "Eu sou paciente e prefiro um ambiente de trabalho previsível e estável.",
+      "es": "Soy paciente y prefiero un entorno de trabajo predecible y estable.",
+      "de": "Ich bin geduldig und bevorzuge ein vorhersehbares und stabiles Arbeitsumfeld."
     },
-    {
-      "id": 17,
-      "text": {
-        "en": "I am supportive and value harmony in my team and relationships.",
-        "pt": "Eu sou prestativo e valorizo a harmonia na minha equipe e relacionamentos.",
-        "es": "Soy solidario y valoro la armonía en mi equipo y relaciones."
-      },
-      "factor": "S"
+    "factor": "S"
+  },
+  {
+    "id": 17,
+    "text": {
+      "en": "I am supportive and value harmony in my team and relationships.",
+      "pt": "Eu sou prestativo e valorizo a harmonia na minha equipe e relacionamentos.",
+      "es": "Soy solidario y valoro la armonía en mi equipo y relaciones.",
+      "de": "Ich bin unterstützend und lege Wert auf Harmonie in meinem Team und meinen Beziehungen."
     },
-    {
-      "id": 18,
-      "text": {
-        "en": "I am a reliable team player who follows through on commitments.",
-        "pt": "Eu sou um membro de equipe confiável que cumpre os compromissos.",
-        "es": "Soy un miembro de equipo confiable que cumple sus compromisos."
-      },
-      "factor": "S"
+    "factor": "S"
+  },
+  {
+    "id": 18,
+    "text": {
+      "en": "I am a reliable team player who follows through on commitments.",
+      "pt": "Eu sou um membro de equipe confiável que cumpre os compromissos.",
+      "es": "Soy un miembro de equipo confiable que cumple sus compromisos.",
+      "de": "Ich bin ein zuverlässiges Teammitglied, das Verpflichtungen einhält."
     },
-    {
-      "id": 19,
-      "text": {
-        "en": "I prefer to work at a steady, deliberate, and consistent pace.",
-        "pt": "Eu prefiro trabalhar em um ritmo constante, deliberado e consistente.",
-        "es": "Prefiero trabajar a un ritmo constante, deliberado y consistente."
-      },
-      "factor": "S"
+    "factor": "S"
+  },
+  {
+    "id": 19,
+    "text": {
+      "en": "I prefer to work at a steady, deliberate, and consistent pace.",
+      "pt": "Eu prefiro trabalhar em um ritmo constante, deliberado e consistente.",
+      "es": "Prefiero trabajar a un ritmo constante, deliberado y consistente.",
+      "de": "Ich arbeite bevorzugt in einem gleichmäßigen, überlegten und beständigen Tempo."
     },
-    {
-      "id": 20,
-      "text": {
-        "en": "I value maintaining a secure and familiar routine.",
-        "pt": "Eu valorizo a manutenção de uma rotina segura e familiar.",
-        "es": "Valoro mantener una rutina segura y familiar."
-      },
-      "factor": "S"
+    "factor": "S"
+  },
+  {
+    "id": 20,
+    "text": {
+      "en": "I value maintaining a secure and familiar routine.",
+      "pt": "Eu valorizo a manutenção de uma rotina segura e familiar.",
+      "es": "Valoro mantener una rutina segura y familiar.",
+      "de": "Ich lege Wert auf die Aufrechterhaltung einer sicheren und vertrauten Routine."
     },
-    {
-      "id": 21,
-      "text": {
-        "en": "I am empathetic and a good listener for others' concerns.",
-        "pt": "Eu sou empático e um bom ouvinte para as preocupações dos outros.",
-        "es": "Soy empático y sé escuchar las preocupaciones de los demás."
-      },
-      "factor": "S"
+    "factor": "S"
+  },
+  {
+    "id": 21,
+    "text": {
+      "en": "I am empathetic and a good listener for others' concerns.",
+      "pt": "Eu sou empático e um bom ouvinte para as preocupações dos outros.",
+      "es": "Soy empático y sé escuchar las preocupaciones de los demás.",
+      "de": "Ich bin empathisch und höre mir die Anliegen anderer aufmerksam an."
     },
-    {
-      "id": 22,
-      "text": {
-        "en": "I dislike sudden, unexpected changes to plans or schedules.",
-        "pt": "Eu não gosto de mudanças repentinas e inesperadas nos planos ou horários.",
-        "es": "No me gustan los cambios repentinos e inesperados en planes u horarios."
-      },
-      "factor": "S"
+    "factor": "S"
+  },
+  {
+    "id": 22,
+    "text": {
+      "en": "I dislike sudden, unexpected changes to plans or schedules.",
+      "pt": "Eu não gosto de mudanças repentinas e inesperadas nos planos ou horários.",
+      "es": "No me gustan los cambios repentinos e inesperados en planes u horarios.",
+      "de": "Ich mag keine plötzlichen, unerwarteten Änderungen von Plänen oder Zeitplänen."
     },
-    {
-      "id": 23,
-      "text": {
-        "en": "I tend to be quite cautious when approaching new tasks or risks.",
-        "pt": "Eu tento a ser bastante cauteloso ao abordar novas tarefas ou riscos.",
-        "es": "Tiendo a ser bastante cauteloso al abordar nuevas tareas o riesgos."
-      },
-      "factor": "S"
+    "factor": "S"
+  },
+  {
+    "id": 23,
+    "text": {
+      "en": "I tend to be quite cautious when approaching new tasks or risks.",
+      "pt": "Eu tento a ser bastante cauteloso ao abordar novas tarefas ou riscos.",
+      "es": "Tiendo a ser bastante cauteloso al abordar nuevas tareas o riesgos.",
+      "de": "Ich bin tendenziell eher vorsichtig, wenn ich neue Aufgaben oder Risiken angehe."
     },
-    {
-      "id": 24,
-      "text": {
-        "en": "I am highly analytical and focused on details and accuracy.",
-        "pt": "Eu sou altamente analítico e focado em detalhes e precisão.",
-        "es": "Soy altamente analítico y enfocado en los detalles y la precisión."
-      },
-      "factor": "C"
+    "factor": "S"
+  },
+  {
+    "id": 24,
+    "text": {
+      "en": "I am highly analytical and focused on details and accuracy.",
+      "pt": "Eu sou altamente analítico e focado em detalhes e precisão.",
+      "es": "Soy altamente analítico y enfocado en los detalles y la precisión.",
+      "de": "Ich bin sehr analytisch und auf Details sowie Genauigkeit fokussiert."
     },
-    {
-      "id": 25,
-      "text": {
-        "en": "I enjoy following established rules, procedures, and high standards.",
-        "pt": "Eu gosto de seguir regras estabelecidas, procedimentos e altos padrões.",
-        "es": "Disfruto seguir reglas establecidas, procedimientos y altos estándares."
-      },
-      "factor": "C"
+    "factor": "C"
+  },
+  {
+    "id": 25,
+    "text": {
+      "en": "I enjoy following established rules, procedures, and high standards.",
+      "pt": "Eu gosto de seguir regras estabelecidas, procedimentos e altos padrões.",
+      "es": "Disfruto seguir reglas establecidas, procedimientos y altos estándares.",
+      "de": "Ich halte mich gerne an etablierte Regeln, Verfahren und hohe Standards."
     },
-    {
-      "id": 26,
-      "text": {
-        "en": "I approach problems logically, systematically, and critically.",
-        "pt": "Eu abordo problemas de forma lógica, sistemática e crítica.",
-        "es": "Abordo los problemas de forma lógica, sistemática y crítica."
-      },
-      "factor": "C"
+    "factor": "C"
+  },
+  {
+    "id": 26,
+    "text": {
+      "en": "I approach problems logically, systematically, and critically.",
+      "pt": "Eu abordo problemas de forma lógica, sistemática e crítica.",
+      "es": "Abordo los problemas de forma lógica, sistemática y crítica.",
+      "de": "Ich gehe Probleme logisch, systematisch und kritisch an."
     },
-    {
-      "id": 27,
-      "text": {
-        "en": "I take time to carefully review and critique all my work.",
-        "pt": "Eu dedico tempo para revisar e criticar cuidadosamente todo o meu trabalho.",
-        "es": "Me tomo tiempo para revisar y criticar cuidadosamente todo mi trabajo."
-      },
-      "factor": "C"
+    "factor": "C"
+  },
+  {
+    "id": 27,
+    "text": {
+      "en": "I take time to carefully review and critique all my work.",
+      "pt": "Eu dedico tempo para revisar e criticar cuidadosamente todo o meu trabalho.",
+      "es": "Me tomo tiempo para revisar y criticar cuidadosamente todo mi trabajo.",
+      "de": "Ich nehme mir Zeit, meine gesamte Arbeit sorgfältig zu überprüfen und zu hinterfragen."
     },
-    {
-      "id": 28,
-      "text": {
-        "en": "I am highly organized and meticulous about my workspace.",
-        "pt": "Eu sou altamente organizado e meticuloso com meu espaço de trabalho.",
-        "es": "Soy altamente organizado y meticuloso con mi espacio de trabajo."
-      },
-      "factor": "C"
+    "factor": "C"
+  },
+  {
+    "id": 28,
+    "text": {
+      "en": "I am highly organized and meticulous about my workspace.",
+      "pt": "Eu sou altamente organizado e meticuloso com meu espaço de trabalho.",
+      "es": "Soy altamente organizado y meticuloso con mi espacio de trabajo.",
+      "de": "Ich bin sehr organisiert und achte sorgfältig auf meinen Arbeitsplatz."
     },
-    {
-      "id": 29,
-      "text": {
-        "en": "I strive for perfection in everything I do, even minor tasks.",
-        "pt": "Eu me esforço para a perfeição em tudo o que faço, mesmo em tarefas menores.",
-        "es": "Busco la perfección en todo lo que hago, incluso en tareas menores."
-      },
-      "factor": "C"
+    "factor": "C"
+  },
+  {
+    "id": 29,
+    "text": {
+      "en": "I strive for perfection in everything I do, even minor tasks.",
+      "pt": "Eu me esforço para a perfeição em tudo o que faço, mesmo em tarefas menores.",
+      "es": "Busco la perfección en todo lo que hago, incluso en tareas menores.",
+      "de": "Ich strebe in allem, was ich tue, nach Perfektion, selbst bei kleinen Aufgaben."
     },
-    {
-      "id": 30,
-      "text": {
-        "en": "I base my decisions primarily on verifiable facts and data.",
-        "pt": "Eu baseio minhas decisões principalmente em fatos e dados verificáveis.",
-        "es": "Baso mis decisiones principalmente en hechos y datos verificables."
-      },
-      "factor": "C"
-    }
+    "factor": "C"
+  },
+  {
+    "id": 30,
+    "text": {
+      "en": "I base my decisions primarily on verifiable facts and data.",
+      "pt": "Eu baseio minhas decisões principalmente em fatos e dados verificáveis.",
+      "es": "Baso mis decisiones principalmente en hechos y datos verificables.",
+      "de": "Ich stütze meine Entscheidungen hauptsächlich auf überprüfbare Fakten und Daten."
+    },
+    "factor": "C"
+  }
   ],
   "mbti": [
     {
