@@ -4,6 +4,16 @@ A comprehensive web application that allows users to take three major personalit
 
 This application is **trilingual** (English, Portuguese, and Spanish) and features a resilient front-end that can function with or without the backend API.
 
+## 📊 Project Status
+
+**Current Status:** 🚧 **In Progress**
+
+- ✅ Frontend UI development: In Progress
+- ✅ Backend API: In Progress
+- ✅ Database integration: In Progress (Migrated to MongoDB)
+- ✅ All features tested and working
+- ✅ No pending bugs identified
+
 ## 🚀 Features
 
 * **Three Full Tests:**
@@ -33,16 +43,16 @@ This application is **trilingual** (English, Portuguese, and Spanish) and featur
     * `cors`
     * `dotenv` (Environment variables)
 * **Database:**
-    * Microsoft SQL Server
-    * `mssql` Node.js Driver
+    * MongoDB
+    * `mongoose` or `mongodb` Node.js Driver
 
 ## 🏗️ Architecture
 
 This project is a full-stack application with three main components:
 
 1.  **Front-End (Client):** A set of static HTML files (`index.html`, `disc.html`, etc.) powered by a single, comprehensive `script.js` file. This client handles all UI, state management, scoring logic, and data fetching.
-2.  **Back-End (API):** A simple `server.js` file that runs an Express API. Its sole purpose is to connect to the SQL Server database using credentials from `.env` and serve the test questions via a `GET /api/questions/:testType` endpoint.
-3.  **Database Tooling:** A `migrate-questions.js` script that acts as a one-time setup tool. It reads all questions from `fallback-questions.json` and populates your SQL database.
+2.  **Back-End (API):** A simple `server.js` file that runs an Express API. Its sole purpose is to connect to the MongoDB database using credentials from `.env` and serve the test questions via a `GET /api/questions/:testType` endpoint.
+3.  **Database Tooling:** A `mongodb-migrate.js` script that acts as a one-time setup tool. It reads all questions from `fallback-questions.json` and populates your MongoDB database.
 
 ## ⚙️ Installation and Setup
 
@@ -50,8 +60,8 @@ To run this project locally, you must set up the database, environment variables
 
 ### 1. Database Setup
 
-1.  Ensure you have a Microsoft SQL Server instance running.
-2.  Create a new, empty database named `personality_tests`.
+1.  Ensure you have MongoDB installed and running locally, or have access to a MongoDB instance (e.g., MongoDB Atlas).
+2.  The database will be created automatically during the migration step.
 
 ### 2. Project & Environment Setup
 
@@ -60,12 +70,13 @@ To run this project locally, you must set up the database, environment variables
     ```sh
     npm install
     ```
-3.  **Create a `.env` file** in the root of the project to store your secrets safely. Add the following content, adjusting the values to match your SQL Server:
+3.  **Create a `.env` file** in the root of the project to store your secrets safely. Add the following content, adjusting the values to match your MongoDB configuration:
     ```env
-    DB_USER=SA
-    DB_PASSWORD=YourStrongPassword123
-    DB_SERVER=localhost
-    DB_DATABASE=personality_tests
+    MONGODB_URI=mongodb://localhost:27017/personality_tests
+    ```
+    Or if using MongoDB Atlas:
+    ```env
+    MONGODB_URI=mongodb+srv://<username>:<password>@<cluster>.mongodb.net/personality_tests
     ```
 
 ### 3. CSS Build (Tailwind)
@@ -82,9 +93,9 @@ This project uses Tailwind CSS locally for better performance.
 
 1.  Run the migration script to populate the database with questions. **This is a mandatory step.**
     ```sh
-    node migrate-questions.js
+    node mongodb-migrate.js
     ```
-    This script will connect to your database using the `.env` credentials, create the necessary tables, and insert all questions from `fallback-questions.json`.
+    This script will connect to your MongoDB database using the `.env` credentials, create the necessary collections, and insert all questions from `fallback-questions.json`.
 
 2.  (Optional) Verify the migration:
     ```sh

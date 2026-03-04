@@ -34,13 +34,21 @@
   "discDescriptions": {
     "D": { "title": { "en": "Dominance (D)", "pt": "Dominância (D)", "es": "Dominancia (D)" }, "style": "bg-red-100 border-red-500 text-red-700", "icon": "⚡" },
     "I": { "title": { "en": "Influence (I)", "pt": "Influência (I)", "es": "Influencia (I)" }, "style": "bg-yellow-100 border-yellow-500 text-yellow-700", "icon": "✨" },
-    "S": { "title": { "en": "Steadiness (S)", "pt": "Estabilidade (S)", "es": "Estabilidad (S)" }, "style": "bg-green-100 border-green-500 text-green-700", "icon": "🌿" },
+    "S": { 
+      "title": { "en": "Steadiness (S)", "pt": "Estabilidade (S)", "es": "Estabilidad (S)" }, 
+      "style": "bg-green-100 border-green-500 text-green-700", "icon": "🌿" },
     "C": { "title": { "en": "Conscientiousness (C)", "pt": "Conscienciosidade (C)", "es": "Cumplimiento (C)" }, "style": "bg-blue-100 border-blue-500 text-blue-700", "icon": "🔬" }
   },
   "mbtiDimensions": {
     "E": { "title": { "en": "Extraversion", "pt": "Extroversão", "es": "Extraversión" }, "style": "bg-blue-100 border-blue-500 text-blue-700", "icon": "🗣️", "description": { "en": "Energized by social interaction", "pt": "Energizado por interação social", "es": "Energizado por interacción social"} },
     "I": { "title": { "en": "Introversion", "pt": "Introversão", "es": "Introversión" }, "style": "bg-indigo-100 border-indigo-500 text-indigo-700", "icon": "🤫", "description": { "en": "Energized by solitude and reflection", "pt": "Energizado por solidão e reflexão", "es": "Energizado por soledad y reflexión"} },
-    "S": { "title": { "en": "Sensing", "pt": "Sensação", "es": "Sensación" }, "style": "bg-green-100 border-green-500 text-green-700", "icon": "🔍", "description": { "en": "Focus on concrete, practical details", "pt": "Foco em detalhes concretos e práticos", "es": "Foco en detalles concretos y prácticos"} },
+    "S": { 
+      "title": { "en": "Sensing", "pt": "Sensação", "es": "Sensación" }, 
+      "style": "bg-green-100 border-green-500 text-green-700", "icon": "🔍", 
+      "description": { 
+        "en": "Focus on concrete, practical details", 
+        "pt": "Foco em detalhes concretos e práticos", 
+        "es": "Foco en detalles concretos y prácticos"} },
     "N": { "title": { "en": "Intuition", "pt": "Intuição", "es": "Intuición" }, "style": "bg-purple-100 border-purple-500 text-purple-700", "icon": "💡", "description": { "en": "Focus on patterns and possibilities", "pt": "Foco em padrões e possibilidades", "es": "Foco en patrones y posibilidades"} },
     "T": { "title": { "en": "Thinking", "pt": "Pensamento", "es": "Pensamiento"}, "style": "bg-orange-100 border-orange-500 text-orange-700", "icon": "⚖️", "description": { "en": "Decisions based on logic and objectivity", "pt": "Decisões baseadas em lógica e objetividade", "es": "Decisión basado en la lógica y objetividad"} },
     "F": { "title": { "en": "Feeling", "pt": "Sentimento", "es": "Sentimiento"}, "style": "bg-pink-100 border-pink-500 text-pink-700", "icon": "❤️", "description": { "en": "Decisions based on values and harmony", "pt": "Decisões baseadas em valores e harmonia", "es": "Decisión basado en valores y harmonía"} },
