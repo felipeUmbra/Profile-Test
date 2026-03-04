@@ -2,7 +2,7 @@ import { exportResultToPDF, AccessibilityManager, TestRunner, showError, setupEn
     setupVirtualScrollingForResults, cleanupVirtualScrolling } from '/JS/utils.js';
 import {big5TraitDescriptions, mbtiDimensions, mbtiTypeDescriptions, discDescriptions, big5Descriptions, 
     blendedDescriptions, unifiedProfiles, fetchTraitDescriptions} from '/JS/trait-description.js';
-import { interfaceTranslations, indexInterfaceTranslations, translateUtilIndex } from '/JS/translation.js';
+import { indexInterfaceTranslations, translateUtilIndex, tUtility } from '/JS/translation.js';
 
 
 // --- Configuration Object ---
@@ -55,20 +55,6 @@ export let currentLang = localStorage.getItem('personalityTest_language') || 'en
 
 // Global Accessibility Manager
 export let accessibilityManager;
-
-// Utility function for translation
-function t(key, replacements = {}) {
-    try {
-        let text = interfaceTranslations[currentLang][key] || interfaceTranslations['en'][key] || key;
-        for (const [k, v] of Object.entries(replacements)) {
-            text = text.replace(`{${k}}`, v);
-        }
-        return text;
-    } catch (error) {
-        console.error('Translation error:', error);
-        return key;
-    }
-}
 
 // Cache for fallback questions
 export let fallbackQuestionsCache = null;
@@ -372,7 +358,7 @@ function loadProgressFromLocalStorage() {
             const progress = JSON.parse(saved);
             
             if (Date.now() - progress.timestamp < CONFIG.localStorageTimeout) {
-                console.log(t('resuming_test'));
+                console.log(tUtility('resuming_test'));
                 return progress;
             } else {
                 localStorage.removeItem(getStorageKey());
@@ -516,7 +502,7 @@ function validateTestData() {
     }
 }
 
-export function showLoading(message = t('loading')) {
+export function showLoading(message = tUtility('loading')) {
     const loadingElement = document.createElement('div');
     loadingElement.id = 'loading-overlay';
     loadingElement.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
@@ -625,7 +611,7 @@ function setLanguage(lang) {
         }
     } catch (error) {
         console.error('Error setting language:', error);
-        showError(t('error_general'));
+        showError(tUtility('error_general'));
     }
 }
 
@@ -638,13 +624,13 @@ function updateStaticText() {
             const ratingGuide = document.getElementById('rating-guide');
 
             if (isMBTITest) {
-                if (headerTitle) headerTitle.textContent = t('mbti_title');
-                if (headerSubtitle) headerSubtitle.textContent = t('mbti_subtitle');
-                if (ratingGuide) ratingGuide.textContent = t('mbti_rating_guide');
-                if (questionTextElement) questionTextElement.textContent = t('mbti_question_text');
+                if (headerTitle) headerTitle.textContent = tUtility('mbti_title');
+                if (headerSubtitle) headerSubtitle.textContent = tUtility('mbti_subtitle');
+                if (ratingGuide) ratingGuide.textContent = tUtility('mbti_rating_guide');
+                if (questionTextElement) questionTextElement.textContent = tUtility('mbti_question_text');
             } else if (isBig5Test) {
-                if (headerTitle) headerTitle.textContent = t('big5_title');
-                if (headerSubtitle) headerSubtitle.textContent = t('big5_subtitle');
+                if (headerTitle) headerTitle.textContent = tUtility('big5_title');
+                if (headerSubtitle) headerSubtitle.textContent = tUtility('big5_subtitle');
                 
                 // Traduções específicas dos labels do Big 5
                 const ratingLabels = currentLang === 'en' 
@@ -669,19 +655,19 @@ function updateStaticText() {
                 }
             } else {
                 // Padrão DISC
-                if (headerTitle) headerTitle.textContent = t('disc_title');
-                if (headerSubtitle) headerSubtitle.textContent = t('disc_subtitle');
+                if (headerTitle) headerTitle.textContent = tUtility('disc_title');
+                if (headerSubtitle) headerSubtitle.textContent = tUtility('disc_subtitle');
                 
                 const r1 = document.getElementById('rating-1');
                 const r2 = document.getElementById('rating-2');
                 const r3 = document.getElementById('rating-3');
                 const r4 = document.getElementById('rating-4');
                 
-                if (r1) r1.textContent = t('rating_1');
-                if (r2) r2.textContent = t('rating_2');
-                if (r3) r3.textContent = t('rating_3');
-                if (r4) r4.textContent = t('rating_4');
-                if (ratingGuide) ratingGuide.textContent = t('rating_guide');
+                if (r1) r1.textContent = tUtility('rating_1');
+                if (r2) r2.textContent = tUtility('rating_2');
+                if (r3) r3.textContent = tUtility('rating_3');
+                if (r4) r4.textContent = tUtility('rating_4');
+                if (ratingGuide) ratingGuide.textContent = tUtility('rating_guide');
             }
         }
         
@@ -690,9 +676,9 @@ function updateStaticText() {
         const exportBtn = document.getElementById('export-btn');
         const backBtn = document.getElementById('back-btn'); // NOVO: Seleciona o botão de voltar
 
-        if (restartBtn) restartBtn.textContent = t('restart');
-        if (exportBtn) exportBtn.textContent = t('export_pdf');
-        if (backBtn) backBtn.textContent = t('back_to_home'); // NOVO: Aplica a tradução
+        if (restartBtn) restartBtn.textContent = tUtility('restart');
+        if (exportBtn) exportBtn.textContent = tUtility('export_pdf');
+        if (backBtn) backBtn.textContent = tUtility('back_to_home'); // NOVO: Aplica a tradução
         
         // 3. Se estiver na página de resultados, força recarga do conteúdo dinâmico
         if (isResultPage) {
@@ -747,7 +733,7 @@ function renderQuestion(clang) {
         questionTextElement.setAttribute('aria-live', 'polite');
         
         const progress = (currentQuestionIndex / totalQuestions) * 100;
-        progressTextElement.textContent = t('progress_q_of_total', { q: currentQuestionIndex + 1, total: totalQuestions });
+        progressTextElement.textContent = tUtility('progress_q_of_total', { q: currentQuestionIndex + 1, total: totalQuestions });
         if (accessibilityManager) {
             accessibilityManager.updateProgressBar(progress);
         }
@@ -762,7 +748,7 @@ function renderQuestion(clang) {
         saveProgress();
     } catch (error) {
         console.error('Error rendering question:', error);
-        showError(t('error_general'));
+        showError(tUtility('error_general'));
     }
 }
 
@@ -784,7 +770,7 @@ function renderMBTIQuestion(clang) {
         document.getElementById('option-b').setAttribute('aria-label', `Option B: ${currentQ.optionB[clang]}`);
         
         const progress = (currentQuestionIndex / totalQuestions) * 100;
-        progressTextElement.textContent = t('progress_q_of_total', { q: currentQuestionIndex + 1, total: totalQuestions });
+        progressTextElement.textContent = tUtility('progress_q_of_total', { q: currentQuestionIndex + 1, total: totalQuestions });
         if (accessibilityManager) {
             accessibilityManager.updateProgressBar(progress);
         }
@@ -803,7 +789,7 @@ function renderMBTIQuestion(clang) {
         saveProgress();
     } catch (error) {
         console.error('Error rendering MBTI question:', error);
-        showError(t('error_general'));
+        showError(tUtility('error_general'));
     }
 }
 
@@ -821,7 +807,7 @@ function renderBig5Question() {
         questionTextElement.setAttribute('aria-live', 'polite');
         
         const progress = (currentQuestionIndex / totalQuestions) * 100;
-        progressTextElement.textContent = t('progress_q_of_total', { q: currentQuestionIndex + 1, total: totalQuestions });
+        progressTextElement.textContent = tUtility('progress_q_of_total', { q: currentQuestionIndex + 1, total: totalQuestions });
         if (accessibilityManager) {
             accessibilityManager.updateProgressBar(progress);
         }
@@ -836,7 +822,7 @@ function renderBig5Question() {
         saveProgress();
     } catch (error) {
         console.error('Error rendering Big5 question:', error);
-        showError(t('error_general'));
+        showError(tUtility('error_general'));
     }
 }
 
@@ -902,7 +888,7 @@ function checkAndDisplayUnifiedProfile() {
             // --- UPDATE THIS HEADER TRANSLATION BLOCK ---
             const headerTitle = document.getElementById('unified-header-title');
             if (headerTitle) {
-                headerTitle.textContent = t('unified_profile_title');
+                headerTitle.textContent = tUtility('unified_profile_title');
             }
             // --------------------------------------------
 
@@ -982,7 +968,7 @@ function handleRating(rating, buttonElement) {
         }, 300);
     } catch (error) {
         console.error('Error handling rating:', error);
-        showError(t('error_general'));
+        showError(tUtility('error_general'));
     }
 }
 
@@ -1024,7 +1010,7 @@ function handleMBTIRating(option, buttonElement) {
         }, 500);
     } catch (error) {
         console.error('Error handling MBTI rating:', error);
-        showError(t('error_general'));
+        showError(tUtility('error_general'));
     }
 }
 
@@ -1060,7 +1046,7 @@ function handleBig5Rating(rating, buttonElement) {
         }, 300);
     } catch (error) {
         console.error('Error handling Big5 rating:', error);
-        showError(t('error_general'));
+        showError(tUtility('error_general'));
     }
 }
 
@@ -1141,7 +1127,7 @@ function showResults(forceRerender = false) {
 
     } catch (error) {
         console.error('Error showing results:', error);
-        showError(t('error_general'));
+        showError(tUtility('error_general'));
     }
 }
 
@@ -1152,14 +1138,14 @@ function showMBTIResults(resultScores, resultInterpretation) {
         const typeData = mbtiTypeDescriptions[mbtiType];
 
         if (!typeData) {
-            showError(t('test_data_invalid'));
+            showError(tUtility('test_data_invalid'));
             return;
         }
 
         const mainResultTitle = document.getElementById('main-result-title');
-        mainResultTitle.innerHTML = `${t('mbti_main_result_title')} <span class="text-purple-600 font-extrabold">${mbtiType}</span>`;
-        document.getElementById('result-subtitle').textContent = t('mbti_result_subtitle');
-        document.getElementById('interpretation-title').textContent = t('mbti_interpretation_title');
+        mainResultTitle.innerHTML = `${tUtility('mbti_main_result_title')} <span class="text-purple-600 font-extrabold">${mbtiType}</span>`;
+        document.getElementById('result-subtitle').textContent = tUtility('mbti_result_subtitle');
+        document.getElementById('interpretation-title').textContent = tUtility('mbti_interpretation_title');
 
         const mbtiTypeDisplay = document.getElementById('mbti-type-display');
         mbtiTypeDisplay.innerHTML = `
@@ -1235,7 +1221,7 @@ function showMBTIResults(resultScores, resultInterpretation) {
         resultInterpretation.innerHTML = mainInterpretationHTML;
     } catch (error) {
         console.error('Error showing MBTI results:', error);
-        showError(t('error_general'));
+        showError(tUtility('error_general'));
     }
 }
 
@@ -1243,9 +1229,9 @@ function showMBTIResults(resultScores, resultInterpretation) {
 function showBig5Results(resultScores, resultInterpretation) {
     try {
         const mainResultTitle = document.getElementById('main-result-title');
-        mainResultTitle.innerHTML = `${t('big5_main_result_title')}`;
-        document.getElementById('result-subtitle').textContent = t('big5_result_subtitle');
-        document.getElementById('interpretation-title').textContent = t('big5_interpretation_title');
+        mainResultTitle.innerHTML = `${tUtility('big5_main_result_title')}`;
+        document.getElementById('result-subtitle').textContent = tUtility('big5_result_subtitle');
+        document.getElementById('interpretation-title').textContent = tUtility('big5_interpretation_title');
 
         // Save the result
         saveTestResult({
@@ -1294,7 +1280,7 @@ function showBig5Results(resultScores, resultInterpretation) {
                          aria-valuenow="${percentage}" aria-valuemin="0" aria-valuemax="100">
                         <div class="h-2.5 rounded-full bg-indigo-600" style="width: ${percentage}%"></div>
                     </div>
-                    <p class="text-sm font-semibold mt-2">${score}/${maxScore} ${t('points')} (${percentage}%)</p>
+                    <p class="text-sm font-semibold mt-2">${score}/${maxScore} ${tUtility('points')} (${percentage}%)</p>
                     <p class="text-sm mt-2 text-gray-600">${desc.description[currentLang]}</p>
                     <p class="text-sm mt-2 font-semibold ${percentage >= 70 ? 'text-green-600' : percentage >= 30 ? 'text-yellow-600' : 'text-blue-600'}">
                         ${interpretation[currentLang]}
@@ -1314,11 +1300,11 @@ function showBig5Results(resultScores, resultInterpretation) {
                     "Os cinco grandes traços de personalidade representam cinco domínios amplos da personalidade humana. Suas pontuações indicam sua posição relativa em cada dimensão em comparação com a população em geral. Lembre-se de que todos os traços têm pontos fortes e desafios, e nenhuma pontuação única é 'melhor' que outra."}
                 </p>
                 <ul class="list-disc list-inside text-gray-600 space-y-2" role="list">
-                    <li><strong>${t('big5_openness')}:</strong> ${currentLang === 'en' ? "Imagination, creativity, curiosity, and appreciation for new experiences" : "Imaginação, criatividade, curiosidade e apreço por novas experiências"}</li>
-                    <li><strong>${t('big5_conscientiousness')}:</strong> ${currentLang === 'en' ? "Organization, diligence, reliability, and goal-directed behavior" : "Organização, diligência, confiabilidade e comportamento orientado a objetivos"}</li>
-                    <li><strong>${t('big5_extraversion')}:</strong> ${currentLang === 'en' ? "Sociability, assertiveness, energy, and positive emotions" : "Sociabilidade, assertividade, energia e emoções positivas"}</li>
-                    <li><strong>${t('big5_agreeableness')}:</strong> ${currentLang === 'en' ? "Compassion, cooperation, trust, and concern for social harmony" : "Compaixão, cooperação, confiança e preocupação com a harmonia social"}</li>
-                    <li><strong>${t('big5_neuroticism')}:</strong> ${currentLang === 'en' ? "Anxiety, moodiness, emotional sensitivity, and vulnerability to stress" : "Ansiedade, instabilidade emocional, sensibilidade emocional e vulnerabilidade ao estresse"}</li>
+                    <li><strong>${tUtility('big5_openness')}:</strong> ${currentLang === 'en' ? "Imagination, creativity, curiosity, and appreciation for new experiences" : "Imaginação, criatividade, curiosidade e apreço por novas experiências"}</li>
+                    <li><strong>${tUtility('big5_conscientiousness')}:</strong> ${currentLang === 'en' ? "Organization, diligence, reliability, and goal-directed behavior" : "Organização, diligência, confiabilidade e comportamento orientado a objetivos"}</li>
+                    <li><strong>${tUtility('big5_extraversion')}:</strong> ${currentLang === 'en' ? "Sociability, assertiveness, energy, and positive emotions" : "Sociabilidade, assertividade, energia e emoções positivas"}</li>
+                    <li><strong>${tUtility('big5_agreeableness')}:</strong> ${currentLang === 'en' ? "Compassion, cooperation, trust, and concern for social harmony" : "Compaixão, cooperação, confiança e preocupação com a harmonia social"}</li>
+                    <li><strong>${tUtility('big5_neuroticism')}:</strong> ${currentLang === 'en' ? "Anxiety, moodiness, emotional sensitivity, and vulnerability to stress" : "Ansiedade, instabilidade emocional, sensibilidade emocional e vulnerabilidade ao estresse"}</li>
                 </ul>
             </div>
         `;
@@ -1331,7 +1317,7 @@ function showBig5Results(resultScores, resultInterpretation) {
         }
     } catch (error) {
         console.error('Error showing Big5 results:', error);
-        showError(t('error_general'));
+        showError(tUtility('error_general'));
     }
 }
 
@@ -1356,14 +1342,14 @@ function showDISCResults(resultScores, resultInterpretation) {
         const profileData = blendedDescriptions[profileKey];
         
         if (!profileData) {
-            showError(t('test_data_invalid'));
+            showError(tUtility('test_data_invalid'));
             return;
         }
 
         const mainResultTitle = document.getElementById('main-result-title');
-        mainResultTitle.innerHTML = `${t('main_result_title')} <span class="text-indigo-600 font-extrabold">${profileData.name[currentLang]}</span>`;
-        document.getElementById('result-subtitle').textContent = t('result_subtitle');
-        document.getElementById('interpretation-title').textContent = t('interpretation_title');
+        mainResultTitle.innerHTML = `${tUtility('main_result_title')} <span class="text-indigo-600 font-extrabold">${profileData.name[currentLang]}</span>`;
+        document.getElementById('result-subtitle').textContent = tUtility('result_subtitle');
+        document.getElementById('interpretation-title').textContent = tUtility('interpretation_title');
 
         // Save the result
         saveTestResult({
@@ -1403,7 +1389,7 @@ function showDISCResults(resultScores, resultInterpretation) {
                          aria-valuenow="${percentage}" aria-valuemin="0" aria-valuemax="100">
                         <div class="h-2.5 rounded-full ${isPrimary ? 'bg-indigo-600' : 'bg-gray-500'}" style="width: ${percentage}%"></div>
                     </div>
-                    <p class="text-sm font-semibold mt-2">${item.score} / ${maxScore} ${t('points')} (${percentage}%)</p>
+                    <p class="text-sm font-semibold mt-2">${item.score} / ${maxScore} ${tUtility('points')} (${percentage}%)</p>
                 </div>
             `;
         });
@@ -1423,7 +1409,7 @@ function showDISCResults(resultScores, resultInterpretation) {
         resultInterpretation.innerHTML = mainInterpretationHTML;
     } catch (error) {
         console.error('Error showing DISC results:', error);
-        showError(t('error_general'));
+        showError(tUtility('error_general'));
     }
 }
 
@@ -1916,7 +1902,7 @@ export function generateBig5ResultHTML(resultData) {
                 <div class="w-full bg-gray-200 rounded-full h-2.5 mb-2">
                     <div class="h-2.5 rounded-full bg-indigo-600" style="width: ${percentage}%"></div>
                 </div>
-                <p class="text-sm font-semibold mt-2">${score}/${maxScore} ${t('points')} (${percentage}%)</p>
+                <p class="text-sm font-semibold mt-2">${score}/${maxScore} ${tUtility('points')} (${percentage}%)</p>
                 <p class="text-sm mt-2 text-gray-600">${desc.description[currentLang]}</p>
                 <p class="text-sm mt-2 font-semibold ${percentage >= 70 ? 'text-green-600' : percentage >= 30 ? 'text-yellow-600' : 'text-blue-600'}">
                     ${interpretation}
@@ -1927,7 +1913,7 @@ export function generateBig5ResultHTML(resultData) {
 
     return `
         <div class="text-center mb-10">
-            <h1 class="text-4xl font-extrabold text-gray-800 mb-4">${t('big5_title')}</h1>
+            <h1 class="text-4xl font-extrabold text-gray-800 mb-4">${tUtility('big5_title')}</h1>
             <p class="text-gray-500">${currentLang === 'en' ? 'Your complete Big Five personality traits results' : 'Seus resultados completos dos traços de personalidade Big Five'}</p>
         </div>
 
@@ -1938,7 +1924,7 @@ export function generateBig5ResultHTML(resultData) {
 
         <!-- Trait Interpretations -->
         <div class="mb-10">
-            <h3 class="text-2xl font-bold text-gray-800 mb-6 border-b pb-2">${t('big5_interpretation_title')}</h3>
+            <h3 class="text-2xl font-bold text-gray-800 mb-6 border-b pb-2">${tUtility('big5_interpretation_title')}</h3>
             <div class="bg-white p-6 rounded-xl border-l-4 border-indigo-500 shadow-md">
                 <h4 class="text-xl font-bold text-gray-800 mb-4">${currentLang === 'en' ? 'Understanding Your Big Five Results' : 'Entendendo Seus Resultados Big Five'}</h4>
                 <p class="text-gray-600 mb-4">
@@ -1947,11 +1933,11 @@ export function generateBig5ResultHTML(resultData) {
                     "Os cinco grandes traços de personalidade representam cinco domínios amplos da personalidade humana. Suas pontuações indicam sua posição relativa em cada dimensão em comparação com a população em geral. Lembre-se de que todos os traços têm pontos fortes e desafios, e nenhuma pontuação única é 'melhor' que outra."}
                 </p>
                 <ul class="list-disc list-inside text-gray-600 space-y-2">
-                    <li><strong>${t('big5_openness')}:</strong> ${currentLang === 'en' ? "Imagination, creativity, curiosity, and appreciation for new experiences" : "Imaginação, criatividade, curiosidade e apreço por novas experiências"}</li>
-                    <li><strong>${t('big5_conscientiousness')}:</strong> ${currentLang === 'en' ? "Organization, diligence, reliability, and goal-directed behavior" : "Organização, diligência, confiabilidade e comportamento orientado a objetivos"}</li>
-                    <li><strong>${t('big5_extraversion')}:</strong> ${currentLang === 'en' ? "Sociability, assertiveness, energy, and positive emotions" : "Sociabilidade, assertividade, energia e emoções positivas"}</li>
-                    <li><strong>${t('big5_agreeableness')}:</strong> ${currentLang === 'en' ? "Compassion, cooperation, trust, and concern for social harmony" : "Compaixão, cooperação, confiança e preocupação com a harmonia social"}</li>
-                    <li><strong>${t('big5_neuroticism')}:</strong> ${currentLang === 'en' ? "Anxiety, moodiness, emotional sensitivity, and vulnerability to stress" : "Ansiedade, instabilidade emocional, sensibilidade emocional e vulnerabilidade ao estresse"}</li>
+                    <li><strong>${tUtility('big5_openness')}:</strong> ${currentLang === 'en' ? "Imagination, creativity, curiosity, and appreciation for new experiences" : "Imaginação, criatividade, curiosidade e apreço por novas experiências"}</li>
+                    <li><strong>${tUtility('big5_conscientiousness')}:</strong> ${currentLang === 'en' ? "Organization, diligence, reliability, and goal-directed behavior" : "Organização, diligência, confiabilidade e comportamento orientado a objetivos"}</li>
+                    <li><strong>${tUtility('big5_extraversion')}:</strong> ${currentLang === 'en' ? "Sociability, assertiveness, energy, and positive emotions" : "Sociabilidade, assertividade, energia e emoções positivas"}</li>
+                    <li><strong>${tUtility('big5_agreeableness')}:</strong> ${currentLang === 'en' ? "Compassion, cooperation, trust, and concern for social harmony" : "Compaixão, cooperação, confiança e preocupação com a harmonia social"}</li>
+                    <li><strong>${tUtility('big5_neuroticism')}:</strong> ${currentLang === 'en' ? "Anxiety, moodiness, emotional sensitivity, and vulnerability to stress" : "Ansiedade, instabilidade emocional, sensibilidade emocional e vulnerabilidade ao estresse"}</li>
                 </ul>
             </div>
         </div>
@@ -1959,10 +1945,10 @@ export function generateBig5ResultHTML(resultData) {
         <!-- Action Buttons -->
         <div class="text-center space-x-4">
             <button id="restart-btn" data-html2canvas-ignore="true" class="px-8 py-3 bg-indigo-500 text-white font-bold rounded-xl hover:bg-indigo-600 transition duration-300 shadow-lg">
-                ${t('restart')}
+                ${tUtility('restart')}
             </button>
             <button id="export-btn" data-html2canvas-ignore="true" class="px-8 py-3 bg-green-500 text-white font-bold rounded-xl hover:bg-green-600 transition duration-300 shadow-lg">
-                ${t('export_pdf')}
+                ${tUtility('export_pdf')}
             </button>
         </div>
     `;
@@ -1996,14 +1982,14 @@ function generateDISCResultHTML(resultData, clang) {
                 <div class="w-full bg-gray-200 rounded-full h-2.5 mb-2">
                     <div class="h-2.5 rounded-full bg-indigo-600" style="width: ${percentage}%"></div>
                 </div>
-                <p class="text-sm font-semibold mt-2">${score} / ${maxScore} ${t('points')} (${percentage}%)</p>
+                <p class="text-sm font-semibold mt-2">${score} / ${maxScore} ${tUtility('points')} (${percentage}%)</p>
             </div>
         `;
     });
 
     return `
         <div class="text-center mb-10">
-            <h1 class="text-4xl font-extrabold text-gray-800 mb-4">${t('disc_title')}</h1>
+            <h1 class="text-4xl font-extrabold text-gray-800 mb-4">${tUtility('disc_title')}</h1>
             <p class="text-gray-500">${currentLang === 'en' ? 'Your complete DISC personality assessment results' : 'Seus resultados completos da avaliação de personalidade DISC'}</p>
         </div>
 
@@ -2021,7 +2007,7 @@ function generateDISCResultHTML(resultData, clang) {
 
         <!-- Detailed Interpretation -->
         <div class="mb-10">
-            <h3 class="text-2xl font-bold text-gray-800 mb-6 border-b pb-2">${t('interpretation_title')}</h3>
+            <h3 class="text-2xl font-bold text-gray-800 mb-6 border-b pb-2">${tUtility('interpretation_title')}</h3>
             <div class="bg-white p-6 rounded-xl border-l-4 ${profileData.style} shadow-md">
                 <h4 class="text-xl font-bold text-gray-800 mb-3 flex items-center">
                     <span class="text-2xl mr-3">${discDescriptions[profileKey.charAt(0)].icon}</span>
@@ -2034,10 +2020,10 @@ function generateDISCResultHTML(resultData, clang) {
         <!-- Action Buttons -->
         <div class="text-center space-x-4">
             <button id="restart-btn" data-html2canvas-ignore="true" class="px-8 py-3 bg-indigo-500 text-white font-bold rounded-xl hover:bg-indigo-600 transition duration-300 shadow-lg">
-                ${t('restart')}
+                ${tUtility('restart')}
             </button>
             <button id="export-btn" data-html2canvas-ignore="true" class="px-8 py-3 bg-green-500 text-white font-bold rounded-xl hover:bg-green-600 transition duration-300 shadow-lg">
-                ${t('export_pdf')}
+                ${tUtility('export_pdf')}
             </button>
         </div>
     `;
@@ -2088,7 +2074,7 @@ function generateMBTIResultHTML(resultData) {
 
     return `
         <div class="text-center mb-10">
-            <h1 class="text-4xl font-extrabold text-gray-800 mb-4">${t('mbti_title')}</h1>
+            <h1 class="text-4xl font-extrabold text-gray-800 mb-4">${tUtility('mbti_title')}</h1>
             <p class="text-gray-500">${currentLang === 'en' ? 'Your complete MBTI personality type results' : 'Seus resultados completos do tipo de personalidade MBTI'}</p>
         </div>
 
@@ -2106,7 +2092,7 @@ function generateMBTIResultHTML(resultData) {
 
         <!-- Detailed Interpretation -->
         <div class="mb-10">
-            <h3 class="text-2xl font-bold text-gray-800 mb-6 border-b pb-2">${t('mbti_interpretation_title')}</h3>
+            <h3 class="text-2xl font-bold text-gray-800 mb-6 border-b pb-2">${tUtility('mbti_interpretation_title')}</h3>
             <div class="bg-white p-6 rounded-xl border-l-4 border-purple-500 shadow-md">
                 <h4 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
                     <span class="text-3xl mr-3">${mbtiDimensions[mbtiType[0]].icon}</span>
@@ -2119,10 +2105,10 @@ function generateMBTIResultHTML(resultData) {
         <!-- Action Buttons -->
         <div class="text-center space-x-4">
             <button id="restart-btn" data-html2canvas-ignore="true" class="px-8 py-3 bg-indigo-500 text-white font-bold rounded-xl hover:bg-indigo-600 transition duration-300 shadow-lg">
-                ${t('restart')}
+                ${tUtility('restart')}
             </button>
             <button id="export-btn" data-html2canvas-ignore="true" class="px-8 py-3 bg-green-500 text-white font-bold rounded-xl hover:bg-green-600 transition duration-300 shadow-lg">
-                ${t('export_pdf')}
+                ${tUtility('export_pdf')}
             </button>
         </div>
     `;
@@ -2159,7 +2145,7 @@ async function init() {
         
     } catch (error) {
         console.error('Error initializing application:', error);
-        showError(t('error_general'));
+        showError(tUtility('error_general'));
     }
 }
 
@@ -2176,7 +2162,7 @@ async function initTestPage() {
         accessibilityManager = new AccessibilityManager();
 
         // Show loading while fetching questions
-        const loading = showLoading(t('loading'));
+        const loading = showLoading(tUtility('loading'));
 
         // Fetch questions from database
         let testType = '';
@@ -2190,8 +2176,8 @@ async function initTestPage() {
 
         // Validate test data
         if (!validateTestData()) {
-            console.warn(t('test_data_invalid'));
-            showError(t('test_data_invalid'));
+            console.warn(tUtility('test_data_invalid'));
+            showError(tUtility('test_data_invalid'));
             return;
         }
 
@@ -2247,7 +2233,7 @@ async function initTestPage() {
         
     } catch (error) {
         console.error('Error initializing test page:', error);
-        showError(t('error_general'));
+        showError(tUtility('error_general'));
     }
 }
 
@@ -2279,7 +2265,7 @@ function initIndexPage() {
         
     } catch (error) {
         console.error('Error initializing index page:', error);
-        showError(t('error_general'));
+        showError(tUtility('error_general'));
     }
 }
 

@@ -233,3 +233,16 @@ export function translateUtilIndex(key, replacements = {}) {
         return key;
     }
 }
+
+export function tUtility(key, replacements = {}) {
+    try {
+        let text = interfaceTranslations[currentLang][key] || interfaceTranslations['en'][key] || key;
+        for (const [k, v] of Object.entries(replacements)) {
+            text = text.replace(`{${k}}`, v);
+        }
+        return text;
+    } catch (error) {
+        console.error('Translation error:', error);
+        return key;
+    }
+}
