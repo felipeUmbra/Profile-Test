@@ -158,7 +158,36 @@ export const interfaceTranslations = {
         restart: "Test neu starten",
         export_pdf: "Als PDF exportieren 📄",
         filename: "DISC_Personality_Results_DE",
-        back_to_home: "← Zurück zur Startseite"
+        back_to_home: "← Zurück zur Startseite",
+
+        mbti_title: "MBTI-Persönlichkeitstest",
+        mbti_subtitle: "Wählen Sie für jede Aussage die Option, die Sie am besten beschreibt",
+        mbti_rating_guide: "Wählen Sie die Aussage, die Ihre natürliche Präferenz besser beschreibt",
+        mbti_main_result_title: "Ihr MBTI-Persönlichkeitstyp:",
+        mbti_result_subtitle: "Ihr MBTI-Persönlichkeitstyp und eine detaillierte Interpretation",
+        mbti_interpretation_title: "Detaillierte Typinterpretation",
+        mbti_filename: "MBTI_Persönlichkeitsresultate_DE",
+
+        big5_title: "Big-Five-Persönlichkeitstest",
+        big5_subtitle: "Bewerten Sie, wie sehr jede Aussage auf Sie zutrifft (1 = Stimme überhaupt nicht zu, 5 = Stimme voll und ganz zu)",
+        big5_main_result_title: "Ihre Big-Five-Persönlichkeitsmerkmale:",
+        big5_result_subtitle: "Unten sehen Sie Ihre Ergebnisse für die fünf wichtigsten Persönlichkeitsfaktoren",
+        big5_interpretation_title: "Merkmalsinterpretationen",
+        big5_filename: "Big5_Persönlichkeitsresultate_DE",
+
+        // Big Five factor names
+        big5_openness: "Offenheit",
+        big5_conscientiousness: "Gewissenhaftigkeit",
+        big5_extraversion: "Extraversion",
+        big5_agreeableness: "Verträglichkeit",
+        big5_neuroticism: "Neurotizismus",
+
+        error_general: "Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.",
+        error_pdf: "PDF konnte nicht erstellt werden. Bitte versuchen Sie es erneut.",
+        loading: "Wird geladen...",
+        resuming_test: "Vorherigen Test wird fortgesetzt...",
+        test_data_invalid: "Die Testdaten scheinen ungültig zu sein. Ein neuer Test wird gestartet.",
+        error_fetch_questions: "Fragen konnten nicht vom Server geladen werden. Bitte überprüfen Sie Ihre Verbindung."
     }
 };
 
@@ -228,7 +257,29 @@ export const indexInterfaceTranslations = {
         developingCharacteristics: "🌱 Características en Desarrollo:",
         personalityProfile: "Tu Perfil de Personalidad",
         basedOnAssessment: "Basado en tu evaluación Big Five"
-    }
+    },
+    'de': {
+        mainTitle: "Persönlichkeitstest-Zentrale",
+        subtitle: "Wählen Sie einen Persönlichkeitstest, um mehr über sich selbst zu erfahren:",
+        discTest: "DISC-Persönlichkeitstest",
+        discSubtitle: "Verstehen Sie Ihren Kommunikations- und Arbeitsstil",
+        mbtiTest: "MBTI-Persönlichkeitstest",
+        mbtiSubtitle: "Entdecken Sie Ihren psychologischen Typ",
+        big5Test: "Big-Five-Persönlichkeitstest",
+        big5Subtitle: "Erkunden Sie die fünf wichtigsten Persönlichkeitsdimensionen",
+        resultsTitle: "Ihre Testergebnisse",
+        clearResults: "Alle Ergebnisse löschen",
+        footerText1: "Alle Tests sind auf Englisch, Portugiesisch und Spanisch verfügbar",
+        footerText2: "Ihre Ergebnisse werden automatisch gespeichert und können hier jederzeit eingesehen werden",
+        confirmDelete: "Sind Sie sicher, dass Sie dieses Ergebnis löschen möchten?",
+        confirmClearAll: "Sind Sie sicher, dass Sie alle Ihre Testergebnisse löschen möchten?",
+        // Big Five trait descriptions
+        strongCharacteristics: "🌟 Starke Eigenschaften:",
+        balancedCharacteristics: "⚖️ Ausgewogene Eigenschaften:",
+        developingCharacteristics: "🌱 Sich entwickelnde Eigenschaften:",
+        personalityProfile: "Ihr Persönlichkeitsprofil",
+        basedOnAssessment: "Basierend auf Ihrer Big-Five-Bewertung"
+    },
     
 };
 

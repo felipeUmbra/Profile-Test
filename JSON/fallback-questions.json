@@ -307,12 +307,14 @@
       "optionA": {
         "en": "You enjoy being the center of attention at social gatherings",
         "pt": "Você gosta de ser o centro das atenções em encontros sociais",
-        "es": "Disfrutas ser el centro de atención en reuniones sociales"
+        "es": "Disfrutas ser el centro de atención en reuniones sociales",
+        "de": "Du genießen es, bei gesellschaftlichen Treffen im Mittelpunkt zu stehen"
       },
       "optionB": {
         "en": "You prefer observing from the sidelines in social situations",
         "pt": "Você prefere observar de fora em situações sociais",
-        "es": "Prefieres observar desde el margen en situaciones sociales"
+        "es": "Prefieres observar desde el margen en situaciones sociales",
+        "de": "Du beobachten in sozialen Situationen lieber vom Rand aus"
       },
       "dimension": "EI",
       "aValue": "E",
@@ -323,12 +325,14 @@
       "optionA": {
         "en": "You feel energized after spending time with large groups",
         "pt": "Você se sente energizado depois de passar tempo com grandes grupos",
-        "es": "Te sientes con energía después de estar con grupos grandes"
+        "es": "Te sientes con energía después de estar con grupos grandes",
+        "de": "Du fühlen sich energiegeladen, nachdem Sie Zeit mit großen Gruppen verbracht haben"
       },
       "optionB": {
         "en": "You need alone time to recharge after social interactions",
         "pt": "Você precisa de tempo sozinho para recarregar após interações sociais",
-        "es": "Necesitas tiempo a solas para recargar después de interacciones sociales"
+        "es": "Necesitas tiempo a solas para recargar después de interacciones sociales",
+        "de": "Du brauchen Zeit allein, um sich nach sozialen Interaktionen wieder aufzuladen"
       },
       "dimension": "EI",
       "aValue": "E",
@@ -339,12 +343,14 @@
       "optionA": {
         "en": "You think out loud and process ideas through conversation",
         "pt": "Você pensa em voz alta e processa ideias através da conversa",
-        "es": "Piensas en voz alta y procesas ideas conversando"
+        "es": "Piensas en voz alta y procesas ideas conversando",
+        "de": "Du denken laut nach und verarbeiten Ideen durch Gespräche"
       },
       "optionB": {
         "en": "You prefer to think things through quietly before speaking",
         "pt": "Você prefere pensar nas coisas quieto antes de falar",
-        "es": "Prefieres pensar las cosas en silencio antes de hablar"
+        "es": "Prefieres pensar las cosas en silencio antes de hablar",
+        "de": "Du denken Dinge lieber in Ruhe durch, bevor Sie sprechen"
       },
       "dimension": "EI",
       "aValue": "E",
@@ -355,12 +361,14 @@
       "optionA": {
         "en": "You enjoy meeting new people and making new friends",
         "pt": "Você gosta de conhecer novas pessoas e fazer novos amigos",
-        "es": "Disfrutas conocer gente nueva y hacer nuevos amigos"
+        "es": "Disfrutas conocer gente nueva y hacer nuevos amigos",
+        "de": "Du genießen es, neue Menschen kennenzulernen und neue Freunde zu finden"
       },
       "optionB": {
         "en": "You prefer spending time with a few close friends",
         "pt": "Você prefere passar o tempo com alguns amigos próximos",
-        "es": "Prefieres pasar tiempo con unos pocos amigos cercanos"
+        "es": "Prefieres pasar tiempo con unos pocos amigos cercanos",
+        "de": "Du verbringen lieber Zeit mit einigen wenigen engen Freunden"
       },
       "dimension": "EI",
       "aValue": "E",
@@ -371,12 +379,14 @@
       "optionA": {
         "en": "You are often described as outgoing and sociable",
         "pt": "Você é frequentemente descrito como extrovertido e sociável",
-        "es": "A menudo te describen como extrovertido y sociable"
+        "es": "A menudo te describen como extrovertido y sociable",
+        "de": "Du werden oft als kontaktfreudig und gesellig beschrieben"
       },
       "optionB": {
         "en": "You are often described as reserved and private",
         "pt": "Você é frequentemente descrito como reservado e discreto",
-        "es": "A menudo te describen como reservado y privado"
+        "es": "A menudo te describen como reservado y privado",
+        "de": "Du werden oft als zurückhaltend und privat beschrieben"
       },
       "dimension": "EI",
       "aValue": "E",
@@ -387,12 +397,14 @@
       "optionA": {
         "en": "You enjoy group activities and collaborative projects",
         "pt": "Você gosta de atividades em grupo e projetos colaborativos",
-        "es": "Disfrutas las actividades grupales y proyectos colaborativos"
+        "es": "Disfrutas las actividades grupales y proyectos colaborativos",
+        "de": "Du genießen Gruppenaktivitäten und gemeinsame Projekte"
       },
       "optionB": {
         "en": "You prefer working alone or in very small groups",
         "pt": "Você prefere trabalhar sozinho ou em grupos muito pequenos",
-        "es": "Prefieres trabajar solo o en grupos muy pequeños"
+        "es": "Prefieres trabajar solo o en grupos muy pequeños",
+        "de": "Du arbeiten lieber allein oder in sehr kleinen Gruppen"
       },
       "dimension": "EI",
       "aValue": "E",
@@ -403,12 +415,14 @@
       "optionA": {
         "en": "You frequently initiate social plans and gatherings",
         "pt": "Você frequentemente inicia planos sociais e encontros",
-        "es": "Frecuentemente inicias planes sociales y reuniones"
+        "es": "Frecuentemente inicias planes sociales y reuniones",
+        "de": "Du initiieren häufig soziale Pläne und Treffen"
       },
       "optionB": {
         "en": "You usually wait for others to invite you to social events",
         "pt": "Você geralmente espera que outros o convidem para eventos sociais",
-        "es": "Usualmente esperas a que otros te inviten a eventos sociales"
+        "es": "Usualmente esperas a que otros te inviten a eventos sociales",
+        "de": "Du warten normalerweise darauf, dass andere Sie zu sozialen Veranstaltungen einladen"
       },
       "dimension": "EI",
       "aValue": "E",
@@ -419,12 +433,14 @@
       "optionA": {
         "en": "You focus on concrete facts and practical realities",
         "pt": "Você se concentra em fatos concretos e realidades práticas",
-        "es": "Te enfocas en hechos concretos y realidades prácticas"
+        "es": "Te enfocas en hechos concretos y realidades prácticas",
+        "de": "Du konzentrieren sich auf konkrete Fakten und praktische Realitäten"
       },
       "optionB": {
         "en": "You enjoy thinking about abstract concepts and future possibilities",
         "pt": "Você gosta de pensar em conceitos abstratos e possibilidades futuras",
-        "es": "Disfrutas pensar en conceptos abstractos y posibilidades futuras"
+        "es": "Disfrutas pensar en conceptos abstractos y posibilidades futuras",
+        "de": "Du denken gern über abstrakte Konzepte und zukünftige Möglichkeiten nach"
       },
       "dimension": "SN",
       "aValue": "S",
@@ -435,12 +451,14 @@
       "optionA": {
         "en": "You prefer clear, step-by-step instructions",
         "pt": "Você prefere instruções claras, passo a passo",
-        "es": "Prefieres instrucciones claras y paso a paso"
+        "es": "Prefieres instrucciones claras y paso a paso",
+        "de": "Du bevorzugen klare Schritt-für-Schritt-Anweisungen"
       },
       "optionB": {
         "en": "You like to improvise and figure things out as you go",
         "pt": "Você gosta de improvisar e descobrir as coisas no caminho",
-        "es": "Te gusta improvisar y resolver las cosas sobre la marcha"
+        "es": "Te gusta improvisar y resolver las cosas sobre la marcha",
+        "de": "Du improvisieren gern und finden Dinge unterwegs heraus"
       },
       "dimension": "SN",
       "aValue": "S",
@@ -451,12 +469,14 @@
       "optionA": {
         "en": "You trust past experiences and proven methods",
         "pt": "Você confia em experiências passadas e métodos comprovados",
-        "es": "Confías en experiencias pasadas y métodos probados"
+        "es": "Confías en experiencias pasadas y métodos probados",
+        "de": "Du vertrauen auf vergangene Erfahrungen und bewährte Methoden"
       },
       "optionB": {
         "en": "You get excited about new ideas and innovative approaches",
         "pt": "Você fica animado com novas ideias e abordagens inovadoras",
-        "es": "Te entusiasman las nuevas ideas y enfoques innovadores"
+        "es": "Te entusiasman las nuevas ideas y enfoques innovadores",
+        "de": "Du begeistern sich für neue Ideen und innovative Ansätze"
       },
       "dimension": "SN",
       "aValue": "S",
@@ -467,12 +487,14 @@
       "optionA": {
         "en": "You notice specific details in your environment",
         "pt": "Você percebe detalhes específicos no seu ambiente",
-        "es": "Notas detalles específicos en tu entorno"
+        "es": "Notas detalles específicos en tu entorno",
+        "de": "Du bemerken spezifische Details in Ihrer Umgebung"
       },
       "optionB": {
         "en": "You tend to see the big picture and overall patterns",
         "pt": "Você tende a ver o panorama geral e os padrões totais",
-        "es": "Tiendes a ver el panorama general y los patrones globales"
+        "es": "Tiendes a ver el panorama general y los patrones globales",
+        "de": "Du sehen eher das große Ganze und übergeordnete Muster"
       },
       "dimension": "SN",
       "aValue": "S",
@@ -483,12 +505,14 @@
       "optionA": {
         "en": "You prefer dealing with actual experiences",
         "pt": "Você prefere lidar com experiências reais",
-        "es": "Prefieres lidiar con experiencias reales"
+        "es": "Prefieres lidiar con experiencias reales",
+        "de": "Du beschäftigen sich lieber mit tatsächlichen Erfahrungen"
       },
       "optionB": {
         "en": "You enjoy imagining what could be in the future",
         "pt": "Você gosta de imaginar o que poderia ser no futuro",
-        "es": "Disfrutas imaginar lo que podría ser en el futuro"
+        "es": "Disfrutas imaginar lo que podría ser en el futuro",
+        "de": "Du stellen sich gern vor, was in der Zukunft möglich sein könnte"
       },
       "dimension": "SN",
       "aValue": "S",
@@ -499,12 +523,14 @@
       "optionA": {
         "en": "You are very present-oriented and practical",
         "pt": "Você é muito orientado para o presente e prático",
-        "es": "Estás muy orientado al presente y eres práctico"
+        "es": "Estás muy orientado al presente y eres práctico",
+        "de": "Du sind stark gegenwartsorientiert und praktisch"
       },
       "optionB": {
         "en": "You are often thinking about future possibilities",
         "pt": "Você frequentemente pensa sobre possibilidades futuras",
-        "es": "A menudo piensas en posibilidades futuras"
+        "es": "A menudo piensas en posibilidades futuras",
+        "de": "Du denken oft über zukünftige Möglichkeiten nach"
       },
       "dimension": "SN",
       "aValue": "S",
@@ -515,12 +541,14 @@
       "optionA": {
         "en": "You prefer literal and straightforward communication",
         "pt": "Você prefere comunicação literal e direta",
-        "es": "Prefieres comunicación literal y directa"
+        "es": "Prefieres comunicación literal y directa",
+        "de": "Du bevorzugen eine wörtliche und direkte Kommunikation"
       },
       "optionB": {
         "en": "You enjoy metaphorical and symbolic meanings",
         "pt": "Você gosta de significados metafóricos e simbólicos",
-        "es": "Disfrutas los significados metafóricos y simbólicos"
+        "es": "Disfrutas los significados metafóricos y simbólicos",
+        "de": "Du mögen metaphorische und symbolische Bedeutungen"
       },
       "dimension": "SN",
       "aValue": "S",
@@ -531,12 +559,14 @@
       "optionA": {
         "en": "You make decisions based on logic and objective analysis",
         "pt": "Você toma decisões baseadas em lógica e análise objetiva",
-        "es": "Tomas decisiones basadas en lógica y análisis objetivo"
+        "es": "Tomas decisiones basadas en lógica y análisis objetivo",
+        "de": "Du treffen Entscheidungen auf Grundlage von Logik und objektiver Analyse"
       },
       "optionB": {
         "en": "You consider people's feelings and values when deciding",
         "pt": "Você considera os sentimentos e valores das pessoas ao decidir",
-        "es": "Consideras los sentimientos y valores de las personas al decidir"
+        "es": "Consideras los sentimientos y valores de las personas al decidir",
+        "de": "Du berücksichtigen die Gefühle und Werte anderer Menschen bei Entscheidungen"
       },
       "dimension": "TF",
       "aValue": "T",
@@ -547,12 +577,14 @@
       "optionA": {
         "en": "You value truth and fairness above harmony",
         "pt": "Você valoriza a verdade e justiça acima da harmonia",
-        "es": "Valoras la verdad y la justicia por encima de la armonía"
+        "es": "Valoras la verdad y la justicia por encima de la armonía",
+        "de": "Du schätzen Wahrheit und Gerechtigkeit höher als Harmonie"
       },
       "optionB": {
         "en": "You prioritize maintaining harmony in relationships",
         "pt": "Você prioriza manter a harmonia nos relacionamentos",
-        "es": "Priorizas mantener la armonía en las relaciones"
+        "es": "Priorizas mantener la armonía en las relaciones",
+        "de": "Du legen Priorität darauf, Harmonie in Beziehungen zu bewahren"
       },
       "dimension": "TF",
       "aValue": "T",
@@ -563,12 +595,14 @@
       "optionA": {
         "en": "You prefer direct, straightforward communication",
         "pt": "Você prefere comunicação direta e objetiva",
-        "es": "Prefieres comunicación directa y objetiva"
+        "es": "Prefieres comunicación directa y objetiva",
+        "de": "Du bevorzugen direkte und klare Kommunikation"
       },
       "optionB": {
         "en": "You consider how your words might affect others emotionally",
         "pt": "Você considera como suas palavras podem afetar outros emocionalmente",
-        "es": "Consideras cómo tus palabras pueden afectar emocionalmente a otros"
+        "es": "Consideras cómo tus palabras pueden afectar emocionalmente a otros",
+        "de": "Du berücksichtigen, wie Ihre Worte andere emotional beeinflussen könnten"
       },
       "dimension": "TF",
       "aValue": "T",
@@ -579,12 +613,14 @@
       "optionA": {
         "en": "You tend to be more critical than compassionate",
         "pt": "Você tende a ser mais crítico do que compassivo",
-        "es": "Tiendes a ser más crítico que compasivo"
+        "es": "Tiendes a ser más crítico que compasivo",
+        "de": "Du neigen dazu, eher kritisch als mitfühlend zu sein"
       },
       "optionB": {
         "en": "You tend to be more compassionate than critical",
         "pt": "Você tende a ser mais compassivo do que crítico",
-        "es": "Tiendes a ser más compasivo que crítico"
+        "es": "Tiendes a ser más compasivo que crítico",
+        "de": "Du neigen dazu, eher mitfühlend als kritisch zu sein"
       },
       "dimension": "TF",
       "aValue": "T",
@@ -595,12 +631,14 @@
       "optionA": {
         "en": "You believe consistency and fairness are most important",
         "pt": "Você acredita que consistência e justiça são mais importantes",
-        "es": "Crees que la consistencia y la justicia son lo más importante"
+        "es": "Crees que la consistencia y la justicia son lo más importante",
+        "de": "Du glauben, dass Beständigkeit und Fairness am wichtigsten sind"
       },
       "optionB": {
         "en": "You believe empathy and circumstances should be considered",
         "pt": "Você acredita que empatia e circunstâncias devem ser consideradas",
-        "es": "Crees que se deben considerar la empatía y las circunstancias"
+        "es": "Crees que se deben considerar la empatía y las circunstancias",
+        "de": "Du glauben, dass Empathie und Umstände berücksichtigt werden sollten"
       },
       "dimension": "TF",
       "aValue": "T",
@@ -611,12 +649,14 @@
       "optionA": {
         "en": "You focus on objective criteria when evaluating situations",
         "pt": "Você se concentra em critérios objetivos ao avaliar situações",
-        "es": "Te enfocas en criterios objetivos al evaluar situaciones"
+        "es": "Te enfocas en criterios objetivos al evaluar situaciones",
+        "de": "Du konzentrieren sich auf objektive Kriterien, wenn Sie Situationen bewerten"
       },
       "optionB": {
         "en": "You focus on human values and needs when evaluating situations",
         "pt": "Você se concentra em valores humanos e necessidades ao avaliar situações",
-        "es": "Te enfocas en valores y necesidades humanas al evaluar situaciones"
+        "es": "Te enfocas en valores y necesidades humanas al evaluar situaciones",
+        "de": "Du konzentrieren sich auf menschliche Werte und Bedürfnisse, wenn Sie Situationen bewerten"
       },
       "dimension": "TF",
       "aValue": "T",
@@ -627,12 +667,14 @@
       "optionA": {
         "en": "You prefer constructive criticism to help others improve",
         "pt": "Você prefere críticas construtivas para ajudar outros a melhorar",
-        "es": "Prefieres la crítica constructiva para ayudar a otros a mejorar"
+        "es": "Prefieres la crítica constructiva para ayudar a otros a mejorar",
+        "de": "Du bevorzugen konstruktive Kritik, um anderen zu helfen, sich zu verbessern"
       },
       "optionB": {
         "en": "You prefer gentle encouragement to support others",
         "pt": "Você prefere incentivo gentil para apoiar os outros",
-        "es": "Prefieres el aliento gentil para apoyar a los demás"
+        "es": "Prefieres el aliento gentil para apoyar a los demás",
+        "de": "Du bevorzugen sanfte Ermutigung, um andere zu unterstützen"
       },
       "dimension": "TF",
       "aValue": "T",
@@ -643,12 +685,14 @@
       "optionA": {
         "en": "You like to have decisions made and plans settled",
         "pt": "Você gosta de ter decisões tomadas e planos estabelecidos",
-        "es": "Te gusta tener decisiones tomadas y planes establecidos"
+        "es": "Te gusta tener decisiones tomadas y planes establecidos",
+        "de": "Du mögen es, wenn Entscheidungen getroffen und Pläne festgelegt sind"
       },
       "optionB": {
         "en": "You prefer to keep your options open as long as possible",
         "pt": "Você prefere manter suas opções abertas o máximo possível",
-        "es": "Prefieres mantener tus opciones abiertas tanto como sea posible"
+        "es": "Prefieres mantener tus opciones abiertas tanto como sea posible",
+        "de": "Du bevorzugen es, Ihre Optionen so lange wie möglich offen zu halten"
       },
       "dimension": "JP",
       "aValue": "J",
@@ -659,12 +703,14 @@
       "optionA": {
         "en": "You work best with deadlines and clear schedules",
         "pt": "Você trabalha melhor com prazos e cronogramas claros",
-        "es": "Trabajas mejor con plazos y horarios claros"
+        "es": "Trabajas mejor con plazos y horarios claros",
+        "de": "Du arbeiten am besten mit Fristen und klaren Zeitplänen"
       },
       "optionB": {
         "en": "You feel constrained by too much structure and planning",
         "pt": "Você se sente limitado por muita estrutura e planejamento",
-        "es": "Te sientes limitado por demasiada estructura y planificación"
+        "es": "Te sientes limitado por demasiada estructura y planificación",
+        "de": "Du fühlen sich durch zu viel Struktur und Planung eingeschränkt"
       },
       "dimension": "JP",
       "aValue": "J",
@@ -675,12 +721,14 @@
       "optionA": {
         "en": "You enjoy completing tasks and checking them off your list",
         "pt": "Você gosta de completar tarefas e marcá-las na sua lista",
-        "es": "Disfrutas completar tareas y tacharlas de tu lista"
+        "es": "Disfrutas completar tareas y tacharlas de tu lista",
+        "de": "Du genießen es, Aufgaben zu erledigen und sie von Ihrer Liste abzuhaken"
       },
       "optionB": {
         "en": "You enjoy starting new projects more than finishing them",
         "pt": "Você gosta mais de começar novos projetos do que terminá-los",
-        "es": "Disfrutas más comenzando nuevos proyectos que terminándolos"
+        "es": "Disfrutas más comenzando nuevos proyectos que terminándolos",
+        "de": "Du beginnen lieber neue Projekte, als bestehende abzuschließen"
       },
       "dimension": "JP",
       "aValue": "J",
@@ -691,12 +739,14 @@
       "optionA": {
         "en": "You prefer to make decisions quickly and move forward",
         "pt": "Você prefere tomar decisões rapidamente e seguir em frente",
-        "es": "Prefieres tomar decisiones rápido y avanzar"
+        "es": "Prefieres tomar decisiones rápido y avanzar",
+        "de": "Du treffen Entscheidungen lieber schnell und gehen voran"
       },
       "optionB": {
         "en": "You prefer to gather more information before deciding",
         "pt": "Você prefere coletar mais informações antes de decidir",
-        "es": "Prefieres recopilar más información antes de decidir"
+        "es": "Prefieres recopilar más información antes de decidir",
+        "de": "Du sammeln lieber mehr Informationen, bevor Sie entscheiden"
       },
       "dimension": "JP",
       "aValue": "J",
@@ -707,12 +757,14 @@
       "optionA": {
         "en": "You like to have a clear plan before starting projects",
         "pt": "Você gosta de ter um plano claro antes de começar projetos",
-        "es": "Te gusta tener un plan claro antes de comenzar proyectos"
+        "es": "Te gusta tener un plan claro antes de comenzar proyectos",
+        "de": "Du haben gern einen klaren Plan, bevor Sie Projekte beginnen"
       },
       "optionB": {
         "en": "You prefer to be spontaneous and adapt as you go",
         "pt": "Você prefere ser espontâneo e se adaptar no caminho",
-        "es": "Prefieres ser espontáneo y adaptarte sobre la marcha"
+        "es": "Prefieres ser espontáneo y adaptarte sobre la marcha",
+        "de": "Du sind lieber spontan und passen sich unterwegs an"
       },
       "dimension": "JP",
       "aValue": "J",
@@ -723,12 +775,14 @@
       "optionA": {
         "en": "You feel more comfortable when things are decided",
         "pt": "Você se sente mais confortável quando as coisas estão decididas",
-        "es": "Te sientes más cómodo cuando las cosas están decididas"
+        "es": "Te sientes más cómodo cuando las cosas están decididas",
+        "de": "Du fühlen sich wohler, wenn Dinge entschieden sind"
       },
       "optionB": {
         "en": "You feel more comfortable leaving things flexible",
         "pt": "Você se sente mais confortável deixando as coisas flexíveis",
-        "es": "Te sientes más cómodo dejando las cosas flexibles"
+        "es": "Te sientes más cómodo dejando las cosas flexibles",
+        "de": "Du fühlen sich wohler, wenn Dinge flexibel bleiben"
       },
       "dimension": "JP",
       "aValue": "J",
@@ -739,12 +793,14 @@
       "optionA": {
         "en": "You prefer to finish projects well before deadlines",
         "pt": "Você prefere terminar projetos bem antes dos prazos",
-        "es": "Prefieres terminar proyectos mucho antes de los plazos"
+        "es": "Prefieres terminar proyectos mucho antes de los plazos",
+        "de": "Du bevorzugen es, Projekte lange vor der Frist abzuschließen"
       },
       "optionB": {
         "en": "You often work best under pressure near deadlines",
         "pt": "Você frequentemente trabalha melhor sob pressão perto dos prazos",
-        "es": "A menudo trabajas mejor bajo presión cerca de los plazos"
+        "es": "A menudo trabajas mejor bajo presión cerca de los plazos",
+        "de": "Du arbeiten oft am besten unter Druck kurz vor Fristen"
       },
       "dimension": "JP",
       "aValue": "J",
@@ -757,7 +813,8 @@
       "text": {
         "en": "I have a rich vocabulary.",
         "pt": "Eu tenho um vocabulário rico.",
-        "es": "Tengo un vocabulario rico."
+        "es": "Tengo un vocabulario rico.",
+        "de": "Ich habe einen großen Wortschatz."
       },
       "factor": "O",
       "reverse": false
@@ -767,7 +824,8 @@
       "text": {
         "en": "I have a vivid imagination.",
         "pt": "Eu tenho uma imaginação vívida.",
-        "es": "Tengo una imaginación vívida."
+        "es": "Tengo una imaginación vívida.",
+        "de": "Ich habe eine lebhafte Vorstellungskraft."
       },
       "factor": "O",
       "reverse": false
@@ -777,7 +835,8 @@
       "text": {
         "en": "I have difficulty understanding abstract ideas.",
         "pt": "Eu tenho dificuldade em entender ideias abstratas.",
-        "es": "Tengo dificultad para entender ideas abstractas."
+        "es": "Tengo dificultad para entender ideas abstractas.",
+        "de": "Ich habe Schwierigkeiten, abstrakte Ideen zu verstehen."
       },
       "factor": "O",
       "reverse": true
@@ -787,7 +846,8 @@
       "text": {
         "en": "I am not interested in abstract ideas.",
         "pt": "Eu não me interesso por ideias abstratas.",
-        "es": "No me interesan las ideas abstractas."
+        "es": "No me interesan las ideas abstractas.",
+        "de": "Ich interessiere mich nicht für abstrakte Ideen."
       },
       "factor": "O",
       "reverse": true
@@ -797,7 +857,8 @@
       "text": {
         "en": "I have excellent ideas.",
         "pt": "Eu tenho excelentes ideias.",
-        "es": "Tengo excelentes ideas."
+        "es": "Tengo excelentes ideas.",
+        "de": "Ich habe ausgezeichnete Ideen."
       },
       "factor": "O",
       "reverse": false
@@ -807,7 +868,8 @@
       "text": {
         "en": "I do not have a good imagination.",
         "pt": "Eu não tenho uma boa imaginação.",
-        "es": "No tengo buena imaginación."
+        "es": "No tengo buena imaginación.",
+        "de": "Ich habe keine gute Vorstellungskraft."
       },
       "factor": "O",
       "reverse": true
@@ -817,7 +879,8 @@
       "text": {
         "en": "I am quick to understand things.",
         "pt": "Eu entendo as coisas rapidamente.",
-        "es": "Entiendo las cosas rápidamente."
+        "es": "Entiendo las cosas rápidamente.",
+        "de": "Ich verstehe Dinge schnell."
       },
       "factor": "O",
       "reverse": false
@@ -827,7 +890,8 @@
       "text": {
         "en": "I use difficult words.",
         "pt": "Eu uso palavras difíceis.",
-        "es": "Uso palabras difíciles."
+        "es": "Uso palabras difíciles.",
+        "de": "Ich benutze schwierige Wörter."
       },
       "factor": "O",
       "reverse": false
@@ -837,7 +901,8 @@
       "text": {
         "en": "I am always prepared.",
         "pt": "Eu estou sempre preparado.",
-        "es": "Siempre estoy preparado."
+        "es": "Siempre estoy preparado.",
+        "de": "Ich bin immer vorbereitet."
       },
       "factor": "C",
       "reverse": false
@@ -847,7 +912,8 @@
       "text": {
         "en": "I pay attention to details.",
         "pt": "Eu presto atenção aos detalhes.",
-        "es": "Presto atención a los detalles."
+        "es": "Presto atención a los detalles.",
+        "de": "Ich achte auf Details."
       },
       "factor": "C",
       "reverse": false
@@ -857,7 +923,8 @@
       "text": {
         "en": "I get chores done right away.",
         "pt": "Eu faço as tarefas imediatamente.",
-        "es": "Hago las tareas de inmediato."
+        "es": "Hago las tareas de inmediato.",
+        "de": "Ich erledige Aufgaben sofort."
       },
       "factor": "C",
       "reverse": false
@@ -867,7 +934,8 @@
       "text": {
         "en": "I like order.",
         "pt": "Eu gosto de ordem.",
-        "es": "Me gusta el orden."
+        "es": "Me gusta el orden.",
+        "de": "Ich mag Ordnung."
       },
       "factor": "C",
       "reverse": false
@@ -877,7 +945,8 @@
       "text": {
         "en": "I often forget to put things back in their proper place.",
         "pt": "Eu frequentemente esqueço de colocar as coisas no lugar certo.",
-        "es": "A menudo olvido poner las cosas en su lugar."
+        "es": "A menudo olvido poner las cosas en su lugar.",
+        "de": "Ich vergesse oft, Dinge wieder an ihren richtigen Platz zu legen."
       },
       "factor": "C",
       "reverse": true
@@ -887,7 +956,8 @@
       "text": {
         "en": "I make a mess of things.",
         "pt": "Eu bagunço as coisas.",
-        "es": "Hago un desastre con las cosas."
+        "es": "Hago un desastre con las cosas.",
+        "de": "Ich mache ein Durcheinander aus Dingen."
       },
       "factor": "C",
       "reverse": true
@@ -897,7 +967,8 @@
       "text": {
         "en": "I often forget my obligations.",
         "pt": "Eu frequentemente esqueço minhas obrigações.",
-        "es": "A menudo olvido mis obligaciones."
+        "es": "A menudo olvido mis obligaciones.",
+        "de": "Ich vergesse oft meine Verpflichtungen."
       },
       "factor": "C",
       "reverse": true
@@ -907,7 +978,8 @@
       "text": {
         "en": "I shirk my duties.",
         "pt": "Eu evito meus deveres.",
-        "es": "Evado mis deberes."
+        "es": "Evado mis deberes.",
+        "de": "Ich drücke mich vor meinen Pflichten."
       },
       "factor": "C",
       "reverse": true
@@ -917,7 +989,8 @@
       "text": {
         "en": "I am the life of the party.",
         "pt": "Eu sou a alma da festa.",
-        "es": "Soy el alma de la fiesta."
+        "es": "Soy el alma de la fiesta.",
+        "de": "Ich bin der Mittelpunkt der Party."
       },
       "factor": "E",
       "reverse": false
@@ -927,7 +1000,8 @@
       "text": {
         "en": "I feel comfortable around people.",
         "pt": "Eu me sinto confortável perto de pessoas.",
-        "es": "Me siento cómodo rodeado de gente."
+        "es": "Me siento cómodo rodeado de gente.",
+        "de": "Ich fühle mich in der Nähe von Menschen wohl."
       },
       "factor": "E",
       "reverse": false
@@ -937,7 +1011,8 @@
       "text": {
         "en": "I start conversations.",
         "pt": "Eu inicio conversas.",
-        "es": "Inicio conversaciones."
+        "es": "Inicio conversaciones.",
+        "de": "Ich beginne Gespräche."
       },
       "factor": "E",
       "reverse": false
@@ -947,7 +1022,8 @@
       "text": {
         "en": "I talk to a lot of different people at parties.",
         "pt": "Eu converso com muitas pessoas diferentes em festas.",
-        "es": "Hablo con muchas personas diferentes en fiestas."
+        "es": "Hablo con muchas personas diferentes en fiestas.",
+        "de": "Auf Partys spreche ich mit vielen verschiedenen Menschen."
       },
       "factor": "E",
       "reverse": false
@@ -956,7 +1032,9 @@
       "id": 21,
       "text": {
         "en": "I don't talk a lot.",
-        "pt": "Eu não falo muito.", "es": "No hablo mucho."
+        "pt": "Eu não falo muito.",
+        "es": "No hablo mucho.",
+        "de": "Ich rede nicht viel."
       },
       "factor": "E",
       "reverse": true
@@ -966,7 +1044,8 @@
       "text": {
         "en": "I keep in the background.",
         "pt": "Eu fico no fundo.",
-        "es": "Me mantengo en segundo plano."
+        "es": "Me mantengo en segundo plano.",
+        "de": "Ich halte mich im Hintergrund."
       },
       "factor": "E",
       "reverse": true
@@ -976,7 +1055,8 @@
       "text": {
         "en": "I have little to say.",
         "pt": "Eu tenho pouco a dizer.",
-        "es": "Tengo poco que decir."
+        "es": "Tengo poco que decir.",
+        "de": "Ich habe wenig zu sagen."
       },
       "factor": "E",
       "reverse": true
@@ -986,7 +1066,8 @@
       "text": {
         "en": "I don't like to draw attention to myself.",
         "pt": "Eu não gosto de chamar atenção para mim mesmo.",
-        "es": "No me gusta llamar la atención."
+        "es": "No me gusta llamar la atención.",
+        "de": "Ich ziehe nicht gern Aufmerksamkeit auf mich."
       },
       "factor": "E",
       "reverse": true
@@ -996,7 +1077,8 @@
       "text": {
         "en": "I am interested in people.",
         "pt": "Eu me interesso por pessoas.",
-        "es": "Me interesa la gente."
+        "es": "Me interesa la gente.",
+        "de": "Ich interessiere mich für Menschen."
       },
       "factor": "A",
       "reverse": false
@@ -1006,7 +1088,8 @@
       "text": {
         "en": "I sympathize with others' feelings.",
         "pt": "Eu simpatizo com os sentimentos dos outros.",
-        "es": "Simpatizo con los sentimientos de los demás."
+        "es": "Simpatizo con los sentimientos de los demás.",
+        "de": "Ich habe Mitgefühl für die Gefühle anderer."
       },
       "factor": "A",
       "reverse": false
@@ -1016,7 +1099,8 @@
       "text": {
         "en": "I have a soft heart.",
         "pt": "Eu tenho um coração mole.",
-        "es": "Tengo un corazón blando."
+        "es": "Tengo un corazón blando.",
+        "de": "Ich habe ein weiches Herz."
       },
       "factor": "A",
       "reverse": false
@@ -1026,7 +1110,8 @@
       "text": {
         "en": "I take time out for others.",
         "pt": "Eu reservo tempo para os outros.",
-        "es": "Dedico tiempo a los demás."
+        "es": "Dedico tiempo a los demás.",
+        "de": "Ich nehme mir Zeit für andere."
       },
       "factor": "A",
       "reverse": false
@@ -1036,7 +1121,8 @@
       "text": {
         "en": "I feel others' emotions.",
         "pt": "Eu sinto as emoções dos outros.",
-        "es": "Siento las emociones de los demás."
+        "es": "Siento las emociones de los demás.",
+        "de": "Ich spüre die Emotionen anderer."
       },
       "factor": "A",
       "reverse": false
@@ -1046,7 +1132,8 @@
       "text": {
         "en": "I make people feel at ease.",
         "pt": "Eu faço as pessoas se sentirem à vontade.",
-        "es": "Hago que la gente se sienta a gusto."
+        "es": "Hago que la gente se sienta a gusto.",
+        "de": "Ich sorge dafür, dass sich Menschen wohlfühlen."
       },
       "factor": "A",
       "reverse": false
@@ -1056,7 +1143,8 @@
       "text": {
         "en": "I am not really interested in others.",
         "pt": "Eu não estou realmente interessado nos outros.",
-        "es": "No estoy realmente interesado en los demás."
+        "es": "No estoy realmente interesado en los demás.",
+        "de": "Ich interessiere mich nicht wirklich für andere."
       },
       "factor": "A",
       "reverse": true
@@ -1066,7 +1154,8 @@
       "text": {
         "en": "I insult people.",
         "pt": "Eu insulte pessoas.",
-        "es": "Insulto a la gente."
+        "es": "Insulto a la gente.",
+        "de": "Ich beleidige Menschen."
       },
       "factor": "A",
       "reverse": true
@@ -1076,7 +1165,8 @@
       "text": {
         "en": "I get stressed out easily.",
         "pt": "Eu fico estressado facilmente.",
-        "es": "Me estreso fácilmente."
+        "es": "Me estreso fácilmente.",
+        "de": "Ich gerate leicht in Stress."
       },
       "factor": "N",
       "reverse": false
@@ -1086,7 +1176,8 @@
       "text": {
         "en": "I worry about things.",
         "pt": "Eu me preocupo com as coisas.",
-        "es": "Me preocupo por las cosas."
+        "es": "Me preocupo por las cosas.",
+        "de": "Ich mache mir über Dinge Sorgen."
       },
       "factor": "N",
       "reverse": false
@@ -1096,7 +1187,8 @@
       "text": {
         "en": "I am easily disturbed.",
         "pt": "Eu me perturbo facilmente.",
-        "es": "Me perturbo fácilmente."
+        "es": "Me perturbo fácilmente.",
+        "de": "Ich lasse mich leicht aus der Ruhe bringen."
       },
       "factor": "N",
       "reverse": false
@@ -1106,7 +1198,8 @@
       "text": {
         "en": "I get upset easily.",
         "pt": "Eu fico chateado facilmente.",
-        "es": "Me molesto fácilmente."
+        "es": "Me molesto fácilmente.",
+        "de": "Ich rege mich leicht auf."
       },
       "factor": "N",
       "reverse": false
@@ -1116,7 +1209,8 @@
       "text": {
         "en": "I change my mood a lot.",
         "pt": "Eu mudo meu humor frequentemente.",
-        "es": "Cambio mi humor a menudo."
+        "es": "Cambio mi humor a menudo.",
+        "de": "Meine Stimmung ändert sich oft."
       },
       "factor": "N",
       "reverse": false
@@ -1126,7 +1220,8 @@
       "text": {
         "en": "I have frequent mood swings.",
         "pt": "Eu tenho mudanças de humor frequentes.",
-        "es": "Tengo cambios de humor frecuentes."
+        "es": "Tengo cambios de humor frecuentes.",
+        "de": "Ich habe häufige Stimmungsschwankungen."
       },
       "factor": "N",
       "reverse": false
@@ -1136,7 +1231,8 @@
       "text": {
         "en": "I get irritated easily.",
         "pt": "Eu fico irritado facilmente.",
-        "es": "Me irrito fácilmente."
+        "es": "Me irrito fácilmente.",
+        "de": "Ich werde leicht gereizt."
       },
       "factor": "N",
       "reverse": false
@@ -1146,7 +1242,8 @@
       "text": {
         "en": "I often feel blue.",
         "pt": "Eu frequentemente me sinto triste.",
-        "es": "A menudo me siento triste."
+        "es": "A menudo me siento triste.",
+        "de": "Ich fühle mich oft niedergeschlagen."
       },
       "factor": "N",
       "reverse": false
