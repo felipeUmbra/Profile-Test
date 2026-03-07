@@ -3,7 +3,8 @@ import { exportResultToPDF, AccessibilityManager, TestRunner, showError, setupEn
 import {big5TraitDescriptions, mbtiDimensions, mbtiTypeDescriptions, discDescriptions, big5Descriptions, 
     blendedDescriptions, unifiedProfiles, fetchTraitDescriptions} from '/JS/trait-description.js';
 import { indexInterfaceTranslations, translateUtilIndex, tUtility } from '/JS/translation.js';
-import { fetchQuestions } from '/JS/questionsHandler.js';
+import { fetchQuestions, generateBig5ResultHTML, generateDISCResultHTML } from '/JS/questionsHandler.js';
+import { saveProgressToLocalStorage, saveProgressToDatabase, saveResultToDatabase } from '/JS/dataHandler.js';
 
 // --- Configuration Object ---
 export const CONFIG = {
@@ -58,91 +59,6 @@ export let accessibilityManager;
 
 // --- Database Integration Functions ---
 
-/**
- * Asynchronously saves the user's current test progress to the backend database.
- * * This function gathers the current session ID, test ID, and the user's answers so far,
- * formatting them into a standard payload. It then attempts to send this data to the 
- * API's `/save-progress` endpoint.
- * * **Fallback Mechanism:**
- * If the network request fails or the server returns an error, this function catches the 
- * exception, logs a warning, and automatically falls back to `saveProgressToLocalStorage`. 
- * This ensures that the user's progress is preserved even if the backend is offline.
- * * @async
- * @returns {Promise<void>} A promise that resolves when the save operation is complete (either via database or local storage fallback).
- * * @example
- * // Call this function after a user selects an answer
- * await saveProgressToDatabase();
- */
-async function saveProgressToDatabase() {
-    try {
-        const sessionId = getOrCreateSessionId();
-        const testId = getCurrentTestId();
-        
-        // Map current ratings to the schema expected by the backend
-        const answers = userRatings.map((rating, index) => ({
-            questionId: currentTestQuestions[index]?.id || index + 1,
-            rating: rating.rating || rating.finalScore || 1,
-            factor: rating.factor || rating.dimension
-        }));
-
-        const response = await fetch(`${CONFIG.apiBaseUrl}/save-progress`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                sessionId: sessionId,
-                testId: testId,
-                currentQuestion: currentQuestionIndex,
-                answers: answers
-            })
-        });
-        
-        if (!response.ok) throw new Error('Failed to save progress to database');
-        
-        console.log('Progress saved to database');
-    } catch (error) {
-        console.warn('Could not save progress to database:', error);
-        // Continue with local storage as fallback
-        saveProgressToLocalStorage(currentLang);
-    }
-}
-
-// Save result to database
-async function saveResultToDatabase(resultData) {
-    try {
-        const sessionId = getOrCreateSessionId();
-        const testId = getCurrentTestId();
-        
-        const response = await fetch(`${CONFIG.apiBaseUrl}/save-result`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                sessionId: sessionId,
-                testId: testId,
-                scores: resultData.scores,
-                profileKey: resultData.profileKey || resultData.type
-            })
-        });
-        
-        if (!response.ok) throw new Error('Failed to save result to database');
-        
-        console.log('Result saved to database');
-        return true;
-    } catch (error) {
-        console.warn('Could not save result to database:', error);
-        return false;
-    }
-}
-
-// Get or create session ID
-function getOrCreateSessionId() {
-    let sessionId = localStorage.getItem('personalityTest_sessionId');
-    if (!sessionId) {
-        sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-        localStorage.setItem('personalityTest_sessionId', sessionId);
-    }
-    return sessionId;
-}
-
 // Get current test ID
 export function getCurrentTestId() {
     if (isDISCTest) return CONFIG.DISC.testId;
@@ -165,27 +81,10 @@ function debounce(func, wait) {
 }
 
 // Local Storage Management (Fallback)
-function getStorageKey() {
+export function getStorageKey() {
     if (isMBTITest) return CONFIG.MBTI.progressKey;
     if (isBig5Test) return CONFIG.BIG5.progressKey;
     return CONFIG.DISC.progressKey;
-}
-
-export function saveProgressToLocalStorage(clang) {
-    try {
-        const progress = {
-            currentQuestionIndex,
-            scores: isDISCTest ? scores : undefined,
-            mbtiScores: isMBTITest ? mbtiScores : undefined,
-            big5Scores: isBig5Test ? big5Scores : undefined,
-            userRatings,
-            clang,
-            timestamp: Date.now()
-        };
-        localStorage.setItem(getStorageKey(), JSON.stringify(progress));
-    } catch (error) {
-        console.warn('Could not save progress to localStorage:', error);
-    }
 }
 
 function loadProgressFromLocalStorage() {
@@ -218,7 +117,7 @@ function clearProgressFromLocalStorage() {
 // Combined progress management
 function saveProgress() {
     // Try database first, then localStorage as fallback
-    saveProgressToDatabase().catch(() => {
+    saveProgressToDatabase(currentLang).catch(() => {
         saveProgressToLocalStorage(currentLang);
     });
 }
@@ -368,9 +267,9 @@ export let currentTestQuestions = [];
 
 // Global State
 export let currentQuestionIndex = 0;
-let scores = { D: 0, I: 0, S: 0, C: 0 };
-let mbtiScores = { E: 0, I: 0, S: 0, N: 0, T: 0, F: 0, J: 0, P: 0 };
-let big5Scores = { O: 0, C: 0, E: 0, A: 0, N: 0 };
+export let scores = { D: 0, I: 0, S: 0, C: 0 };
+export let mbtiScores = { E: 0, I: 0, S: 0, N: 0, T: 0, F: 0, J: 0, P: 0 };
+export let big5Scores = { O: 0, C: 0, E: 0, A: 0, N: 0 };
 export let userRatings = [];
 
 // DOM Elements
@@ -1696,163 +1595,12 @@ function displayFullResult(testType, resultData) {
             resultHTML = generateMBTIResultHTML(resultData);
             break;
         case 'BIG5':
-            resultHTML = generateBig5ResultHTML(resultData);
+            resultHTML = generateBig5ResultHTML(resultData, currentLang);
             break;
     }
     
     container.innerHTML = resultHTML;
     
-}
-
-export function generateBig5ResultHTML(resultData) {
-    const scores = resultData.scores || {};
-    const maxScores = resultData.maxScores || { O: 40, C: 40, E: 40, A: 40, N: 40 };
-    let scoresHTML = '';
-    const factors = ['O', 'C', 'E', 'A', 'N'];
-
-    factors.forEach(factor => {
-        const score = scores[factor] || 0;
-        const max = maxScores[factor] || 40;
-        const percentage = Math.round((score / max) * 100);
-        
-        // Fetch trait data
-        const traitData = big5Descriptions[factor] || {
-            title: { en: factor, pt: factor, es: factor },
-            style: 'bg-gray-100 border-gray-500 text-gray-700',
-            description: { en: '', pt: '', es: '' }
-        };
-        
-        // Determine level (High, Moderate, Low)
-        let level = '';
-        if (percentage >= 70) level = 'high';
-        else if (percentage <= 30) level = 'low';
-        else level = 'moderate';
-        
-        // Fetch interpretation based on level and language
-        let interpretationText = '';
-        if (big5TraitDescriptions && big5TraitDescriptions[factor] && big5TraitDescriptions[factor][level]) {
-            interpretationText = big5TraitDescriptions[factor][level][currentLang] || big5TraitDescriptions[factor][level]['en'];
-        }
-
-        // Apply translations to title and description
-        const titleText = traitData.title[currentLang] || traitData.title['en'];
-        const descText = traitData.description[currentLang] || traitData.description['en'];
-
-        scoresHTML += `
-            <div class="mb-6 p-4 rounded-lg border-l-4 ${traitData.style} shadow-sm bg-white">
-                <div class="flex justify-between items-center mb-2">
-                    <h3 class="text-xl font-bold flex items-center">
-                        <span class="mr-2">${traitData.icon || ''}</span>
-                        ${titleText}
-                    </h3>
-                    <span class="text-lg font-semibold">${score} / ${max}</span>
-                </div>
-                <div class="w-full bg-gray-200 rounded-full h-3 mb-3">
-                    <div class="h-3 rounded-full ${traitData.style.split(' ')[0]}" style="width: ${percentage}%"></div>
-                </div>
-                <p class="text-gray-600 italic mb-2">${descText}</p>
-                <div class="bg-gray-50 p-3 rounded border border-gray-200">
-                    <p class="text-gray-800"><span class="font-semibold">${t('interpretation')}:</span> ${interpretationText}</p>
-                </div>
-            </div>
-        `;
-    });
-
-    // Determine introductory text based on the selected language
-    let introText = "";
-    if (currentLang === 'pt') {
-        introText = "Os cinco grandes traços de personalidade representam cinco amplos domínios da personalidade humana. Suas pontuações indicam sua posição relativa em cada dimensão em comparação com a população em geral. Lembre-se de que todos os traços têm pontos fortes e desafios, e nenhuma pontuação é 'melhor' que a outra.";
-    } else if (currentLang === 'es') {
-        introText = "Los cinco grandes rasgos de personalidad representan cinco amplios dominios de la personalidad humana. Tus puntuaciones indican tu posición relativa en cada dimensión en comparación con la población general. Recuerda que todos los rasgos tienen tanto fortalezas como desafíos, y ninguna puntuación es 'mejor' que otra.";
-    } else {
-        introText = "The Big Five personality traits represent five broad domains of human personality. Your scores indicate your relative standing on each dimension compared to the general population. Remember that all traits have both strengths and challenges, and no single score is 'better' than another.";
-    }
-
-    return `
-        <div class="mb-8">
-            <p class="text-gray-700 mb-6 leading-relaxed bg-blue-50 p-4 rounded-lg border border-blue-100">
-                ${introText}
-            </p>
-            <div class="space-y-2">
-                ${scoresHTML}
-            </div>
-        </div>
-    `;
-}
-
-function generateDISCResultHTML(resultData, clang) {
-    const profileKey = resultData.profileKey;
-    const profileData = blendedDescriptions[profileKey];
-    const profileName = profileData ? profileData.name[clang] : 'Unknown Profile';
-    const description = profileData ? profileData.description[clang] : '';
-    
-    const factorScores = resultData.factors || [];
-    const scores = resultData.scores || {};
-    
-    let scoresHTML = '';
-    const factorOrder = ['D', 'I', 'S', 'C'];
-    
-    factorOrder.forEach(factor => {
-        const score = scores[factor] || 0;
-        const desc = discDescriptions[factor];
-        const factorCount = 8; // Default, you might want to store this in resultData
-        const maxScore = factorCount * 4;
-        const percentage = Math.round((score / maxScore) * 100);
-        
-        scoresHTML += `
-            <div class="p-6 rounded-xl border-2 ${desc.style} shadow-lg">
-                <div class="flex items-center mb-4">
-                    <span class="text-3xl mr-3">${desc.icon}</span>
-                    <h3 class="text-xl font-bold">${desc.title[currentLang]}</h3>
-                </div>
-                <div class="w-full bg-gray-200 rounded-full h-2.5 mb-2">
-                    <div class="h-2.5 rounded-full bg-indigo-600" style="width: ${percentage}%"></div>
-                </div>
-                <p class="text-sm font-semibold mt-2">${score} / ${maxScore} ${tUtility('points')} (${percentage}%)</p>
-            </div>
-        `;
-    });
-
-    return `
-        <div class="text-center mb-10">
-            <h1 class="text-4xl font-extrabold text-gray-800 mb-4">${tUtility('disc_title')}</h1>
-            <p class="text-gray-500">${currentLang === 'en' ? 'Your complete DISC personality assessment results' : 'Seus resultados completos da avaliação de personalidade DISC'}</p>
-        </div>
-
-        <!-- Profile Overview -->
-        <div class="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl p-8 text-white text-center mb-10 shadow-2xl">
-            <div class="text-6xl font-bold mb-4">${profileKey}</div>
-            <h2 class="text-3xl font-bold mb-4">${profileName}</h2>
-            <p class="text-indigo-100 text-lg">${description}</p>
-        </div>
-
-        <!-- Score Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-            ${scoresHTML}
-        </div>
-
-        <!-- Detailed Interpretation -->
-        <div class="mb-10">
-            <h3 class="text-2xl font-bold text-gray-800 mb-6 border-b pb-2">${tUtility('interpretation_title')}</h3>
-            <div class="bg-white p-6 rounded-xl border-l-4 ${profileData.style} shadow-md">
-                <h4 class="text-xl font-bold text-gray-800 mb-3 flex items-center">
-                    <span class="text-2xl mr-3">${discDescriptions[profileKey.charAt(0)].icon}</span>
-                    ${profileName} ${currentLang === 'en' ? 'Profile' : 'Perfil'}
-                </h4>
-                <p class="text-gray-600 leading-relaxed">${description}</p>
-            </div>
-        </div>
-
-        <!-- Action Buttons -->
-        <div class="text-center space-x-4">
-            <button id="restart-btn" data-html2canvas-ignore="true" class="px-8 py-3 bg-indigo-500 text-white font-bold rounded-xl hover:bg-indigo-600 transition duration-300 shadow-lg">
-                ${tUtility('restart')}
-            </button>
-            <button id="export-btn" data-html2canvas-ignore="true" class="px-8 py-3 bg-green-500 text-white font-bold rounded-xl hover:bg-green-600 transition duration-300 shadow-lg">
-                ${tUtility('export_pdf')}
-            </button>
-        </div>
-    `;
 }
 
 function generateMBTIResultHTML(resultData) {
