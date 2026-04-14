@@ -158,6 +158,8 @@ function saveTestResultToLocalStorage(resultData, clang) {
             timestamp: Date.now()
         };
 
+        console.log("DEBUG: What is being saved?", JSON.stringify(resultObject, null, 2));
+        
         if (isMBTITest) {
             storageKey = CONFIG.resultKeys.MBTI;
         } else if (isBig5Test) {
@@ -684,11 +686,17 @@ function handleRating(rating, buttonElement) {
         Array.from(ratingButtonsContainer.children).forEach(btn => btn.classList.remove('selected'));
         buttonElement.classList.add('selected');
 
+        if (!currentQ.factor) {
+            console.error("Critical Error: Question factor is missing for ID", currentQ.id);
+            return;
+        }
+
         scores[currentQ.factor] += rating;
+        console.log("DEBUG: Current question factor:", currentQ.factor, "Rating:", rating);
         userRatings.push({ 
             questionId: currentQ.id,
             factor: currentQ.factor, 
-            rating: rating 
+            rating: rating,   
         });
         
         // Announce selection for screen readers
@@ -1092,7 +1100,8 @@ function showDISCResults(resultScores, resultInterpretation) {
             testType: 'DISC',
             profileKey: profileKey,
             scores: { ...scores },
-            factors: factorScores
+            factors: factorScores,
+            factorCounts: factorCounts
         });
 
         // Announce result
@@ -1107,7 +1116,7 @@ function showDISCResults(resultScores, resultInterpretation) {
         
         sortedForDisplay.forEach(item => {
             const desc = discDescriptions[item.factor];
-            const factorCount = factorCounts[item.factor];
+            const factorCount = factorCounts[item.factor] || 0;
             const maxScore = factorCount * 4;
             const minScore = factorCount * 1;
             const range = maxScore - minScore;

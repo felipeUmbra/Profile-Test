@@ -89,7 +89,7 @@ async function migrate() {
         const discQuestions = allQuestions.disc.map((q, index) => ({
             testId: testIds['DISC'],
             testType: 'DISC',
-            factor: q.factor,
+            factor: q.factor || q.dimension,
             questionText: q.text,
             questionOrder: index + 1
         }));
@@ -103,7 +103,7 @@ async function migrate() {
         const mbtiQuestions = allQuestions.mbti.map((q, index) => ({
             testId: testIds['MBTI'],
             testType: 'MBTI',
-            factor: q.dimension,
+            factor: q.dimension || q.factor,
             questionText: {
                 optionA: q.optionA,
                 optionB: q.optionB
@@ -122,7 +122,7 @@ async function migrate() {
         const big5Questions = allQuestions.big5.map((q, index) => ({
             testId: testIds['BIG5'],
             testType: 'BIG5',
-            factor: q.factor,
+            factor: q.factor || q.dimension,
             questionText: q.text,
             reverseScoring: q.reverse,
             questionOrder: index + 1

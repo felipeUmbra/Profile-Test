@@ -68,15 +68,20 @@ app.get('/api/questions/:type', async (req, res) => {
 
         // Map MongoDB data to the format script.js expects
         const mappedQuestions = questions.map(q => {
-            const textObj = typeof q.questionText === 'object' ? q.questionText : { en: q.questionText, pt: q.questionText, es: q.questionText };
+            const textObj = typeof q.questionText === 'object' ? q.questionText : 
+                           { en: q.questionText || '', pt: q.questionText || '', es: q.questionText || '' };
             
+            // Log for debugging (camelCase fields from DB)
+            console.log(`Question ${q.questionOrder}: factor = ${q.factor}`);
+
             return {
                 id: q._id,
-                question_text: q.questionText, // Contains the full {en, pt, es} object
+                question_text: textObj, 
                 question_text_en: textObj.en || q.questionText,
                 question_text_pt: textObj.pt || q.questionText,
-                question_text_es: textObj.es || q.questionText, // Added Spanish support
+                question_text_es: textObj.es || q.questionText,
                 reverse_scoring: q.reverseScoring, 
+                factor: q.factor || q.dimension, // Handle both naming conventions
                 question_order: q.questionOrder,
                 aValue: q.aValue, // Needed for MBTI
                 bValue: q.bValue  // Needed for MBTI

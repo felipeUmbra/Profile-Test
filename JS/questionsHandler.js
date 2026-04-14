@@ -245,6 +245,7 @@ export function generateDISCResultHTML(resultData, clang) {
     
     const factorScores = resultData.factors || [];
     const scores = resultData.scores || {};
+    const factorCounts = resultData.factorCounts || { D: 8, I: 7, S: 8, C: 7 }; // Fallback to actual counts from fallback questions
     
     let scoresHTML = '';
     const factorOrder = ['D', 'I', 'S', 'C'];
@@ -252,7 +253,7 @@ export function generateDISCResultHTML(resultData, clang) {
     factorOrder.forEach(factor => {
         const score = scores[factor] || 0;
         const desc = discDescriptions[factor];
-        const factorCount = 8; // Default, you might want to store this in resultData
+        const factorCount = factorCounts[factor] || 8;
         const maxScore = factorCount * 4;
         const percentage = Math.round((score / maxScore) * 100);
         
